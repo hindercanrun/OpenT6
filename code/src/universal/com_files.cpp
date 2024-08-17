@@ -25,7 +25,9 @@ char lastValidGame[256];
 
 const char* fs_serverIwdNames[1024];
 int fs_numServerReferencedIwds;
+const char* fs_serverReferencedIwds[1024];
 const char* fs_serverReferencedIwdNames[1024];
+const char* fs_serverReferencedFFCheckSums[64];
 int fs_numServerReferencedFFs;
 const char* fs_serverReferencedFFNames[32];
 
@@ -38,7 +40,14 @@ TRACK_com_files
 */
 void TRACK_com_files()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(fs_gamedir, 256, "fs_gamedir", 12);
+	track_static_alloc_internal(fsh, 19880, "fsh", 12);
+	track_static_alloc_internal(fs_serverIwds, 4096, "fs_serverIwds", 12);
+	track_static_alloc_internal(fs_serverIwdNames, 4096, "fs_serverIwdNames", 12);
+	track_static_alloc_internal(fs_serverReferencedIwds, 4096, "fs_serverReferencedIwds", 12);
+	track_static_alloc_internal(fs_serverReferencedIwdNames, 4096, "fs_serverReferencedIwdNames", 12);
+	track_static_alloc_internal(fs_serverReferencedFFCheckSums, 256, "fs_serverReferencedFFCheckSums", 12);
+	track_static_alloc_internal(fs_serverReferencedIwdNames, 4096, "fs_serverReferencedIwdNames", 12);
 }
 
 /*
@@ -2159,7 +2168,18 @@ FS_ClearIwdReferences
 */
 void FS_ClearIwdReferences()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	searchpath_s *i;
+	iwd_t *iwd;
+
+	for ( i = fs_searchpaths; i; i = i->next )
+	{
+		iwd = i->iwd;
+
+		if ( iwd )
+		{
+			iwd->referenced = 0;
+		}
+	}
 }
 
 /*
@@ -2278,8 +2298,42 @@ Com_IsAddonMap
 */
 char Com_IsAddonMap(const char *mapName, const char **pBaseMapName)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	const char *v2;
+	int *p_prefixLen;
+	unsigned __int8 *v4;
+	int v5;
+	int v6;
+	unsigned int v8;
+
+	v2 = mapName;
+	p_prefixLen = &g_addonMapDefs[0].prefixLen;
+	v8 = 0;
+	while ( I_strnicmp(v2, *(p_prefixLen - 1), *p_prefixLen) )
+	{
+LABEL_9:
+	p_prefixLen += 3;
+	v8 += 12;
+	if ( v8 >= 0x18 )
+		return 0;
+	}
+	v4 = &v2[*p_prefixLen];
+	strchr(v4, 0x5Fu);
+	v6 = v5;
+	if ( p_prefixLen[1] && !v5 )
+	{
+		v2 = mapName;
+		goto LABEL_9;
+	}
+	if ( pBaseMapName )
+	{
+		if ( p_prefixLen[1] && I_strnicmp(v4, "mp_", 3) && I_strnicmp(v4, "zm_", 3) )
+		{
+			*pBaseMapName = (v6 + 1);
+			return 1;
+		}
+		*pBaseMapName = v4;
+	}
+	return 1;
 }
 
 /*
