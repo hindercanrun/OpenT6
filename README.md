@@ -1,4 +1,4 @@
-# OpenBO2
+# OpenT6
 
 [![License](https://img.shields.io/badge/License-GPLv2-blue)](LICENSE)
 
@@ -11,4 +11,4 @@ Official releases will not be available until the project reaches a playable sta
 I really don't care, just send me stuff.
 
 # Legal
-OpenBO2 is licensed under the [GPLv2](LICENSE.md) and is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with Activision Blizzard, Inc or Treyarch Studios**.
+OpenT6 is licensed under the [GPLv2](LICENSE.md) and is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with Activision Blizzard, Inc or Treyarch Studios**.
