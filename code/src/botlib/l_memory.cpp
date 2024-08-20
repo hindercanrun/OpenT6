@@ -7,8 +7,15 @@ GetMemory
 */
 char *GetMemory(unsigned int size)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	char* result = Z_Malloc(size + 4, "GetMemory", 12);
+
+	if ( result )
+	{
+		*result = 305419896;
+		result += 4;
+	}
+
+	return result;
 }
 
 /*
@@ -29,6 +36,9 @@ FreeMemory
 */
 void FreeMemory(void *ptr)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if ( *( ptr - 1 ) == 305419896 )
+	{
+		Z_Free(ptr - 4);
+	}
 }
 

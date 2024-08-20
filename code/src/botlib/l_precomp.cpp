@@ -7,7 +7,17 @@ SourceError
 */
 void SourceError(source_s *source, char *str, ...)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char text[1024];
+	va_list ap;
+
+	va_start(ap, str);
+
+	if ( ( script->flags & 1 ) == 0 )
+	{
+		_vsnprintf_s(text, 0x400u, str, ap);
+
+		Com_PrintError(21, "Error: file %s, line %d: %s\n", script->filename, script->line, text);
+	}
 }
 
 /*
@@ -17,7 +27,18 @@ SourceWarning
 */
 void SourceWarning(source_s *source, char *str, ...)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char text[1024];
+	va_list ap;
+
+	va_start(ap, str);
+	_vsnprintf_s(text, 0x400u, str, ap);
+
+	Com_PrintWarning(21, "Warning: file %s, line %d: %s\n", source->scriptstack->filename, source->scriptstack->line, text);
+
+	for ( script_s *i = source->scriptstack->next; i; i = i->next )
+	{
+		Com_PrintWarning(21, "  From file %s, line %d\n", i->filename, i->line);
+	}
 }
 
 /*
@@ -69,8 +90,24 @@ PC_UnreadSourceToken
 */
 int PC_UnreadSourceToken(source_s *source, token_s *token)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	token_s *Memory = GetMemory(0x430u);
+
+	if ( Memory )
+	{
+		qmemcpy(Memory, token, sizeof(token_s));
+		Memory->next = 0;
+		++numtokens;
+	}
+	else
+	{
+		Com_Error(ERR_FATAL, "EXE_ERR_OUT_OF_MEMORY");
+		Memory = 0;
+	}
+
+	Memory->next = source->tokens;
+	source->tokens = Memory;
+
+	return 1;
 }
 
 /*
