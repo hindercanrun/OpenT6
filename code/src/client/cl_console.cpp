@@ -18,19 +18,9 @@ void SetupChatField(const LocalClientNum_t localClientNum, int teamChat, int wid
 Con_ChatModePublic_f
 ==============
 */
-void Con_ChatModePublic_f(LocalClientNum_t a1, int a2)
+void Con_ChatModePublic_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-Con_ChatModeTeam_f
-==============
-*/
-void Con_ChatModeTeam_f(LocalClientNum_t a1, int a2)
-{
-	UNIMPLEMENTED(__FUNCTION__);
+	SetupChatField(LOCAL_CLIENT_FIRST, 0, 588);
 }
 
 /*
@@ -40,15 +30,12 @@ Con_GetTextCopy
 */
 void Con_GetTextCopy(char *text, int maxSize)
 {
-	unsigned int end;
-	int begin;
-	int totalSize;
-
 	if (con.consoleWindow.activeLineCount)
 	{
-		begin = con.consoleWindow.lines[con.consoleWindow.firstLineIndex].textBufPos;
-		end = con.consoleWindow.textBufPos;
-		totalSize = con.consoleWindow.textBufPos - begin;
+		int begin = con.consoleWindow.lines[con.consoleWindow.firstLineIndex].textBufPos;
+		unsigned int end = con.consoleWindow.textBufPos;
+		int totalSize = con.consoleWindow.textBufPos - begin;
+
 		if (con.consoleWindow.textBufPos - begin < 0)
 		{
 			totalSize += con.consoleWindow.textBufSize;
@@ -57,10 +44,12 @@ void Con_GetTextCopy(char *text, int maxSize)
 		if (totalSize > maxSize - 1)
 		{
 			begin += totalSize - (maxSize - 1);
+
 			if (begin > con.consoleWindow.textBufSize)
 			{
 				begin -= con.consoleWindow.textBufSize;
 			}
+
 			totalSize = maxSize - 1;
 		}
 
@@ -69,12 +58,15 @@ void Con_GetTextCopy(char *text, int maxSize)
 			memcpy(text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufSize - begin);
 			memcpy(&text[con.consoleWindow.textBufSize - begin], con.consoleWindow.circularTextBuffer, end);
 		}
+
 		else
 		{
 			memcpy(text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufPos - begin);
 		}
+
 		text[totalSize] = 0;
 	}
+
 	else
 	{
 		*text = 0;
@@ -116,7 +108,7 @@ void Con_NudgeMessageWindowTimes(MessageWindow *msgwnd, int serverTimeNudge, int
 Con_TimeNudged
 ==============
 */
-void __cdecl Con_TimeNudged(LocalClientNum_t localClientNum, int serverTimeNudge)
+void Con_TimeNudged(LocalClientNum_t localClientNum, int serverTimeNudge)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -148,7 +140,35 @@ Con_CheckResize
 */
 void Con_CheckResize()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	float v0 = ScrPlace_ApplyX(&scrPlaceFullUnsafe, 4.0, 1);
+	con.screenMin.v[0] = floor(v0);
+	float v1 = ScrPlace_ApplyY(&scrPlaceFullUnsafe, 4.0, 1);
+	con.screenMin.v[1] = floor(v1);
+	float v2 = ScrPlace_ApplyX(&scrPlaceFullUnsafe, -4.0, 3);
+	con.screenMax.v[0] = floor(v2);
+	float v3 = ScrPlace_ApplyY(&scrPlaceFullUnsafe, -4.0, 3);
+	con.screenMax.v[1] = floor(v3);
+
+	if (cls.consoleFont)
+	{
+		int fontHeight = R_TextHeight(cls.consoleFont);
+		con.fontHeight = fontHeight;
+
+		if (fontHeight <= 0)
+		{
+			fontHeight = con.fontHeight;
+		}
+
+		con.visiblePixelWidth = (((con.screenMax.v[0] - con.screenMin.v[0]) - 10.0) - 18.0);
+		con.visibleLineCount = (((con.screenMax.v[1] - con.screenMin.v[1]) - (2 * fontHeight)) - 24.0) / fontHeight;
+	}
+
+	else
+	{
+		con.fontHeight = 0;
+		con.visibleLineCount = 0;
+		con.visiblePixelWidth = 0;
+	}
 }
 
 /*
@@ -166,9 +186,12 @@ void Con_InitMessageWindow(MessageWindow *msgwnd, Message *messages, MessageLine
 Con_Clear_f
 ==============
 */
-void Con_Clear_f(MessageWindow *notthis)
+void Con_Clear_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Con_ClearMessageWindow(&con.consoleWindow);
+
+	con.lineOffset = 0;
+	con.displayLineOffset = 0;
 }
 
 /*
@@ -176,9 +199,9 @@ void Con_Clear_f(MessageWindow *notthis)
 Con_InitClientAssets
 ==============
 */
-void __cdecl Con_InitClientAssets()
+void Con_InitClientAssets()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Con_CheckResize();
 }
 
 /*
@@ -323,7 +346,7 @@ void Con_UpdateNotifyLine(LocalClientNum_t localClientNum, int channel, bool lin
 Con_InitMessageBuffer
 ==============
 */
-void __cdecl Con_InitMessageBuffer()
+void Con_InitMessageBuffer()
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -333,7 +356,7 @@ void __cdecl Con_InitMessageBuffer()
 CL_ConsolePrint_AddLine
 ==============
 */
-char __cdecl CL_ConsolePrint_AddLine(LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, char color, int flags)
+char CL_ConsolePrint_AddLine(LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, char color, int flags)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 	return 0;
@@ -502,7 +525,7 @@ void ConDrawInput_IncrMatchCounter(const char *str)
 ConDrawInput_DvarMatch
 ==============
 */
-void __cdecl ConDrawInput_DvarMatch(const char *str)
+void ConDrawInput_DvarMatch(const char *str)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -597,7 +620,7 @@ Con_DrawInputPrompt
 */
 void Con_DrawInputPrompt(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Field_Draw(localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y, 5, 5, 0);
 }
 
 /*
@@ -607,8 +630,7 @@ Con_HasTooManyMatchesToShow
 */
 BOOL Con_HasTooManyMatchesToShow()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return conDrawInputGlob.matchCount > con_inputMaxMatchesShown;
 }
 
 /*
@@ -618,8 +640,12 @@ Con_IsDvarCommand
 */
 bool Con_IsDvarCommand(const char *cmd)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return !I_stricmp(cmd, "set")
+		|| !I_stricmp(cmd, "seta")
+		|| !I_stricmp(cmd, "sets")
+		|| !I_stricmp(cmd, "reset")
+		|| !I_stricmp(cmd, "toggle")
+		|| I_stricmp(cmd, "togglep") == 0;
 }
 
 /*
@@ -640,8 +666,15 @@ Con_CancelAutoComplete
 */
 char Con_CancelAutoComplete()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (conDrawInputGlob.matchIndex < 0 || !conDrawInputGlob.autoCompleteChoice[0])
+	{
+		return 0;
+	}
+
+	conDrawInputGlob.matchIndex = -1;
+	conDrawInputGlob.autoCompleteChoice[0] = 0;
+
+	return 1;
 }
 
 /*
@@ -651,7 +684,7 @@ Con_AllowAutoCompleteCycling
 */
 void Con_AllowAutoCompleteCycling(bool isAllowed)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	conDrawInputGlob.mayAutoComplete = isAllowed;
 }
 
 /*
@@ -730,7 +763,7 @@ void Con_DrawMessageWindow(LocalClientNum_t localClientNum, MessageWindow *msgwn
 Con_DrawGameMessageWindow
 ==============
 */
-void Con_DrawGameMessageWindow(char *a1, LocalClientNum_t localClientNum, int windowIndex, int xPos, int yPos, int horzAlign, int vertAlign, Font_s *font, float fontScale, vec4_t *color, int textStyle, int textAlignMode, msgwnd_mode_t mode)
+void Con_DrawGameMessageWindow(LocalClientNum_t localClientNum, int windowIndex, int xPos, int yPos, int horzAlign, int vertAlign, Font_s *font, float fontScale, vec4_t *color, int textStyle, int textAlignMode, msgwnd_mode_t mode)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -740,7 +773,7 @@ void Con_DrawGameMessageWindow(char *a1, LocalClientNum_t localClientNum, int wi
 Con_DrawMiniConsole
 ==============
 */
-void __cdecl Con_DrawMiniConsole(LocalClientNum_t localClientNum, int xPos, int yPos, float alpha)
+void Con_DrawMiniConsole(LocalClientNum_t localClientNum, int xPos, int yPos, float alpha)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -750,7 +783,7 @@ void __cdecl Con_DrawMiniConsole(LocalClientNum_t localClientNum, int xPos, int 
 Con_DrawErrors
 ==============
 */
-void __cdecl Con_DrawErrors(LocalClientNum_t localClientNum, int xPos, int yPos, float alpha)
+void Con_DrawErrors(LocalClientNum_t localClientNum, int xPos, int yPos, float alpha)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -794,7 +827,7 @@ Con_ToggleConsoleOutput
 */
 void Con_ToggleConsoleOutput()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	con.outputVisible = !con.outputVisible;
 }
 
 /*
@@ -834,7 +867,17 @@ Con_PageUp
 */
 void Con_PageUp()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	con.displayLineOffset -= 2;
+
+	if ( con.displayLineOffset < con.visibleLineCount )
+	{
+		con.displayLineOffset = con.visibleLineCount;
+
+		if ( con.consoleWindow.activeLineCount < con.visibleLineCount )
+		{
+			con.displayLineOffset = con.consoleWindow.activeLineCount;
+		}
+	}
 }
 
 /*
@@ -844,7 +887,13 @@ Con_PageDown
 */
 void Con_PageDown()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int v0 = con.displayLineOffset + 2;
+	con.displayLineOffset = con.consoleWindow.activeLineCount;
+
+	if ( v0 < con.consoleWindow.activeLineCount )
+	{
+		con.displayLineOffset = v0;
+	}
 }
 
 /*
@@ -854,7 +903,12 @@ Con_Top
 */
 void Con_Top()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	con.displayLineOffset = con.visibleLineCount;
+
+	if (con.consoleWindow.activeLineCount < con.visibleLineCount)
+	{
+		con.displayLineOffset = con.consoleWindow.activeLineCount;
+	}
 }
 
 /*
@@ -864,7 +918,7 @@ Con_Bottom
 */
 void Con_Bottom()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	con.displayLineOffset = con.consoleWindow.activeLineCount;
 }
 
 /*
@@ -874,7 +928,25 @@ Con_Close
 */
 void Con_Close(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if ((clientUIActives[localClientNum].flags & 2) != 0)
+	{
+		Field_Clear(&g_consoleField);
+
+		if (conDrawInputGlob.matchIndex >= 0)
+		{
+			if (conDrawInputGlob.autoCompleteChoice[0])
+			{
+				conDrawInputGlob.matchIndex = -1;
+				conDrawInputGlob.autoCompleteChoice[0] = 0;
+			}
+		}
+
+		Con_ClearNotify(localClientNum);
+
+		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].miniconWindow);
+		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].errorWindow);
+		keyCatchers &= ~1u;
+	}
 }
 
 /*
@@ -884,8 +956,7 @@ Con_IsActive
 */
 bool Con_IsActive(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return Key_IsCatcherActive(localClientNum, 1);
 }
 
 /*
@@ -905,7 +976,19 @@ Con_ToggleConsole
 */
 void Con_ToggleConsole()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Field_Clear(&g_consoleField);
+
+	if ( conDrawInputGlob.matchIndex >= 0 && conDrawInputGlob.autoCompleteChoice[0] )
+	{
+		conDrawInputGlob.matchIndex = -1;
+		conDrawInputGlob.autoCompleteChoice[0] = 0;
+	}
+
+	g_consoleField.widthInPixels = g_console_field_width;
+	keyCatchers ^= 1u;
+	g_consoleField.charHeight = g_console_char_height;
+	g_consoleField.fixedSize = 1;
+	con.outputVisible = 0;
 }
 
 /*
@@ -915,7 +998,11 @@ Con_Echo_f
 */
 void Con_Echo_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Con_ToggleConsole();
+
+	I_strncpyz(g_consoleField.buffer, "\\echo ", 256);
+	g_consoleField.cursor = strlen(g_consoleField.buffer);
+	Field_AdjustScroll(LOCAL_CLIENT_FIRST, &scrPlaceFull, &g_consoleField);
 }
 
 /*
@@ -923,7 +1010,7 @@ void Con_Echo_f()
 Con_OneTimeInit
 ==============
 */
-void __cdecl Con_OneTimeInit()
+void Con_OneTimeInit()
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -935,7 +1022,39 @@ Con_Init
 */
 void Con_Init()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int *p_widthInPixels;
+
+	cl_deathMessageWidth = Dvar_RegisterInt("cl_deathMessageWidth", 320, 1, 640, 0, "Pixel width of the obituary area");
+
+	Field_Clear(&g_consoleField);
+
+	g_consoleField.widthInPixels = g_console_field_width;
+	g_consoleField.charHeight = g_console_char_height;
+	g_consoleField.fixedSize = 1;
+	p_widthInPixels = &historyEditLines[0].widthInPixels;
+
+	// messy asf
+	do
+	{
+		Field_Clear((field_t *)(p_widthInPixels - 3));
+		float v1 = g_console_char_height;
+		*p_widthInPixels = g_console_field_width;
+		*(p_widthInPixels + 1) = v1;
+		p_widthInPixels[2] = 1;
+		p_widthInPixels += 70;
+	}
+	while ( p_widthInPixels < &dword_125CC14 );
+
+	conDrawInputGlob.matchIndex = -1;
+
+	Cmd_AddCommandInternal("chatmodepublic", Con_ChatModePublic_f, &Con_ChatModePublic_f_VAR);
+	Cmd_AddCommandInternal("clear", Con_Clear_f, &Con_Clear_f_VAR);
+	Cmd_AddCommandInternal("con_echo", Con_Echo_f, &Con_Echo_f_VAR);
+
+	if ( !con.initialized )
+	{
+		Con_OneTimeInit();
+	}
 }
 
 /*
@@ -943,9 +1062,26 @@ void Con_Init()
 CL_ConsolePrint
 ==============
 */
-void CL_ConsolePrint(LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, int flags)
+void CL_ConsolePrint(
+		LocalClientNum_t localClientNum,
+		int channel,
+		const char *txt,
+		int duration,
+		int pixelWidth,
+		int flags)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Dvar_GetBool(cl_noprint) && channel != 8)
+	{
+		if (!con.initialized)
+		{
+			Con_OneTimeInit();
+		}
+
+		Con_IsChannelVisible(CON_DEST_CONSOLE, channel, flags);
+		Sys_EnterCriticalSection(CRITSECT_CONSOLE);
+		CL_ConsolePrint_AddLine(localClientNum, channel, txt, duration, pixelWidth, 55, flags);
+		Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
+	}
 }
 
 /*
@@ -973,7 +1109,7 @@ void CL_ReviveMessagePrint(unsigned int a1, LocalClientNum_t localClientNum, con
 CL_DeathMessagePrint
 ==============
 */
-void __cdecl CL_DeathMessagePrint(LocalClientNum_t localClientNum, const char *attackerName, char attackerColorIndex, const char *victimName, int victimColorIndex, Material *iconShader, float iconWidth, float iconHeight, unsigned int horzFlipIcon)
+void CL_DeathMessagePrint(LocalClientNum_t localClientNum, const char *attackerName, char attackerColorIndex, const char *victimName, int victimColorIndex, Material *iconShader, float iconWidth, float iconHeight, unsigned int horzFlipIcon)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -983,7 +1119,7 @@ void __cdecl CL_DeathMessagePrint(LocalClientNum_t localClientNum, const char *a
 Con_DrawInput
 ==============
 */
-void Con_DrawInput(char *a1, LocalClientNum_t localClientNum)
+void Con_DrawInput(LocalClientNum_t localClientNum)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -1006,7 +1142,36 @@ Con_DrawSolidConsole
 */
 void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Sys_EnterCriticalSection(CRITSECT_CONSOLE);
+
+	if (con.lineOffset)
+	{
+		Con_UpdateNotifyLine(localClientNum, con.prevChannel, 1, 0);
+
+		con.lineOffset = 0;
+		if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+		{
+			++con.displayLineOffset;
+		}
+	}
+
+	Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
+
+	if (Key_IsCatcherActive(localClientNum, 1))
+	{
+		if (con.outputVisible)
+		{
+			Con_DrawOuputWindow();
+		}
+
+		Con_DrawInput(localClientNum);
+	}
+
+	else
+	{
+		con.outputVisible = 0;
+		Con_DrawInput(localClientNum);
+	}
 }
 
 /*
@@ -1016,16 +1181,11 @@ Con_DrawConsole
 */
 void Con_DrawConsole(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-}
+	Con_CheckResize();
 
-/*
-==============
-TRACK_cl_console
-==============
-*/
-void TRACK_cl_console()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Key_IsCatcherActive(localClientNum, 1))
+	{
+		Con_DrawSolidConsole(localClientNum);
+	}
 }
 
