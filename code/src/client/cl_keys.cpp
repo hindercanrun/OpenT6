@@ -5,6 +5,9 @@
 
 PlayerKeyState playerKeys[MAX_LOCAL_CLIENTS];
 
+bool con_ignoreMatchPrefixOnly;
+char s_shortestMatch[1024];
+
 /*
 ==============
 Field_AdjustScroll
@@ -43,7 +46,14 @@ PrintMatches
 */
 void PrintMatches(const char *s)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (con_ignoreMatchPrefixOnly && Dvar_GetBool(con_matchPrefixOnly)
+		|| !I_strnicmp(s, s_shortestMatch, strlen(s_shortestMatch)))
+	{
+		if ( I_stristr(s, s_shortestMatch) )
+		{
+			Com_Printf(0, "    %s\n", s);
+		}
+	}
 }
 
 /*
@@ -452,7 +462,25 @@ Field_Draw
 */
 void Field_Draw(LocalClientNum_t localClientNum, field_t *edit, int x, int y, int horzAlign, int vertAlign, bool fullUnSafe)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char str[1024];
+
+	if ( !edit->drawWidth )
+	{
+		edit->drawWidth = 256;
+	}
+
+	I_strncpyz(str, &edit->buffer[edit->scroll], 256 - edit->scroll);
+
+	Field_DrawTextOverride(
+		localClientNum,
+		edit,
+		x,
+		y,
+		horzAlign,
+		vertAlign,
+		str,
+		edit->drawWidth,
+		edit->cursor - edit->scroll);
 }
 
 /*

@@ -1087,7 +1087,23 @@ CL_DrawTextWithCursor
 */
 void CL_DrawTextWithCursor(const ScreenPlacement *scrPlace, const char *text, int maxChars, Font_s *font, float x, float y, int horzAlign, int vertAlign, float xScale, float yScale, const vec4_t *color, int style, int cursorPos, char cursor)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	ScrPlace_ApplyRect(scrPlace, &x, &y, &xScale, &yScale, horzAlign, vertAlign);
+
+	R_AddCmdDrawTextWithCursorInternal(
+		text,
+		maxChars,
+		font,
+		x,
+		y,
+		1.0,
+		xScale,
+		yScale,
+		0.0,
+		color,
+		style,
+		cursorPos,
+		cursor,
+		0.0);
 }
 
 /*

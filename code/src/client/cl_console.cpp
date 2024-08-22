@@ -163,7 +163,6 @@ void Con_CheckResize()
 		con.visiblePixelWidth = (((con.screenMax.v[0] - con.screenMin.v[0]) - 10.0) - 18.0);
 		con.visibleLineCount = (((con.screenMax.v[1] - con.screenMin.v[1]) - (2 * fontHeight)) - 24.0) / fontHeight;
 	}
-
 	else
 	{
 		con.fontHeight = 0;
@@ -177,9 +176,40 @@ void Con_CheckResize()
 Con_InitMessageWindow
 ==============
 */
-void Con_InitMessageWindow(MessageWindow *msgwnd, Message *messages, MessageLine *lines, char *text, int lineCount, int padding, int textPoolSize, int scrollTime, int fadeIn, int fadeOut)
+void Con_InitMessageWindow(
+	MessageWindow *msgwnd,
+	Message *messages,
+	MessageLine *lines,
+	char *text,
+	int lineCount,
+	int padding,
+	int textPoolSize,
+	int scrollTime,
+	int fadeIn,
+	int fadeOut)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	msgwnd->lines = lines;
+	msgwnd->messages = messages;
+	msgwnd->circularTextBuffer = text;
+	msgwnd->textBufSize = textPoolSize;
+	msgwnd->textBufPos = 0;
+	msgwnd->firstLineIndex = 0;
+	msgwnd->activeLineCount = 0;
+	msgwnd->messageIndex = 0;
+	msgwnd->lineCount = lineCount;
+	msgwnd->padding = padding;
+	msgwnd->scrollTime = scrollTime;
+
+	if (fadeOut > 0)
+	{
+		msgwnd->fadeOut = fadeOut;
+		msgwnd->fadeIn = fadeIn;
+	}
+	else
+	{
+		msgwnd->fadeOut = fadeOut;
+		msgwnd->fadeIn = fadeIn;
+	}
 }
 
 /*
