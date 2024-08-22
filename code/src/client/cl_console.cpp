@@ -434,7 +434,17 @@ ConDrawInput_Text
 */
 void ConDrawInput_Text(const char *str, const vec4_t *color)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_AddCmdDrawTextInternal(
+		str,
+		0x7FFFFFFF,
+		cls.consoleFont,
+		conDrawInputGlob.x,
+		conDrawInputGlob.fontHeight + conDrawInputGlob.y,
+		1.0,
+		1.0,
+		0.0,
+		color,
+		0);
 }
 
 /*
@@ -444,7 +454,17 @@ ConDrawInput_TextLimitChars
 */
 void ConDrawInput_TextLimitChars(const char *str, int maxChars, const vec4_t *color)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_AddCmdDrawTextInternal(
+		str,
+		maxChars,
+		cls.consoleFont,
+		conDrawInputGlob.x,
+		conDrawInputGlob.fontHeight + conDrawInputGlob.y,
+		1.0,
+		1.0,
+		0.0,
+		color,
+		0);
 }
 
 /*
@@ -454,7 +474,9 @@ ConDrawInput_TextAndOver
 */
 void ConDrawInput_TextAndOver(const vec4_t *a1, const char *a2, LocalClientNum_t localClientNum, const char *str)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	ConDrawInput_Text(str, color);
+
+	conDrawInputGlob.x = R_TextWidth(localClientNum, str, 0, cls.consoleFont) + conDrawInputGlob.x;
 }
 
 /*
@@ -464,7 +486,18 @@ ConDraw_Box
 */
 void ConDraw_Box(float x, float y, float w, float h, const vec4_t *color)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	vec4_t darkColor;
+
+	darkColor[0] = color[0] * 0.5;
+	darkColor[1] = color[1] * 0.5;
+	darkColor[2] = color[2] * 0.5;
+	darkColor[3] = color[3];
+
+	R_AddCmdDrawStretchPicInternal(x, y, w, h, 0.0, 0.0, 0.0, 0.0, color, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal(x, y, 2.0, h, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal((x + w) - 2.0, y, 2.0, h, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal(x, y, w, 2.0, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal(x, (y + h) - 2.0, w, 2.0, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
 }
 
 /*
@@ -474,7 +507,12 @@ ConDrawInput_Box
 */
 void ConDrawInput_Box(int lines, const vec4_t *color)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	ConDraw_Box(
+		conDrawInputGlob.x - 6.0,
+		conDrawInputGlob.y - 6.0,
+		(con.screenMax.v[0] - con.screenMin.v[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin.v[0]),
+		(lines * conDrawInputGlob.fontHeight) + 12.0,
+		color);
 }
 
 /*
@@ -569,8 +607,21 @@ ConDrawInput_GetDvarDescriptionLines
 */
 int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int result;
+
+	const char* desc = Dvar_GetDescription(dvar);
+	signed int v2 = strlen(desc);
+	signed int v3 = 0;
+
+	for ( result = 1; v3 < v2; ++v3 )
+	{
+		if ( desc[v3] == 10 )
+		{
+			++result;
+		}
+	}
+
+	return result;
 }
 
 /*
