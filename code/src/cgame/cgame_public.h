@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/cgame/cg_ammocounter.cpp
+//t6/code/src/cgame/cg_ammocounter.cpp
 void CG_AmmoCounterRegisterDvars();
 void GetBaseRectPos(LocalClientNum_t localClientNum, const rectDef_s *rect, vec2_t *base);
 Weapon GetWeaponAltIndex(const cg_t *cgameGlob, Weapon weapon);
@@ -38,11 +38,11 @@ void DrawStretchPicGun(const ScreenPlacement *scrPlace, const rectDef_s *rect, c
 void CG_DrawPlayerWeaponIcon(cg_t *a1, LocalClientNum_t a2, LocalClientNum_t localClientNum, const rectDef_s *rect, const vec4_t *color);
 void CG_DrawPlayerWeaponLowAmmoWarning(LocalClientNum_t localClientNum, const rectDef_s *rect, Font_s *font, float textScale, int textStyle, float text_x, float text_y, int textAlignMode, Material *material);
 
-//t6/code/src_noserver/cgame/cg_bolt.cpp
+//t6/code/src/cgame/cg_bolt.cpp
 void CG_InitBolt(LocalClientNum_t localClientNum);
 void CG_UpdateBolt(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_camera.cpp
+//t6/code/src/cgame/cg_camera.cpp
 void InterpolateAnglesSmooth(vec3_t *curAngles, const vec3_t *initialAngles, const vec3_t *targetAngles, float t);
 void CG_StartCameraTween(LocalClientNum_t localClientNum, float tweenTime);
 float CG_UpdateCameraTweenFOV(LocalClientNum_t localClientNum, float currentFov);
@@ -107,14 +107,14 @@ void CG_RadiantCamCalcView(LocalClientNum_t localClientNum);
 char GetRemoteEyeValues(LocalClientNum_t localClientNum);
 bool CG_CalcRemoteEyesViewValues(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_camerashake.cpp
+//t6/code/src/cgame/cg_camerashake.cpp
 void TRACK_cg_camerashake();
 int CG_UpdateCameraShake(const cg_t *cgameGlob, CameraShake *shake);
 void CG_StartShakeCamera(CameraShake *a1, const cg_t *a2, LocalClientNum_t localClientNum, float p, int duration, const vec3_t *src, float radius);
 void CG_ShakeCamera(CameraShake *a1, const cg_t *a2, LocalClientNum_t localClientNum);
 void CG_ClearCameraShakes(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_colltree.cpp
+//t6/code/src/cgame/cg_colltree.cpp
 void TRACK_CG_CollWorld();
 void CG_ClearEntityCollWorld(LocalClientNum_t localClientNum);
 void CG_AddEntityToCollSector(LocalClientNum_t localClientNum, int entIndex, unsigned __int16 sectorIndex);
@@ -123,7 +123,7 @@ void CG_SortEntityCollSector(LocalClientNum_t localClientNum, unsigned __int16 s
 void CG_UnlinkEntityColl(LocalClientNum_t localClientNum, int entIndex);
 void CG_LinkEntityColl(LocalClientNum_t localClientNum, int entIndex, const vec3_t *absMins, const vec3_t *absMaxs);
 
-//t6/code/src_noserver/cgame/cg_compass.cpp
+//t6/code/src/cgame/cg_compass.cpp
 void CG_CompassRegisterDvars();
 bool CG_IsSelectingLocation(LocalClientNum_t localClientNum);
 void CG_ApplySplitScreenCompassScale(CompassType compassType, float *x, float *y, float *w, float *h);
@@ -147,7 +147,7 @@ void CG_SetGridTable();
 void CG_GetGridFromPos(LocalClientNum_t localClientNum, vec3_t *pos, char *gridName);
 double CG_GetHudAlphaCompass(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_drawtools.cpp
+//t6/code/src/cgame/cg_drawtools.cpp
 double CG_GetPicWidth(Material *mat);
 void CG_DrawRotatedPicPhysicalW(const ScreenPlacement *scrPlace, float x, float y, float w, float width, float height, float angle, const vec4_t *color, Material *material);
 void CG_DrawRotatedPicPhysical(const ScreenPlacement *scrPlace, float x, float y, float width, float height, float angle, const vec4_t *color, Material *material);
@@ -164,7 +164,7 @@ void CG_NorthDirectionChanged(LocalClientNum_t localClientNum);
 void CG_RelativeTeamColor(ClientNum_t clientNum, vec4_t *color, LocalClientNum_t localClientNum);
 int CG_DrawBigDevString(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, float x, float y, const char *s, float alpha, int align);
 
-//t6/code/src_noserver/cgame/cg_draw_debug.cpp
+//t6/code/src/cgame/cg_draw_debug.cpp
 void CG_DrawScriptUsage(const ScreenPlacement *scrPlace);
 int CG_CompareSndInfoChannel(const void *va, const void *vb);
 int CG_CompareSndInfoPriority(const void *va, const void *vb);
@@ -209,7 +209,7 @@ double CG_DrawFPS(LocalClientNum_t localClientNum, const ScreenPlacement *scrPla
 void CG_QuickPrint(const char *fmt, ...);
 void CG_DrawUpperRightDebugInfo(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_draw_indicators.cpp
+//t6/code/src/cgame/cg_draw_indicators.cpp
 void CG_GrenadeIndicator_GetPlayerPosition(const cg_t *cgameGlob, vec3_t *playerOrigin);
 void CG_DrawFriendlyIndicators(int a1, int a2, LocalClientNum_t localClientNum);
 void CG_DrawFlashDamage(const cg_t *cgameGlob);
@@ -222,7 +222,7 @@ double CG_AddHudGrenade_PositionCheck(vec3_t *a1, const cg_t *a2, const cg_t *cg
 void CG_AddHudGrenade(const cg_t *cgameGlob, const centity_t *grenadeEnt);
 void CG_DrawGrenadeIndicators(float localClientNum, LocalClientNum_t a2);
 
-//t6/code/src_noserver/cgame/cg_draw_names.cpp
+//t6/code/src/cgame/cg_draw_names.cpp
 void TRACK_cg_draw_names();
 void CG_ClearOverheadFade();
 OverheadFade *CG_GetOverheadFade(LocalClientNum_t localClientNum);
@@ -254,7 +254,7 @@ void CG_DrawFriendlyName(LocalClientNum_t a1, vec3_t *a2, LocalClientNum_t local
 void CG_DrawFriendlyNames(LocalClientNum_t localClientNum);
 void CG_DrawVisibleNames(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_draw_reticles.cpp
+//t6/code/src/cgame/cg_draw_reticles.cpp
 void CG_CalcCrosshairPosition(const cg_t *cgameGlob, float *x, float *y);
 char CG_GetWeapReticleZoom(const cg_t *cgameGlob, float *zoom);
 void CG_DrawFrameOverlay(float innerLeft, float innerRight, float innerTop, float innerBottom, const vec4_t *color, Material *material, LocalClientNum_t localClientNum);
@@ -280,7 +280,7 @@ bool CG_DrawCrosshair(unsigned int a1, LocalClientNum_t localClientNum);
 
 //#include "cgame/cg_effects_load_db.h"
 
-//t6/code/src_noserver/cgame/cg_effects_load_obj.cpp
+//t6/code/src/cgame/cg_effects_load_obj.cpp
 const char *CG_FleshTypeToName(int fleshTypeId);
 int CG_AddImpactFileToList(const char *filePath, int index, char **fileList, int *fileCount, int maxFiles);
 int CG_GetIncludesForFile(const char *file, char **list, int *count, int max);
@@ -292,7 +292,7 @@ int CG_RegisterImpactEffects_NonFlesh(const char **szEffectFile, const char *con
 FxImpactTable *CG_RegisterImpactEffects_LoadObj(const char *filePath);
 FxImpactTable *CG_RegisterImpactEffects();
 
-//t6/code/src_noserver/cgame/cg_event.cpp
+//t6/code/src/cgame/cg_event.cpp
 void CG_Obituary(LocalClientNum_t localClientNum, const entityState_s *ent);
 void RemoteMissileBoostEvent(LocalClientNum_t localClientNum, centity_t *cent, int eventParm);
 void CG_ObituaryRevive(LocalClientNum_t localClientNum, const entityState_s *ent);
@@ -324,7 +324,7 @@ void CG_CheckEntEvents(LocalClientNum_t localClientNum, centity_t *cent);
 
 //#include "cgame/cg_footsteptable_load_db.h"
 
-//t6/code/src_noserver/cgame/cg_hudelem.cpp
+//t6/code/src/cgame/cg_hudelem.cpp
 void CG_HudElemRegisterDvars();
 void DirectiveFakeIntroSeconds(LocalClientNum_t localClientNum, const char *arg0, char *result);
 void ParseDirective(const char *directive, char *resultName, char *resultArg0);
@@ -375,13 +375,13 @@ void CG_AddDrawSurfsFor3dHudElems(LocalClientNum_t localClientNum);
 void CG_AddWaypoint(LocalClientNum_t localClientNum, Material *material, const vec4_t *color, const vec3_t *origin, float radius, bool screenSize, bool alignBottom, bool forceNear);
 int RB_NumDrawWaypoints(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_info.cpp
+//t6/code/src/cgame/cg_info.cpp
 void CG_LoadingString(LocalClientNum_t localClientNum, const char *s);
 BOOL CG_IsShowingProgress_LoadObj();
 BOOL CG_IsShowingProgress_FastFile();
 void CG_DrawInformation(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_laser.cpp
+//t6/code/src/cgame/cg_laser.cpp
 laser_cache_t *get_laser_cache(int entnum);
 void CG_LaserRegisterDvars();
 bool CG_LaserForceOnEnabled();
@@ -394,14 +394,14 @@ void CG_LaserDrawAll(LocalClientNum_t localClientNum);
 
 //#include "cgame/cg_local.h"
 
-//t6/code/src_noserver/cgame/cg_localents.cpp
+//t6/code/src/cgame/cg_localents.cpp
 void TRACK_cg_localents();
 void CG_InitLocalEntities(const LocalClientNum_t localClientNum);
 localEntity_s *CG_AllocLocalEntity(const LocalClientNum_t localClientNum);
 void CG_AddMovingTracer(const cg_t *cgameGlob, localEntity_s *le);
 void CG_AddLocalEntityTracerBeams(localEntity_s *next, const LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_main.cpp
+//t6/code/src/cgame/cg_main.cpp
 void TRACK_cg_main();
 int CG_irand(int min, int max);
 double CG_flrand(float min, float max);
@@ -434,15 +434,15 @@ void CG_SetThirdPerson(LocalClientNum_t localClientNum, bool value);
 void CG_UpdateFovCallBack();
 void CG_RegisterDvars();
 
-//t6/code/src_noserver/cgame/cg_mem_track.cpp
+//t6/code/src/cgame/cg_mem_track.cpp
 void CG_track_init();
 
-//t6/code/src_noserver/cgame/cg_perf.cpp
+//t6/code/src/cgame/cg_perf.cpp
 void UpdateData(CG_PerfData *data, int value);
 void CG_PerfInit();
 void CG_PerfUpdate();
 
-//t6/code/src_noserver/cgame/cg_playerstate.cpp
+//t6/code/src/cgame/cg_playerstate.cpp
 void CG_DamageFeedback(LocalClientNum_t localClientNum, int yawByte, int pitchByte, int damage);
 void CG_Respawn(LocalClientNum_t localClientNum, int spectate);
 void CG_ResetSpectatorViewAngles(LocalClientNum_t localClientNum);
@@ -451,7 +451,7 @@ void CG_TransitionPlayerState(playerState_s *a1, LocalClientNum_t a2, LocalClien
 void CG_ClearTransPlayerState(transPlayerState_t *transPs);
 void CG_ExtractTransPlayerState(const playerState_s *ps, transPlayerState_t *transPs);
 
-//t6/code/src_noserver/cgame/cg_pose.cpp
+//t6/code/src/cgame/cg_pose.cpp
 void BG_Player_DoControllers(const CEntPlayerInfo *player, const DObj *obj, int *partBits);
 void CG_Player_DoControllers(const cpose_t *pose, const DObj *obj, int *partBits);
 void CG_Vehicle_DoControllersAir(const cpose_t *pose, const DObj *obj, int *partBits);
@@ -467,11 +467,11 @@ DObjAnimMat *CG_DObjCalcPose(const cpose_t *remote_pose, const DObj *obj, int *p
 
 //#include "cgame/cg_pose.h"
 
-//t6/code/src_noserver/cgame/cg_pose_utils.cpp
+//t6/code/src/cgame/cg_pose_utils.cpp
 void CG_UsedDObjCalcPose(const cpose_t *pose);
 void CG_CullIn(const cpose_t *pose);
 
-//t6/code/src_noserver/cgame/cg_rumble.cpp
+//t6/code/src/cgame/cg_rumble.cpp
 void Rumble_Strcpy(unsigned __int8 *member, const char *keyValue);
 bool ParseRumbleGraph(RumbleGraph *graph, const char *buffer, const char *fileName);
 bool ReadRumbleGraph(RumbleGraph *graph, const char *rumbleFileName);
@@ -501,7 +501,7 @@ void InitDevguiRumbleGraphInteral(const char *rumbleName, RumbleGraph *rumbleGra
 void CG_InitDevguiRumbleGraph(dvarType_t a1, LocalClientNum_t localClientNum);
 void CG_UpdateRumble(dvarType_t a1, LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_scr_main.cpp
+//t6/code/src/cgame/cg_scr_main.cpp
 unsigned __int16 CScr_GetMeansOfDeathConstString(int mod);
 void CScr_Notify(LocalClientNum_t localClientNum, centity_t *ent, unsigned __int16 stringValue, unsigned int paramcount);
 void CScr_ToLower();
@@ -983,7 +983,7 @@ void CG_FreeEntityDelay(centity_t *ed);
 
 //#include "cgame/cg_scr_main.h"
 
-//t6/code/src_noserver/cgame/cg_shellshock.cpp
+//t6/code/src/cgame/cg_shellshock.cpp
 void CG_PerturbCamera(cg_t *cgameGlob);
 void SaveScreenToBuffer(LocalClientNum_t localClientNum);
 int CG_DrawShellShockSavedScreenBlendBlurred(LocalClientNum_t localClientNum, const shellshock_parms_t *parms, int start, int duration);
@@ -1002,7 +1002,7 @@ void CG_StartShellShock(cg_t *cgameGlob, const shellshock_parms_t *parms, int st
 bool CG_Flashbanged(LocalClientNum_t localClientNum);
 bool CG_Flared(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_sound.cpp
+//t6/code/src/cgame/cg_sound.cpp
 void CG_RegisterSoundDvars();
 void CG_ClearSoundPlaybackTracking();
 bool CG_ShouldPlaySoundOnLocalClient(LocalClientNum_t localClientNum, int entitynum, const vec3_t *origin, unsigned int aliasname);
@@ -1044,7 +1044,7 @@ void CG_StopZombieVoxSounds(LocalClientNum_t localClientNum, int entityNum);
 bool CG_SoundEntInUse(const SndEntHandle sndEnt);
 void CG_SndGameReset();
 
-//t6/code/src_noserver/cgame/cg_spawn.cpp
+//t6/code/src/cgame/cg_spawn.cpp
 const char *CG_GetEntityTypeName(centity_t *cent);
 int CG_GetModelIndex(const char *name, LocalClientNum_t localClientNum);
 void CScr_FreeFields(const cent_field_t *fields, unsigned __int8 *base);
@@ -1067,7 +1067,7 @@ void CG_CallSpawn(LocalClientNum_t localClientNum, SpawnVar *spawnVar);
 void CG_SpawnEntitiesFromString(LocalClientNum_t localClientNum);
 void CG_InitFakeEntities(LocalClientNum_t localClientNum, bool spawnEntsFromMap);
 
-//t6/code/src_noserver/cgame/cg_vehicle.cpp
+//t6/code/src/cgame/cg_vehicle.cpp
 cgVehicleTurretLoopState_t CG_VehicleComputeTurretRotationState(float angularVel, cgVehicle_t *vehicle);
 void CG_Vehicle_UpdateTurretRotateSounds(LocalClientNum_t localClientNum, centity_t *cent);
 bool CG_ShouldLockTurretToPlayerView(const centity_t *cent, const VehicleDef *info, const playerState_s *ps);
@@ -1108,11 +1108,11 @@ void CG_Vehicle_PreControllersAir(LocalClientNum_t localClientNum, const DObj *o
 void CG_Vehicle_PreControllersGround(float localClientNum, LocalClientNum_t a2, const DObj *obj, centity_t *cent);
 void __cdecl CG_Vehicle_PreControllers(LocalClientNum_t localClientNum, const DObj *obj, centity_t *cent);
 
-//t6/code/src_noserver/cgame/cg_vehicle_hud.cpp
+//t6/code/src/cgame/cg_vehicle_hud.cpp
 void CG_TargetsChanged(LocalClientNum_t localClientNum, int num);
 void CG_ParseAllTargets(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_visionsets.cpp
+//t6/code/src/cgame/cg_visionsets.cpp
 void CG_RegisterVisionSetsDvars();
 const char *RawBufferOpen(const char *path, const char *backupPath);
 bool ApplyTokenToField(int fieldNum, const char *token, visionSetVars_t *settings);
@@ -1146,7 +1146,7 @@ void CG_VisionSetUpdateTweaksFromFile_Film();
 void CG_VisionSetUpdateTweaksFromFile_CharPrimary();
 void CG_VisionSetUpdateTweaksFromFile_Bloom();
 
-//t6/code/src_noserver/cgame/cg_weapons.cpp
+//t6/code/src/cgame/cg_weapons.cpp
 void CG_RegisterWeaponDvars();
 float GetWeaponAnimRate(LocalClientNum_t localClientNum, const Weapon weapon, XAnim_s *anims, int animIndex);
 float GetWeaponAnimTimeFrac(LocalClientNum_t localClientNum, const Weapon weapon, XAnim_s *anims, int animIndex);
@@ -1343,7 +1343,7 @@ void CG_FireWeapon(LocalClientNum_t localClientNum, centity_t *cent, int event, 
 void __cdecl CG_UpdateViewWeaponAnim(LocalClientNum_t localClientNum, int newPlayerstate);
 void CG_FireVehicleWeapon(LocalClientNum_t localClientNum, centity_t *cent, int event, int eventParm, const unsigned __int16 tagName, Weapon weapon, const playerState_s *ps);
 
-//t6/code/src_noserver/cgame/cg_weapon_attachments.cpp
+//t6/code/src/cgame/cg_weapon_attachments.cpp
 bool CG_RangeFinderEnabled(LocalClientNum_t localClientNum, const cg_t *cgameGlob);
 bool CG_RangeFinderChangeColor(LocalClientNum_t localClientNum, const cg_t *cgameGlob);
 void CG_InitRangeFinderParameters(LocalClientNum_t localClientNum);
@@ -1356,11 +1356,11 @@ unsigned int CG_DrawPDAHackerHUD(LocalClientNum_t localClientNum);
 void CG_DrawWeaponDynamicTextures(LocalClientNum_t localClientNum);
 void CG_RangeFinderUpdate(unsigned int a1, LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame/cg_weapon_utils.cpp
+//t6/code/src/cgame/cg_weapon_utils.cpp
 unsigned __int16 G_GetWeaponAttachBone(clientInfo_t *ci, weapType_t weapType, weapInventoryType_t invType);
 unsigned __int16 CG_AttachWeaponWorldModel(DObjModel_s *dobjModels, unsigned __int16 numModels, clientInfo_t *ci, bool hideClip);
 
-//t6/code/src_noserver/cgame/cg_world.cpp
+//t6/code/src/cgame/cg_world.cpp
 int CG_GetEntityBModelContents(const centity_t *cent);
 void CG_GetEntityDobjBounds(const centity_t *cent, const DObj *dobj, vec3_t *mins, vec3_t *maxs, vec3_t *absMins, vec3_t *absMaxs);
 int CG_GetEntityDObjContents(const centity_t *cent, const DObj *dobj);
@@ -1387,7 +1387,7 @@ BOOL CG_SightTracePointInternal(int a1, int *hitNum, const vec3_t *start, const 
 bool CG_SightTracePoint(float hitNum, int *a2, const vec3_t *start, const vec3_t *end, int mask, trace_t *trace);
 void CG_TraceCapsule(int a1, trace_t *results, const vec3_t *start, const vec3_t *mins, const vec3_t *maxs, const vec3_t *end, int passEntityNum, int contentMask, col_context_t *context);
 
-//t6/code/src_noserver/cgame/offhandweapons.cpp
+//t6/code/src/cgame/offhandweapons.cpp
 bool IsOffHandDisplayVisible(LocalClientNum_t localClientNum, const cg_t *cgameGlob);
 int CalcOffHandAmmo(const playerState_s *predictedPlayerState, int weaponType);
 void OffHandFlash(const cg_t *cgameGlob, const vec4_t *base_color, vec4_t *out_color);

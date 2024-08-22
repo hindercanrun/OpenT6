@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/aim_assist/aim_assist.cpp
+//t6/code/src/aim_assist/aim_assist.cpp
 double AA_GetAutoMeleeRange(Weapon weapon);
 void TRACK_aim_assist();
 float AimAssist_LerpDvars(const dvar_t *from, const dvar_t *to, float frac);
@@ -55,7 +55,7 @@ void AimAssist_ApplyAutoMelee(const AimInput *input, AimOutput *output);
 void AimAssist_UpdateGamePadInput(LocalClientNum_t a1, const AimInput *a2, const AimInput *input, AimOutput *output);
 void AimAssist_UpdateMouseInput(LocalClientNum_t a1, const AimInput *a2, const AimInput *input, AimOutput *output);
 
-//t6/code/src_noserver/aim_assist/aim_target.cpp
+//t6/code/src/aim_assist/aim_target.cpp
 void TRACK_aim_target();
 const dvar_t *AimTarget_RegisterDvars();
 void AimTarget_Init(LocalClientNum_t localClientNum);

@@ -4,7 +4,7 @@
 
 //#include "client/client.h"
 
-//t6/code/src_noserver/client/cl_compositing.cpp
+//t6/code/src/client/cl_compositing.cpp
 GfxImage *CL_CompositeSetupImage();
 void CL_PCCopyImageGenMIPCallback(void *job);
 void CL_CompositeResetLayer(CompositeEmblemLayer *layer);
@@ -13,7 +13,7 @@ void CL_CompositeClearRecentColor(vec4_t *recentColor);
 void CL_CompositeShiftLayersUp(CompositeEmblemLayer *layers, int selectedLayer, int layerCount);
 void CL_CompositeRender();
 
-//t6/code/src_noserver/client/cl_console.cpp
+//t6/code/src/client/cl_console.cpp
 void SetupChatField(const LocalClientNum_t localClientNum, int teamChat, int widthInPixels);
 void Con_ChatModePublic_f(LocalClientNum_t a1, int a2);
 void Con_ChatModeTeam_f(LocalClientNum_t a1, int a2);
@@ -111,7 +111,7 @@ void Con_DrawSolidConsole(LocalClientNum_t localClientNum);
 void Con_DrawConsole(LocalClientNum_t localClientNum);
 void TRACK_cl_console();
 
-//t6/code/src_noserver/client/cl_debugdata.cpp
+//t6/code/src/client/cl_debugdata.cpp
 void CL_DebugInitSVThreadVariables();
 BOOL CreateDebugStringsIfNeeded();
 void AddDebugStringInternal(const float* xyz, const float* color, float scale, const char* text, int duration, clientDebugStringInfo_t* info);
@@ -135,7 +135,7 @@ void CL_FlushDebugServerData(clientDebugStringInfo_t *a1, int a2);
 void CL_UpdateDebugServerData();
 void CL_ShutdownDebugData();
 
-//t6/code/src_noserver/client/cl_devgui.cpp
+//t6/code/src/client/cl_devgui.cpp
 void CL_AddMapDirSlider(const char *dir, int locationFlags, const char *locationName);
 void CL_CreateMapMenuEntriesForLocation(int locationFlags, const char *locationName);
 const dvar_t *CL_RegisterDevGuiDvars();
@@ -143,7 +143,7 @@ void CL_CreateMapMenuEntries();
 void CL_CreateDevGui();
 void CL_DestroyDevGui();
 
-//t6/code/src_noserver/client/cl_gamepad.cpp
+//t6/code/src/client/cl_gamepad.cpp
 void CL_ResetLastGamePadEventTime();
 void CL_InitGamepadAxisBindings();
 GamepadPhysicalAxis Gamepad_StringToPhysicalAxis(const char *axisName);
@@ -169,7 +169,7 @@ const char* Axis_NumToAxisString(GamepadPhysicalAxis axis);
 const char* Gamepad_InputTypeName(GamepadMapping mapType);
 void Gamepad_WriteBindings(LocalClientNum_t localClientNum, int f);
 
-//t6/code/src_noserver/client/cl_input.cpp
+//t6/code/src/client/cl_input.cpp
 void CL_LeanCount_Reset();
 void CL_LeanCount_Increment();
 BOOL CL_LeanCount_ShouldIncrementStat();
@@ -242,7 +242,7 @@ void CL_CreateNewCommands(LocalClientNum_t localClientNum);
 void CL_Input(LocalClientNum_t localClientNum);
 void TRACK_cl_input();
 
-//t6/code/src_noserver/client/cl_keys.cpp
+//t6/code/src/client/cl_keys.cpp
 void Field_AdjustScroll(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, field_t *edit);
 char Field_Paste(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, field_t *edit);
 void FindMatches(const char *s);
@@ -307,7 +307,7 @@ void Key_WriteBindings(LocalClientNum_t localClientNum, int f);
 int Key_WriteBindingsToBuffer(LocalClientNum_t localClientNum, char* buffer, int bufferSize);
 void TRACK_cl_keys();
 
-//t6/code/src_noserver/client/cl_main.cpp
+//t6/code/src/client/cl_main.cpp
 char CL_AnyLocalClientsRunning();
 void CL_Command_DisableAllButPrimaryClients();
 void CL_Command_SetClientBeingUsedAndPrimary();
@@ -446,17 +446,17 @@ void CL_InitOnceForAllClients();
 void CL_SetupClientsForFrontend();
 void TRACK_cl_main();
 
-//t6/code/src_noserver/client/cl_main_dw.cpp
+//t6/code/src/client/cl_main_dw.cpp
 void CL_Live_PartyPlay();
 
-//t6/code/src_noserver/client/cl_main_pc.cpp
+//t6/code/src/client/cl_main_pc.cpp
 void CL_Live_ShowGamerCard();
 void CL_Live_UpdatePartyMapPacks();
 void CL_Platform_RemoveCommands();
 BOOL CL_IsPlayerMuted(SessionData *session, LocalClientNum_t localClientNum, ClientNum_t muteClientIndex);
 int CL_IsPlayerMuted(LocalClientNum_t localClientNum, unsigned __int64 playerXuid);
 
-//t6/code/src_noserver/client/cl_migration.cpp
+//t6/code/src/client/cl_migration.cpp
 void CL_MigrationInit();
 void PingAck(const LocalClientNum_t localClientNum, netadr_t to, const int time);
 void SendToHost(const LocalClientNum_t localClientNum, const char *cmd, const unsigned __int8 *data, int len);
@@ -472,7 +472,7 @@ char CL_MigrationPacket(const LocalClientNum_t localClientNum, const char *cmd, 
 void CL_Migrate(LocalClientNum_t localClientNum, XSESSION_INFO *hostInfo, netadr_t addr);
 void HandleStartMsg(char *a1, const LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/client/cl_parse.cpp
+//t6/code/src/client/cl_parse.cpp
 void CL_SavePredictedPlayerInformationForServerTime(clientActive_t *cl, const int serverTime);
 char CL_GetClientArchiveIndexForServerTime(clientActive_t *cl, const int serverTime, int *resultIndex);
 char CL_GetPredictedPlayerInformationForServerTime(clientActive_t *cl, const int serverTime, playerState_s *to);
@@ -494,7 +494,7 @@ void CL_ParseGamestate(LocalClientNum_t localClientNum, msg_t *msg);
 void CL_ParseServerMessage(LocalClientNum_t localClientNum, msg_t *msg);
 void TRACK_cl_parse();
 
-//t6/code/src_noserver/client/con_channels.cpp
+//t6/code/src/client/con_channels.cpp
 bool Con_OpenChannel(const char *name, bool allowScript);
 bool Con_ScriptHasPermission(int channel);
 BOOL Con_GetChannel(const char *name, int *channel_result);
@@ -512,7 +512,7 @@ void Con_InitGameMsgChannels();
 void Con_InitChannels();
 void Con_ShutdownChannels();
 
-//t6/code/src_noserver/client/screen_placement.cpp
+//t6/code/src/client/screen_placement.cpp
 ScreenPlacement *ScrPlace_GetView(const LocalClientNum_t localClientNum);
 ScreenPlacement *ScrPlace_GetViewWritable(const LocalClientNum_t localClientNum);
 ScreenPlacement *ScrPlace_GetViewUIContext(const UIContextIndex_t contextIndex);
@@ -534,7 +534,7 @@ void ScrPlace_Init();
 
 //#include "client/screen_placement.h"
 
-//t6/code/src_noserver/client/splitscreen.cpp
+//t6/code/src/client/splitscreen.cpp
 int CL_LocalClient_IsActive(LocalClientNum_t localClientNum);
 BOOL CL_LocalClient_IsFirstActive(LocalClientNum_t localClientNum);
 BOOL CL_LocalClient_GetActiveCount();

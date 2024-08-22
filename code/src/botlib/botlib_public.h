@@ -2,12 +2,12 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/botlib/l_memory.cpp
+//t6/code/src/botlib/l_memory.cpp
 char *GetMemory(unsigned int size);
 char *GetClearedMemory(unsigned int size);
 void FreeMemory(void *ptr);
 
-//t6/code/src_noserver/botlib/l_precomp.cpp
+//t6/code/src/botlib/l_precomp.cpp
 void SourceError(source_s *source, char *str, ...);
 void SourceWarning(source_s *source, char *str, ...);
 void PC_PushIndent(source_s *source, int type, parseSkip_t skip);
@@ -65,7 +65,7 @@ void PC_Directive_define(source_s *);
 define_s *PC_DefineFromString(const char *string);
 int PC_LoadSourceHandle(const char *filename, const char **builtinDefines);
 
-//t6/code/src_noserver/botlib/l_script.cpp
+//t6/code/src/botlib/l_script.cpp
 void PS_CreatePunctuationTable(script_s *script, punctuation_s *punctuations);
 void ScriptError(script_s *script, const char *str, ...);
 void ScriptWarning(script_s *script, const char *str, ...);

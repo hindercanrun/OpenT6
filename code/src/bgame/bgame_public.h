@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/bgame/bg_actor.cpp
+//t6/code/src/bgame/bg_actor.cpp
 int BG_Actor_GetAnimStateIndex(unsigned __int16 animStateName);
 char *BG_Actor_GetAnimStateName(int animStateIndex);
 char *BG_Actor_GetAnimStateCategoryName(int animStateIndex);
@@ -15,11 +15,11 @@ XAnim_s *BG_Actor_GetAnims();
 void BG_Actor_CreateAnims(void *(*xanimAlloc)(int));
 void BG_Actor_ShutdownAnims();
 
-//t6/code/src_noserver/bgame/bg_actor_dog.cpp
+//t6/code/src/bgame/bg_actor_dog.cpp
 void BG_Dog_SetNewAnimationState(LocalClientNum_t localClientNum, animInfo_t *animInfo, actorLerpFrame_t *lf, int newAnimationState, const entityState_s *es);
 void __cdecl BG_Dog_UpdateAnimationState(LocalClientNum_t localClientNum, const entityState_s *es, actorInfo_t *actorInfo);
 
-//t6/code/src_noserver/bgame/bg_actor_dog_animations_mp.cpp
+//t6/code/src/bgame/bg_actor_dog_animations_mp.cpp
 XAnim_s *Dog_GetAnims();
 void Dog_CreateAnims(void *(*xanimAlloc)(int));
 void Dog_ShutdownAnims();
@@ -83,11 +83,11 @@ void BG_Dog_Traverse_Through_Hole_42(LocalClientNum_t localClientNum, const enti
 void BG_Dog_Move_Run(LocalClientNum_t localClientNum, const entityState_s *es, ActorAnimStates prevState);
 void __cdecl BG_Dog_Move_Walk(LocalClientNum_t localClientNum, const entityState_s *es, ActorAnimStates prevState);
 
-//t6/code/src_noserver/bgame/bg_actor_prone.cpp
+//t6/code/src/bgame/bg_actor_prone.cpp
 int BG_ActorIsProne(actor_prone_info_s *pInfo, int iCurrentTime);
 double BG_GetActorProneFraction(actor_prone_info_s *pInfo, int iCurrentTime);
 
-//t6/code/src_noserver/bgame/bg_animation.cpp
+//t6/code/src/bgame/bg_animation.cpp
 const char *BG_GetPlayerAnimScriptFileName();
 void TRACK_bg_animation_mp();
 int BG_StringHashValue(const char *fname);
@@ -151,7 +151,7 @@ void BG_LoadAnim(const char *levelName, bool canModifyChecksum);
 void BG_FinalizePlayerAnims(__int64 levelName, const char *a2);
 void BG_PostLoadAnim();
 
-//t6/code/src_noserver/bgame/bg_animconditions.cpp
+//t6/code/src/bgame/bg_animconditions.cpp
 void BG_LocalEvalPlayerAnimType(pmove_t *pm);
 void BG_EvalPlayerAnimType(const entityState_s *es);
 void BG_LocalEvalNextPlayerAnimType(pmove_t *pm);
@@ -185,7 +185,7 @@ void BG_LocalEvalVehicleSeatTo(pmove_t *pm);
 void BG_LocalEvalEvent(pmove_t *pm);
 void BG_LocalEvalFiring(pmove_t *pm);
 
-//t6/code/src_noserver/bgame/bg_animstatedef.cpp
+//t6/code/src/bgame/bg_animstatedef.cpp
 bool __cdecl BG_AnimStateDef_InUse();
 void BG_AnimStateDef_Precache(int aiIndex, scr_animtree_t animtree, unsigned __int16 animStateDefName);
 void BG_AnimStateDef_ParseError(const char *filename, const char *msg);
@@ -214,7 +214,7 @@ int BG_AnimStateDef_GetAnimSubStateIndex(const entityState_s *es, int stateIndex
 void BG_AnimStateDef_GetCurrentStateInfo(const entityState_s *es, unsigned __int16 *defName, unsigned __int16 *stateName, unsigned __int16 *subStateName);
 void BG_AnimStateDef_Shutdown();
 
-//t6/code/src_noserver/bgame/bg_attachments_load_obj.cpp
+//t6/code/src/bgame/bg_attachments_load_obj.cpp
 int Attachment_GetStringArrayIndex(const char *value, const char **stringArray, int arraySize);
 int BG_ParseAttachmentSpecificFieldType(const char **a1, char *a2, unsigned __int8 *pStruct, const char *pValue, const int iFieldType);
 WeaponAttachment *BG_LoadDefaultWeaponAttachment_LoadObj();
@@ -222,7 +222,7 @@ WeaponAttachment *BG_LoadDefaultWeaponAttachment_FastFile();
 WeaponAttachment *BG_LoadDefaultWeaponAttachment();
 char BG_AttachmentUpdateField(int (*a1)(unsigned __int8 *, const char *, const int, const int), const char *attachmentName, const char *keyValue);
 
-//t6/code/src_noserver/bgame/bg_attachments_unique_load_obj.cpp
+//t6/code/src/bgame/bg_attachments_unique_load_obj.cpp
 void SetConfigString(char **ppszConfigString, const char *pszKeyValue);
 void SetConfigString2(char **a1, const char *a2);
 int BG_ParseAttachmentUniqueSpecificFieldType(const char **a1, char *a2, unsigned __int8 *pStruct, const char *pValue, const int iFieldType, const int iOffset);
@@ -235,7 +235,7 @@ void SetConfigString(char **ppszConfigString, const char *pszKeyValue);
 
 //#include "bgame/bg_attachment_unique_load_db.h"
 
-//t6/code/src_noserver/bgame/bg_clientfields.cpp
+//t6/code/src/bgame/bg_clientfields.cpp
 int BG_GetFieldOffset(const NetField *pFields, int numFields, const char *pName);
 void BG_InitClientFields();
 void BG_ShutdownClientFields();
@@ -272,7 +272,7 @@ void BG_ProcessClientFieldSet(int systemIndex, LocalClientNum_t localClientNum, 
 
 //#include "bgame/bg_common_load_db.h"
 
-//t6/code/src_noserver/bgame/bg_dtp.cpp
+//t6/code/src/bgame/bg_dtp.cpp
 void Dtp_RegisterDvars();
 int Dtp_CalcSurfaceType(pmove_t *pm, pml_t *pml);
 BOOL Dtp_IsSliding(const playerState_s *ps);
@@ -286,7 +286,7 @@ double Dtp_ReduceFriction(unsigned int a1, pmove_t *pm, const playerState_s *ps)
 int Dtp_IsDtp(const pmove_t *pm, const playerState_s *ps);
 int Dtp_Update(pmove_t *pm, pml_t *pml);
 
-//t6/code/src_noserver/bgame/bg_emblems.cpp
+//t6/code/src/bgame/bg_emblems.cpp
 int BG_EmblemsGetUnlockedLayerCount(ControllerIndex_t controllerIndex);
 EmblemLayer *BG_EmblemsGetLayerCost(int layer);
 int BG_EmblemsGetLayerUnlockLevel(int layer);
@@ -336,7 +336,7 @@ char BG_EmblemsIsBackgroundLocked(ControllerIndex_t controllerIndex, __int16 id)
 
 //#include "bgame/bg_emblems_load_db.h"
 
-//t6/code/src_noserver/bgame/bg_faction.cpp
+//t6/code/src/bgame/bg_faction.cpp
 void BG_FactionData_Clear();
 void BG_FactionData_GetTeamColor(team_t team, vec4_t *out);
 const char *BG_GetTeamName(const team_t team);
@@ -345,7 +345,7 @@ const char *BG_GetFactionForTeam(const team_t team, const char *mapName);
 char BG_GetFactionColor(const char *factionName, vec4_t *out);
 void BG_FactionData_Init(const char *mapName);
 
-//t6/code/src_noserver/bgame/bg_helicopter.cpp
+//t6/code/src/bgame/bg_helicopter.cpp
 void BG_HeliCmdScale(bool scaleMovement, const char *move, vec4_t *outFracs);
 void BG_HeliCalcAccelFromTilt(const pmove_t *pm, const pml_t *pml, VehicleState *vehicleState, vec4_t *moveRequest, vec3_t *bodyAccel, vec3_t *rotAccel);
 void BG_HelicopterHeightTrace(pmove_t *pm, VehicleState *vehicleState, trace_t *trace, vec3_t *hitOrigin, float dt, float trace_offset);
@@ -359,7 +359,7 @@ double BG_HeliMaintainHeight_CalcAccel(int a1, pmove_t *pm, const pml_t *pml, Ve
 char BG_VehicleHelicopterVerticalMove(const vec3_t *a1, const char *a2, pmove_t *pm, const pml_t *pml, VehicleState *vehicleState);
 void BG_VehicleHelicopterMove(unsigned int a1, pmove_t *pm, const pml_t *pml);
 
-//t6/code/src_noserver/bgame/bg_jump.cpp
+//t6/code/src/bgame/bg_jump.cpp
 void Jump_RegisterDvars(dvarType_t a1, dvarType_t a2);
 double Jump_GetHeight();
 void Jump_ClearState(playerState_s *ps);
@@ -376,7 +376,7 @@ void Jump_PushOffLadder(playerState_s *ps, pml_t *pml, pmove_t *pm);
 void Jump_AddSurfaceEvent(playerState_s *ps, pml_t *pml);
 char __cdecl Jump_Check(pmove_t *pm, pml_t *pml);
 
-//t6/code/src_noserver/bgame/bg_mantle.cpp
+//t6/code/src/bgame/bg_mantle.cpp
 void Mantle_RegisterDvars();
 void Mantle_DebugPrint(const char *msg);
 int Mantle_GetUpLength(const MantleState *mstate);
@@ -407,7 +407,7 @@ char __cdecl Hatch_CheckHatch(pmove_t *pm, pml_t *pml);
 char Hatch_Check(unsigned int a1, pmove_t *pm, pml_t *pml);
 void Mantle_Check(unsigned int a1, pmove_t *pm, pml_t *pml);
 
-//t6/code/src_noserver/bgame/bg_misc.cpp
+//t6/code/src/bgame/bg_misc.cpp
 void BG_RegisterDvars(dvarType_t a1, dvarType_t a2);
 double BG_GetFallDamageMaxHeight();
 double BG_GetFallDamageMinHeight();
@@ -463,11 +463,11 @@ void BG_PlayerStateToEntityState(entityState_s *a1, playerState_s *a2, playerSta
 char BG_CheckProne(unsigned int a1, const playerState_s *ps, int passEntityNum, const vec3_t *vPos, const float fSize, const float fHeight, const float fYaw, float *pfTorsoPitch, float *pfWaistPitch, bool isAlreadyProne, bool isOnGround, bool groundIsWalkable, unsigned __int8 handler, proneCheckType_t proneCheckType, float prone_feet_dist);
 void BG_GetPlayerViewOrigin(const playerState_s *ps, vec3_t *origin, int time);
 
-//t6/code/src_noserver/bgame/bg_misctables.cpp
+//t6/code/src/bgame/bg_misctables.cpp
 int VEH_ParseSpecificField(unsigned __int8 *pStruct, const char *pValue, const int fieldType, const int fieldOffset);
 void TRACK_bg_misctables();
 
-//t6/code/src_noserver/bgame/bg_mover.cpp
+//t6/code/src/bgame/bg_mover.cpp
 bool entity_is_a_mover(const int entnum, const int max_ents);
 // void mover_info_t::init(mover_info_t *notthis, const vec3_t *origin, const vec3_t *angles, int time);
 // void mover_info_t::add_record(mover_info_t *notthis, const vec3_t *origin, const vec3_t *angles, int time);
@@ -497,7 +497,7 @@ void mover_info_apply_rotation_translation(const int gentnum, vec3_t *v);
 
 //#include "bgame/bg_mover.h"
 
-//t6/code/src_noserver/bgame/bg_perks.cpp
+//t6/code/src/bgame/bg_perks.cpp
 void Perks_CalculateStringHashes();
 unsigned int BG_GetPerkIndexForName(const char *perkName);
 const char *BG_GetPerkNameForIndex(unsigned int perkIndex);
@@ -506,7 +506,7 @@ char BG_WeaponHasPerk(Weapon weapon, unsigned int perkIndex);
 
 //#include "bgame/bg_perks.h"
 
-//t6/code/src_noserver/bgame/bg_pmove.cpp
+//t6/code/src/bgame/bg_pmove.cpp
 float PM_GetMoveSpeedScale(pmove_t *pm, const WeaponDef *weapDef);
 void PM_AddEvent(playerState_s *ps, int newEvent);
 void PM_AddTouchEnt(pmove_t *pm, int entityNum);
@@ -624,7 +624,7 @@ void Pmove(pmove_t *pm);
 
 //#include "bgame/bg_public.h"
 
-//t6/code/src_noserver/bgame/bg_scriptmoveranim.cpp
+//t6/code/src/bgame/bg_scriptmoveranim.cpp
 void BG_ScriptMoverAnim_Shutdown();
 void BG_ScriptMoverAnim_UseAnimTree(scr_animtree_t animtree);
 int BG_ScriptMoverAnim_FindAnimTree(XAnimTree_s *tree);
@@ -632,7 +632,7 @@ void BG_ScriptMoverAnim_ClearServerEntity(gentity_t *ent);
 void BG_ScriptMoverAnim_SetupServerEntity(gentity_t *ent, XAnimTree_s *tree, scr_anim_s anim, unsigned int flags);
 void BG_ScriptMoverAnim_UpdateClientAnimation(LocalClientNum_t localClientNum, centity_t *cent);
 
-//t6/code/src_noserver/bgame/bg_slidemove.cpp
+//t6/code/src/bgame/bg_slidemove.cpp
 gjk_polygon_cylinder_t *create_gjkcc_gjk_geom(const vec3_t *mins, const vec3_t *maxs, const int stype, gjk_collision_visitor *allocator);
 // void gjkcc_info::update_cg(gjkcc_info *notthis, int a2, int mins, const vec3_t *maxs, const vec3_t *force, const bool a6);
 // bool gjk_double_sphere_t::is_foot(gjk_double_sphere_t *notthis, const phys_vec3 *hit_point);
@@ -674,7 +674,7 @@ void destroy_client_gjkcc_info(LocalClientNum_t localClientNum);
 void destroy_all_server_gjkcc_info();
 void gjkcc_prolog(int a1, const gjkcc_input_t *gjkcc_in, const vec3_t *origin);
 
-//t6/code/src_noserver/bgame/bg_unlockable_items.cpp
+//t6/code/src/bgame/bg_unlockable_items.cpp
 void BG_UnlockablesBuildUnlockMapping(const char *unlockMappingTableName);
 int BG_UnlockablesGetUnlockIndexFromGroup(itemGroup_t group);
 int BG_UnlockablesGetUnlockIndexFromName(const char *name);
@@ -690,7 +690,7 @@ int BG_UnlockablesGetLoadoutItem(loadoutSlot_t a1, char *a2, const CACRoot *cacR
 void BG_UnlockablesEquipClassToSlot(const char **a1, const char *a2, char *a3, const CACRoot *cacRoot, loadoutClass_t customClass, int itemIndex, const char *loadoutName);
 const CACRoot *BG_UnlockablesGetLocalCACRoot(const CACRoot *result, const ControllerIndex_t controllerIndex, const loadoutClass_t loadoutClass);
 
-//t6/code/src_noserver/bgame/bg_unlockable_items_mp.cpp
+//t6/code/src/bgame/bg_unlockable_items_mp.cpp
 const char *BG_UnlockablesGetLoadoutSlotName(loadoutSlot_t loadoutSlot);
 int FindEntryInList(const char *stringEntry, const char **textArray, int numEntries);
 int BG_UnlockablesCompareItemsBySortKey(const void *arg0, const void *arg1);
@@ -915,7 +915,7 @@ const char *BG_UnlockablesGetItemReferenceInLoadoutSlot(loadoutSlot_t a1, const 
 void BG_UnlockablesValidateClassCmd();
 void BG_UnlockableItemsInit();
 
-//t6/code/src_noserver/bgame/bg_vehicle.cpp
+//t6/code/src/bgame/bg_vehicle.cpp
 VehicleDef *BG_GetVehicleDef(int index);
 BOOL BG_IsVehicleAircraftRemote(const VehicleDef *info);
 bool BG_VehicleUsesCylinderGJK(const VehicleDef *vehDef);
@@ -947,7 +947,7 @@ void BG_VehicleMove(pmove_t *pm, const pml_t *pml);
 
 //#include "bgame/bg_vehicleinfo_load_db.h"
 
-//t6/code/src_noserver/bgame/bg_vehicleinfo_load_obj.cpp
+//t6/code/src/bgame/bg_vehicleinfo_load_obj.cpp
 void VEH_Strcpy(unsigned __int8 *pMember, const char *pKeyValue);
 void InitVehicle(VehicleDef *vehicleDef);
 VehicleDef *VehicleDefLoadFile(FsThread a1, const char *name, void *(*Alloc)(int));
@@ -958,19 +958,19 @@ VehicleDef *VehicleDef_Register_LoadObj(const char *name);
 VehicleDef *VehicleDef_Register();
 void VehicleDef_PostLoadFixUp(VehicleDef *vehicleDef);
 
-//t6/code/src_noserver/bgame/bg_vehicles_mp.cpp
+//t6/code/src/bgame/bg_vehicles_mp.cpp
 unsigned __int16 BG_VehiclesGetSlotTagName(int seatIndex);
 
-//t6/code/src_noserver/bgame/bg_vehicle_anim.cpp
+//t6/code/src/bgame/bg_vehicle_anim.cpp
 void VehAnim_RegisterDvars();
 void VehAnim_Init();
 void VehAnim_GetAnimDelta(XAnimTree_s *tree, int animIndex, vec4_t *rot, vec3_t *trans);
 void VehAnim_UpdatePosRot(LocalClientNum_t localClientNum, const entityState_s *es, clientInfo_t *ci, int handler, vec3_t *origin, vec3_t *angles);
 
-//t6/code/src_noserver/bgame/bg_vehicle_csptable.cpp
+//t6/code/src/bgame/bg_vehicle_csptable.cpp
 void TRACK_bg_vehicle_csptable();
 
-//t6/code/src_noserver/bgame/bg_weapons.cpp
+//t6/code/src/bgame/bg_weapons.cpp
 void BG_ParsePenetrationDepthTable(const char *penetrateType, float *depthTable, const char *buffer);
 void BG_LoadPenetrationDepthTable();
 bool BG_AdvanceTrace(BulletFireParams *bp, BulletTraceResults *br, float dist);
@@ -1153,7 +1153,7 @@ void __cdecl PM_Weapon(pmove_t *pm, pml_t *pml);
 
 //#include "bgame/bg_weapons.h"
 
-//t6/code/src_noserver/bgame/bg_weapons_ammo.cpp
+//t6/code/src/bgame/bg_weapons_ammo.cpp
 void TRACK_bg_weapons_ammo();
 Weapon BG_GetWeaponForAmmoClip(const Weapon weapon);
 Weapon BG_GetWeaponForAmmoPool(const Weapon weapon);
@@ -1186,7 +1186,7 @@ BOOL PM_WeaponClipEmpty(playerState_s *ps);
 
 //#include "bgame/bg_weapons_ammo.h"
 
-//t6/code/src_noserver/bgame/bg_weapons_attachment.cpp
+//t6/code/src/bgame/bg_weapons_attachment.cpp
 const char **BG_GetAttachmentNames();
 const char *BG_GetAttachmentName(eAttachment index);
 eAttachment BG_GetAttachmentIndex(const char *name);
@@ -1220,7 +1220,7 @@ void BG_LoadWeaponAttachmentTable(char *a1);
 int BG_GetWeaponOptionMTXIndex(int weaponOption);
 int BG_GetWeaponAttachmentCount(const Weapon weapon);
 
-//t6/code/src_noserver/bgame/bg_weapons_def.cpp
+//t6/code/src/bgame/bg_weapons_def.cpp
 // void WeaponVariantDefHash::Set(WeaponVariantDefHash *notthis, int wi);
 unsigned int BG_GetNumWeapons();
 WeaponVariantDef *BG_GetWeaponVariantDef(const Weapon weapon);
@@ -1258,7 +1258,7 @@ char BG_LoadWeaponTable(const char *weaponNamePostfix, void (*regWeap)(unsigned 
 
 //#include "bgame/bg_weapons_load_db.h"
 
-//t6/code/src_noserver/bgame/bg_weapons_load_obj.cpp
+//t6/code/src/bgame/bg_weapons_load_obj.cpp
 char *BG_GetPlayerAnimTypeName(int index);
 int BG_GetPlayerAnimTypeIndex(int typeEnum);
 void TRACK_bg_weapons_load_obj();
@@ -1300,7 +1300,7 @@ WeaponFullDef *BG_LoadDefaultWeaponVariantDef_LoadObj(WeaponFullDef *notthis);
 WeaponVariantDef *BG_LoadDefaultWeaponVariantDef_FastFile();
 WeaponVariantDef *BG_LoadDefaultWeaponVariantDef();
 
-//t6/code/src_noserver/bgame/bg_weapons_util.cpp
+//t6/code/src/bgame/bg_weapons_util.cpp
 void BG_WeaponNameToComponentList(const char *name, WeaponComponentList *componentList);
 void BG_WeaponNameToIdentifiedComponentList(const char *name, WeaponComponentList *componentList);
 void BG_WeaponComponentListIdentify(WeaponComponentList *componentList);
@@ -1408,7 +1408,7 @@ void BG_WeaponComponentListSort(const char *originalName, WeaponComponentList *c
 
 //#include "bgame/bg_weapons_util.h"
 
-//t6/code/src_noserver/bgame/bg_weapons_view.cpp
+//t6/code/src/bgame/bg_weapons_view.cpp
 double BG_GetBobCycle(const playerState_s *ps);
 long double BG_CalculateWeaponMovement_VerticalBobFactor(const playerState_s *ps, float cycle, float speed);
 long double BG_CalculateWeaponMovement_HorizontalBobFactor(const playerState_s *ps, float cycle, float speed);
@@ -1434,7 +1434,7 @@ void BG_CalculateViewMovement_BobAngles(viewState_t *vs, vec3_t *angles);
 void BG_CalculateViewMovement_AdsBob(viewState_t *vs, vec3_t *angles);
 void BG_CalculateViewMovementAngles(vec3_t *a1, viewState_t *a2, viewState_t *vs, vec3_t *angles, bool bIgnoreIdleSway);
 
-//t6/code/src_noserver/bgame/bg_wind.cpp
+//t6/code/src/bgame/bg_wind.cpp
 void BG_Wind_RegisterDvars();
 void DisplayWindDebug(clientDebugLineInfo_t *a1);
 void BG_SeedVarintWinds(int variant_seed, int start_time);

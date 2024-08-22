@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/cgame_mp/cg_actors_mp.cpp
+//t6/code/src/cgame_mp/cg_actors_mp.cpp
 void CG_UpdateActorDObj(LocalClientNum_t localClientNum, centity_t *cent, actorInfo_t *ai);
 void CG_ResetActorEntity(LocalClientNum_t localClientNum, cg_t *cgameGlob, centity_t *cent);
 void CG_Actor(LocalClientNum_t localClientNum, centity_t *cent);
@@ -12,7 +12,7 @@ BOOL CG_IsActorCorpseInfoCurrent(LocalClientNum_t localClientNum, int corpseInde
 actorInfo_t *CG_ActorEntityScriptedAnim(LocalClientNum_t localClientNum, int entNum);
 void CG_ActorProcessSnapshot(LocalClientNum_t localClientNum, centity_t *cent);
 
-//t6/code/src_noserver/cgame_mp/cg_animscripted_mp.cpp
+//t6/code/src/cgame_mp/cg_animscripted_mp.cpp
 void CG_GetTagMatrix(LocalClientNum_t localClientNum, int linkEntNum, unsigned __int16 tagName, vec3_t *resultTagMat);
 void CG_CalcTagParentAxis(LocalClientNum_t localClientNum, centity_t *cent, vec3_t *parentAxis);
 void CG_CalcEntityScriptedAnimTransform(LocalClientNum_t localClientNum, centity_t *cent, vec3_t *matrix, vec3_t *origin, vec3_t *angles);
@@ -28,7 +28,7 @@ void CG_ScriptedAnimTransformForEntity(LocalClientNum_t localClientNum, centity_
 void CG_ScriptedAnimUpdate(LocalClientNum_t localClientNum, centity_t *cent);
 void CG_LinkedEntUpdate(LocalClientNum_t localClientNum, centity_t *cent);
 
-//t6/code/src_noserver/cgame_mp/cg_animtree_mp.cpp
+//t6/code/src/cgame_mp/cg_animtree_mp.cpp
 void *Hunk_AllocXAnimCreate(int size);
 void CGScr_LoadAnimTrees();
 void CG_SetDObjInfo(LocalClientNum_t localClientNum, int iEntNum, int iEntType, XModel *pXModel);
@@ -37,7 +37,7 @@ void CG_SafeDObjFree(LocalClientNum_t localClientNum, int entIndex);
 void CG_FreeEntityDObjInfo(LocalClientNum_t localClientNum);
 void CG_FreeClientDObjInfo(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_compassfriendlies_mp.cpp
+//t6/code/src/cgame_mp/cg_compassfriendlies_mp.cpp
 void TRACK_cg_compassfriendlies();
 void CG_ClearCompassPingData();
 float GetRadarLineMargin(cg_t *cgameGlob);
@@ -80,7 +80,7 @@ void CG_CompassUpdateActors(LocalClientNum_t localClientNum);
 void CG_AddArtilleryPing(LocalClientNum_t localClientNum, vec3_t *position);
 void CG_UpdateCompassObituary(LocalClientNum_t localClientNum, int client);
 
-//t6/code/src_noserver/cgame_mp/cg_consolecmds_mp.cpp
+//t6/code/src/cgame_mp/cg_consolecmds_mp.cpp
 void CG_Viewpos_f();
 void CG_CloseScoreboard(LocalClientNum_t localClientNum);
 void CG_ScoresUp(LocalClientNum_t localClientNum);
@@ -102,7 +102,7 @@ void CG_ToggleScores_f();
 void CG_InitConsoleCommandsProject();
 void CG_ShutdownConsoleCommandsProject();
 
-//t6/code/src_noserver/cgame_mp/cg_draw_mp.cpp
+//t6/code/src/cgame_mp/cg_draw_mp.cpp
 void TRACK_cg_draw();
 void CG_DrawSay(LocalClientNum_t localClientNum);
 void CG_DrawVote(LocalClientNum_t localClientNum);
@@ -159,7 +159,7 @@ void CG_CheckTimedMenus(LocalClientNum_t localClientNum);
 void CG_Draw2DInternal(LocalClientNum_t localClientNum);
 void CG_Draw2D(LocalClientNum_t notthis);
 
-//t6/code/src_noserver/cgame_mp/cg_draw_net_mp.cpp
+//t6/code/src/cgame_mp/cg_draw_net_mp.cpp
 void CG_AddLagometerFrameInfo(const cg_t *cgameGlob);
 void CG_AddLagometerSnapshotInfo(snapshot_s *snap);
 void CL_TrackServerBandwidth(int kbps);
@@ -171,7 +171,7 @@ void CG_DrawServerKillcamData(LocalClientNum_t localClientNum);
 void CG_DrawDisconnect(LocalClientNum_t localClientNum);
 void CG_DrawLagometer(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_ents_mp.cpp
+//t6/code/src/cgame_mp/cg_ents_mp.cpp
 void CG_GetLightingOrigin(const DObj *obj, const centity_t *cent, vec3_t *lightingOrigin);
 XAnim_s *CG_GetTurretAnims(centity_t *cent);
 void CG_Player_PreControllers(DObj *obj, centity_t *cent);
@@ -291,11 +291,11 @@ void UpdatePacketEnt(LocalClientNum_t localClientNum, int entnum, int timeNow, i
 void UpdateDelayedPacketEnts(LocalClientNum_t localClientNum, DelayListInfo *delayList, int *postPSEntNum, bool contextKey);
 int CG_AddPacketEntities(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_gamepad.cpp
+//t6/code/src/cgame_mp/cg_gamepad.cpp
 bool CG_ShouldUpdateViewAngles(LocalClientNum_t localClientNum);
 // char destructible_ent_aa::process_collision();
 
-//t6/code/src_noserver/cgame_mp/cg_killcam.cpp
+//t6/code/src/cgame_mp/cg_killcam.cpp
 void CG_KillcamRegisterDvars();
 void CG_UpdateKillCamEntityViewOffset(LocalClientNum_t localClientNum);
 void CG_GetPlayerKillCamEntityLookAt(LocalClientNum_t localClientNum, vec3_t *lookAtPos);
@@ -330,7 +330,7 @@ void CG_UpdateKillCamEntity(vec3_t *a1, LocalClientNum_t a2, vec3_t *killCamEnti
 
 //#include "cgame_mp/cg_local_mp.h"
 
-//t6/code/src_noserver/cgame_mp/cg_main_mp.cpp
+//t6/code/src/cgame_mp/cg_main_mp.cpp
 ClientNum_t CG_GetClientNumForLocalClient(LocalClientNum_t localClientNum);
 BOOL CG_IsRagdollTrajectory(const trajectory_t *trajectory);
 void CG_SetupSplitscreenDvars(bool splitscreen);
@@ -411,7 +411,7 @@ void CG_Init(char *a1, LocalClientNum_t localClientNum, int serverMessageNum, in
 void CG_Shutdown(LocalClientNum_t localClientNum);
 XModel *CG_GetXModel(const char *name, LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_newdraw_mp.cpp
+//t6/code/src/cgame_mp/cg_newdraw_mp.cpp
 void CG_AntiBurnInHUD_RegisterDvars();
 void CG_NewDraw_RegisterDvars();
 BOOL CG_ShouldDrawHud(LocalClientNum_t localClientNum);
@@ -497,7 +497,7 @@ void CG_DrawChargeShotBulletCounter(LocalClientNum_t localClientNum, rectDef_s *
 void CG_OwnerDraw(double localClientNum, LocalClientNum_t a2, rectDef_s parentRect, float x, float y, float w, float h, int horzAlign, int vertAlign, int ownerDraw, int ownerDrawFlags, vec4_t *color, Material *material);
 void CG_OwnerDrawText(Material *a1, LocalClientNum_t localClientNum, rectDef_s parentRect, float x, float y, float w, float h, int horzAlign, int vertAlign, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, Font_s *font, float scale, vec4_t *color, Material *material, int textStyle, int textAlignMode, itemDef_s *item, const char *text);
 
-//t6/code/src_noserver/cgame_mp/cg_players_mp.cpp
+//t6/code/src/cgame_mp/cg_players_mp.cpp
 void CG_AddPlayerSpriteDrawSurf(LocalClientNum_t localClientNum, const centity_t *cent);
 void CG_AddPlayerSpriteDrawSurfs(LocalClientNum_t localClientNum, const centity_t *cent);
 void CG_AddAllPlayerSpriteDrawSurfs(LocalClientNum_t localClientNum);
@@ -530,7 +530,7 @@ unsigned int CG_PlayerSonar(LocalClientNum_t localClientNum, centity_t *cent, cl
 void CG_Player(LocalClientNum_t localClientNum, centity_t *cent);
 void CG_Corpse(LocalClientNum_t localClientNum, centity_t *cent);
 
-//t6/code/src_noserver/cgame_mp/cg_predict_mp.cpp
+//t6/code/src/cgame_mp/cg_predict_mp.cpp
 void TRACK_cg_predict();
 int CG_ItemListLocalClientNum();
 void CG_ClearItemList();
@@ -546,7 +546,7 @@ void CG_InterpolatePlayerState(char *a1, LocalClientNum_t localClientNum, int gr
 void CG_PredictPlayerState_Internal(LocalClientNum_t localClientNum);
 void CG_PredictPlayerState(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_scoreboard_mp.cpp
+//t6/code/src/cgame_mp/cg_scoreboard_mp.cpp
 double CG_ScoreboardScaleMultiplier();
 const GfxViewParms *CG_GetNameForScoreboardColumn(LocalClientNum_t localClientNum, int columnNumber);
 int CG_GetColumnValue(LocalClientNum_t localClientNum, const score_s *score, scoreboardColumnType_t columnType);
@@ -591,7 +591,7 @@ const char *CG_GetColumnValueString(LocalClientNum_t localClientNum, const score
 const char *__cdecl CG_GetMatchScoreboardInfo(LocalClientNum_t localClientNum, float feederID, int column, int index, team_t team, cgScoreboardSort_e sort);
 int CG_DrawScoreboard(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_scoreboard_zm.cpp
+//t6/code/src/cgame_mp/cg_scoreboard_zm.cpp
 int rampScore(ClientNum_t clientNum, int score);
 void CG_PlayerColor(int playerNum, const char *prefix, vec4_t *color);
 void CG_RegisterScoreboardDvarsZM();
@@ -600,7 +600,7 @@ float CG_DrawCompetitiveClientScore(LocalClientNum_t localClientNum, ClientNum_t
 void CG_DrawCompetitiveClients(LocalClientNum_t localClientNum, const vec4_t *color, rectDef_s *rect);
 int CG_DrawCompetitiveScoreboard(LocalClientNum_t localClientNum, rectDef_s *rect);
 
-//t6/code/src_noserver/cgame_mp/cg_scr_main_mp.cpp
+//t6/code/src/cgame_mp/cg_scr_main_mp.cpp
 centity_t *CScr_SpawnFXInternal(LocalClientNum_t localClientNum, int fxId, vec3_t *angles, vec3_t *pos, int time);
 void CScr_DeleteFX();
 char CScr_SetRimIntensity();
@@ -747,7 +747,7 @@ void CG_SendSwimNotify(LocalClientNum_t localClientNum, ClientNum_t clientNum, i
 void CScr_GetEntityByIndex(centity_t *cent, const cent_field_s *pField);
 void CScr_UseWeaponModel(scr_entref_t entref);
 
-//t6/code/src_noserver/cgame_mp/cg_servercmds_mp.cpp
+//t6/code/src/cgame_mp/cg_servercmds_mp.cpp
 void CG_ParseServerInfo(LocalClientNum_t localClientNum);
 void CG_ParseCodInfo(LocalClientNum_t localClientNum);
 void CG_ParseCullDist();
@@ -787,7 +787,7 @@ void CG_MapRestart(LocalClientNum_t localClientNum, int savepersist);
 void CG_DeployServerCommand(LocalClientNum_t localClientNum);
 void CG_ExecuteNewServerCommands(LocalClientNum_t localClientNum, int latestSequence);
 
-//t6/code/src_noserver/cgame_mp/cg_snapshot_mp.cpp
+//t6/code/src/cgame_mp/cg_snapshot_mp.cpp
 void CG_ShutdownEntity(LocalClientNum_t localClientNum, centity_t *cent, bool shutdown_script_for_local_client);
 void CG_TeleportEntity(LocalClientNum_t localClientNum, centity_t *cent);
 void ResetEntity_EventSequence(centity_t *cent);
@@ -806,7 +806,7 @@ void CG_SetInitialSnapshot(LocalClientNum_t localClientNum, snapshot_s *snap);
 void CG_TransitionSnapshot(LocalClientNum_t localClientNum);
 void CG_ProcessSnapshots(LocalClientNum_t localClientNum);
 
-//t6/code/src_noserver/cgame_mp/cg_vehicles_mp.cpp
+//t6/code/src/cgame_mp/cg_vehicles_mp.cpp
 clientInfo_t *ClientInfoForEntity(LocalClientNum_t localClientNum, int entNum);
 DObj *GetVehicleEntDObj(LocalClientNum_t localClientNum, centity_t *centVeh);
 bool CG_Vehicle_UsingVehicle(int a1, LocalClientNum_t localClientNum, int entNum);
@@ -816,7 +816,7 @@ void GetTagMatrix(LocalClientNum_t localClientNum, int vehEntNum, unsigned __int
 void SeatTransformForClientInfo(LocalClientNum_t localClientNum, clientInfo_t *ci, vec3_t *resultOrigin, vec3_t *resultAngles);
 void CG_Vehicle_SeatTransformForPlayer(int a1, LocalClientNum_t localClientNum, int entNum, vec3_t *resultOrigin);
 
-//t6/code/src_noserver/cgame_mp/cg_view_mp.cpp
+//t6/code/src/cgame_mp/cg_view_mp.cpp
 void TRACK_cg_view();
 void CG_DrawWaterTrail(LocalClientNum_t localClientNum, const vec3_t *pos, float waterHeight);
 int CG_GetNextRippleTime(centity_t *cent);
@@ -891,7 +891,7 @@ void CG_InitView(LocalClientNum_t localClientNum);
 void GetCeilingHeight(unsigned int a1, cg_t *cgameGlob);
 int CG_DrawActiveFrame(LocalClientNum_t localClientNum, int serverTime, DemoType demoType, CubemapShot cubemapShot, int cubemapSize, int renderScreen);
 
-//t6/code/src_noserver/cgame_mp/cg_weapon_options.cpp
+//t6/code/src/cgame_mp/cg_weapon_options.cpp
 // void WeaponOptions::InitWeaponOptions(WeaponOptions *notthis);
 // void WeaponOptions::SetupWeaponCamoRender(WeaponOptions *notthis, LocalClientNum_t localClientNum, const float dist, WeaponDobjInfo::Slot weaponSlot, unsigned int camo, const WeaponDobjInfo *weaponDobjInfo, int *textureOverrideIndex);
 // void WeaponOptions::SetReticle(WeaponOptions *notthis, WeaponOptions::ReticleType type, int reticle, unsigned int dobjModelMask, int *textureOverrideIndex);
