@@ -3,15 +3,13 @@
 
 Console con;
 
-/*
-==============
-SetupChatField
-==============
-*/
-void SetupChatField(const LocalClientNum_t localClientNum, int teamChat, int widthInPixels)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
+int con_inputMaxMatchesShown;
+int g_console_field_width;
+float g_console_char_height;
+
+cmd_function_s Con_ChatModePublic_f_VAR;
+cmd_function_s Con_Clear_f_VAR;
+cmd_function_s Con_Echo_f_VAR;
 
 /*
 ==============
@@ -20,7 +18,7 @@ Con_ChatModePublic_f
 */
 void Con_ChatModePublic_f()
 {
-	SetupChatField(LOCAL_CLIENT_FIRST, 0, 588);
+	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
@@ -120,7 +118,10 @@ Con_ClearMessageWindow
 */
 void Con_ClearMessageWindow(MessageWindow *msgwnd)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	msgwnd->textBufPos = 0;
+	msgwnd->messageIndex = 0;
+	msgwnd->firstLineIndex = 0;
+	msgwnd->activeLineCount = 0;
 }
 
 /*
@@ -280,17 +281,6 @@ int PrintableCharsCount(const MessageWindow *msgwnd, MessageLine *line)
 
 /*
 ==============
-PrintTimeTotal
-==============
-*/
-int PrintTimeTotal(MessageWindow *msgwnd, MessageLine *line)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
 GetNextValidPrintTimeForLine
 ==============
 */
@@ -317,8 +307,24 @@ Con_GetDestWindow
 */
 MessageWindow *Con_GetDestWindow(LocalClientNum_t localClientNum, print_msg_dest_t dest)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (!dest)
+	{
+		return &con.consoleWindow;
+	}
+
+	int v4 = dest - 1;
+
+	if (!v4)
+	{
+		return &con.messageBuffer[localClientNum].miniconWindow;
+	}
+
+	if (v4 == 1)
+	{
+		return &con.messageBuffer[localClientNum].errorWindow;
+	}
+
+	return (18520 * localClientNum + 52 * dest + 18941568);
 }
 
 /*
@@ -574,7 +580,20 @@ ConDrawInput_IncrMatchCounter
 */
 void ConDrawInput_IncrMatchCounter(const char *str)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
+	{
+		if (conDrawInputGlob.matchCount == conDrawInputGlob.matchIndex)
+		{
+			I_strncpyz(conDrawInputGlob.autoCompleteChoice, str, 64);
+		}
+
+		++conDrawInputGlob.matchCount;
+
+		if (!str[conDrawInputGlob.inputTextLen])
+		{
+			conDrawInputGlob.hasExactMatch = 1;
+		}
+	}
 }
 
 /*
@@ -584,7 +603,19 @@ ConDrawInput_DvarMatch
 */
 void ConDrawInput_DvarMatch(const char *str)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
+	{
+		ConDrawInput_TextLimitChars(str, 24, &con_inputDvarMatchColor);
+
+		conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
+		const dvar_t *dvar = Dvar_FindVar(str);
+		const char *VariantString = Dvar_GetVariantString(dvar);
+
+		ConDrawInput_TextLimitChars(VariantString, 40, &con_inputDvarValueColor);
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+	}
 }
 
 /*
@@ -882,16 +913,6 @@ Con_IsGameMessageWindowActive
 bool Con_IsGameMessageWindowActive(LocalClientNum_t localClientNum, int windowIndex)
 {
 	return con.messageBuffer[localClientNum].gamemsgWindows[windowIndex].activeLineCount > 0;
-}
-
-/*
-==============
-Con_DrawSay
-==============
-*/
-void Con_DrawSay(LocalClientNum_t localClientNum, int x, int y)
-{
-	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
@@ -1195,7 +1216,17 @@ Con_DrawInput
 */
 void Con_DrawInput(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Key_IsCatcherActive(localClientNum, 1))
+	{
+		return;
+	}
+
+	conDrawInputGlob.fontHeight = R_TextHeight(cls.consoleFont);
+	conDrawInputGlob.x = con.screenMin.v[0] + 6.0;
+	conDrawInputGlob.y = con.screenMin.v[1] + 6.0;
+	conDrawInputGlob.leftX = con.screenMin.v[0] + 6.0;
+
+	// todo
 }
 
 /*
