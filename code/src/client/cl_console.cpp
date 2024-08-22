@@ -410,10 +410,29 @@ void Con_AutoCompleteFromList(const char **strings, unsigned int stringCount, co
 Con_TokenizeInput
 ==============
 */
-const GfxViewParms *Con_TokenizeInput()
+const char* Con_TokenizeInput()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	Cmd_TokenizeStringNoEval(g_consoleField.buffer);
+
+	const char* v0 = Cmd_Argv(0);
+
+	if (*v0 == 92 || *v0 == 47)
+	{
+		++v0;
+	}
+
+	if (isspace(*v0))
+	{
+		int v1;
+
+		do
+		{
+			v1 = *++v0;
+		}
+		while (isspace(v1));
+	}
+
+	return v0;
 }
 
 /*
@@ -651,7 +670,13 @@ ConDrawInput_CmdMatch
 */
 void ConDrawInput_CmdMatch(const char *str)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
+	{
+		ConDrawInput_Text(str, &con_inputCommandMatchColor);
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+	}
 }
 
 /*
@@ -846,8 +871,7 @@ Con_IsValidGameMessageWindow
 */
 BOOL Con_IsValidGameMessageWindow(int windowIndex)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return windowIndex <= 3;
 }
 
 /*
@@ -857,8 +881,7 @@ Con_IsGameMessageWindowActive
 */
 bool Con_IsGameMessageWindowActive(LocalClientNum_t localClientNum, int windowIndex)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return con.messageBuffer[localClientNum].gamemsgWindows[windowIndex].activeLineCount > 0;
 }
 
 /*
