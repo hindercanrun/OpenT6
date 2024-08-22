@@ -491,7 +491,7 @@ void ConDrawInput_TextLimitChars(const char *str, int maxChars, const vec4_t *co
 ConDrawInput_TextAndOver
 ==============
 */
-void ConDrawInput_TextAndOver(const vec4_t *a1, const char *a2, LocalClientNum_t localClientNum, const char *str)
+void ConDrawInput_TextAndOver(LocalClientNum_t localClientNum, const char *str, const vec4_t *color)
 {
 	ConDrawInput_Text(str, color);
 
@@ -632,9 +632,9 @@ int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
 	signed int v2 = strlen(desc);
 	signed int v3 = 0;
 
-	for ( result = 1; v3 < v2; ++v3 )
+	for (result = 1; v3 < v2; ++v3)
 	{
-		if ( desc[v3] == 10 )
+		if (desc[v3] == 10)
 		{
 			++result;
 		}
@@ -943,11 +943,11 @@ void Con_PageUp()
 {
 	con.displayLineOffset -= 2;
 
-	if ( con.displayLineOffset < con.visibleLineCount )
+	if (con.displayLineOffset < con.visibleLineCount)
 	{
 		con.displayLineOffset = con.visibleLineCount;
 
-		if ( con.consoleWindow.activeLineCount < con.visibleLineCount )
+		if (con.consoleWindow.activeLineCount < con.visibleLineCount)
 		{
 			con.displayLineOffset = con.consoleWindow.activeLineCount;
 		}
@@ -964,7 +964,7 @@ void Con_PageDown()
 	int v0 = con.displayLineOffset + 2;
 	con.displayLineOffset = con.consoleWindow.activeLineCount;
 
-	if ( v0 < con.consoleWindow.activeLineCount )
+	if (v0 < con.consoleWindow.activeLineCount)
 	{
 		con.displayLineOffset = v0;
 	}
@@ -1052,7 +1052,7 @@ void Con_ToggleConsole()
 {
 	Field_Clear(&g_consoleField);
 
-	if ( conDrawInputGlob.matchIndex >= 0 && conDrawInputGlob.autoCompleteChoice[0] )
+	if (conDrawInputGlob.matchIndex >= 0 && conDrawInputGlob.autoCompleteChoice[0])
 	{
 		conDrawInputGlob.matchIndex = -1;
 		conDrawInputGlob.autoCompleteChoice[0] = 0;
@@ -1117,7 +1117,7 @@ void Con_Init()
 		p_widthInPixels[2] = 1;
 		p_widthInPixels += 70;
 	}
-	while ( p_widthInPixels < &dword_125CC14 );
+	while (p_widthInPixels < &dword_125CC14);
 
 	conDrawInputGlob.matchIndex = -1;
 
@@ -1125,7 +1125,7 @@ void Con_Init()
 	Cmd_AddCommandInternal("clear", Con_Clear_f, &Con_Clear_f_VAR);
 	Cmd_AddCommandInternal("con_echo", Con_Echo_f, &Con_Echo_f_VAR);
 
-	if ( !con.initialized )
+	if (!con.initialized)
 	{
 		Con_OneTimeInit();
 	}
