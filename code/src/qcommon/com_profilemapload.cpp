@@ -14,7 +14,7 @@ TRACK_com_profilemapload
 */
 void TRACK_com_profilemapload()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(&mapLoadProfile, 43136, "mapLoadProfile", 0);
 }
 
 /*
@@ -425,7 +425,124 @@ ProfLoad_PrintHotSpots
 */
 void ProfLoad_PrintHotSpots()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	// deal with this later
+	int profileEntryCount; // edx
+	int *p_accessCount; // ecx
+	unsigned __int64 *p_ticksSelf; // eax
+	int v3; // esi
+	unsigned int v4; // ebx
+	MapProfileHotSpot *v5; // esi
+	unsigned int v6; // edx
+	int v7; // esi
+	int v8; // edi
+	int v9; // edx
+	int *v10; // eax
+	MapProfileHotSpot *v11; // ecx
+	int *v12; // ecx
+	int v13; // ebx
+	bool v14; // cf
+	int v15; // ebx
+	__int64 *p_ticksFile; // esi
+	long double v17; // [esp+20h] [ebp-2444h]
+	long double v18; // [esp+28h] [ebp-243Ch]
+	double v19; // [esp+50h] [ebp-2414h]
+	double v20; // [esp+58h] [ebp-240Ch]
+	MapProfileHotSpot _First[384]; // [esp+60h] [ebp-2404h] BYREF
+
+	profileEntryCount = mapLoadProfile.profileEntryCount;
+	if ( mapLoadProfile.profileEntryCount > 0 )
+	{
+		p_accessCount = &_First[0].accessCount;
+		p_ticksSelf = &mapLoadProfile.profileEntries[0].ticksSelf;
+		v3 = mapLoadProfile.profileEntryCount;
+		do
+		{
+			v4 = *(p_ticksSelf + 21);
+			*(p_accessCount - 1) = *(p_ticksSelf - 6);
+			*p_accessCount = *(p_ticksSelf - 5);
+			p_accessCount[1] = *p_ticksSelf;
+			p_accessCount[2] = *(p_ticksSelf + 1);
+			*(p_accessCount + 3) = p_ticksSelf[4] + p_ticksSelf[7] + __PAIR64__(v4, *(p_ticksSelf + 20));
+			p_ticksSelf += 14;
+			p_accessCount += 6;
+			--v3;
+		}
+		while ( v3 );
+	}
+	v5 = &_First[profileEntryCount];
+	v6 = ((17179869192i64 * profileEntryCount) >> 32) >> 2;
+	std::_Sort<MapProfileHotSpot *,int,bool (__cdecl *)(MapProfileHotSpot const &,MapProfileHotSpot const &)>(
+		_First,
+		v5,
+		v6 + (v6 >> 31),
+		ProfLoad_CompareHotSpotNames);
+	v7 = mapLoadProfile.profileEntryCount;
+	v8 = 0;
+	v9 = 0;
+	if ( mapLoadProfile.profileEntryCount )
+	{
+		v10 = &_First[0].accessCount;
+		do
+		{
+			v11 = &_First[v9];
+			*(v10 - 1) = *&v11->label;
+			*(v10 + 1) = v11->ticksSelf;
+			++v9;
+			*(v10 + 3) = v11->ticksFile;
+			if ( v9 != v7 )
+			{
+				v12 = &_First[v9].accessCount;
+				do
+				{
+					if ( *(v12 - 1) != *(v10 - 1) )
+						break;
+					*v10 += *v12;
+					v13 = v12[1];
+					v14 = __CFADD__(v13, v10[1]);
+					v10[1] += v13;
+					v10[2] += v12[2] + v14;
+					v15 = v12[3];
+					v14 = __CFADD__(v15, v10[3]);
+					v10[3] += v15;
+					v10[4] += v12[4] + v14;
+					++v9;
+					v12 += 6;
+				}
+				while ( v9 != v7 );
+			}
+			++v8;
+			v10 += 6;
+		}
+		while ( v9 != v7 );
+	}
+	std::_Sort<MapProfileHotSpot *,int,bool (__cdecl *)(MapProfileHotSpot const &,MapProfileHotSpot const &)>(
+		_First,
+		&_First[v8],
+		24 * v8 / 24,
+		ProfLoad_CompareHotSpotTicks);
+	Com_Printf(23, "\n\n");
+	Com_Printf(23, "^6---------- Load time hot spots ----------\n");
+	if ( v8 > 16 )
+		v8 = 16;
+	v20 = 0.0;
+	v19 = 0.0;
+	if ( v8 > 0 )
+	{
+		p_ticksFile = &_First[0].ticksFile;
+		do
+		{
+			v17 = *(p_ticksFile - 1) * msecPerRawTimerTick * 0.001000000047497451;
+			v18 = 0.001000000047497451 * (msecPerRawTimerTick * *p_ticksFile);
+			v20 = v17 + v20;
+			v19 = v18 + v19;
+			Com_Printf(23, "^6%s: %5.3f self, %5.3f file, %i hits\n", *(p_ticksFile - 4), v17, v18, *(p_ticksFile - 3));
+			p_ticksFile += 3;
+			--v8;
+		}
+		while ( v8 );
+	}
+	Com_Printf(23, "\n");
+	Com_Printf(23, "^6Hot spot total time: %5.3f self, %5.3f file\n\n", v20, v19);
 }
 
 /*
