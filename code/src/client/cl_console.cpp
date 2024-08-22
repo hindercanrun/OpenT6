@@ -1186,7 +1186,10 @@ CL_ConsoleFixPosition
 */
 void CL_ConsoleFixPosition()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	LocalClientNum_t primary = Com_LocalClients_GetPrimary();
+	CL_ConsolePrint(primary, 0, "\n", 0, 0, 0);
+
+	con.displayLineOffset = con.consoleWindow.activeLineCount - 1;
 }
 
 /*
@@ -1236,8 +1239,48 @@ Con_CommitToAutoComplete
 */
 char Con_CommitToAutoComplete()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	char v3;
+
+	if (conDrawInputGlob.matchIndex < 0 || !conDrawInputGlob.autoCompleteChoice[0])
+	{
+		return 0;
+	}
+
+	const char *cmd = Con_TokenizeInput();
+
+	if ( Con_IsDvarCommand(cmd) )
+	{
+		Com_sprintf(g_consoleField.buffer, 256, "%s %s", cmd, conDrawInputGlob.autoCompleteChoice);
+	}
+	else
+	{
+		int v2 = 0;
+
+		do
+		{
+			v3 = conDrawInputGlob.autoCompleteChoice[v2];
+			g_consoleField.buffer[v2++] = v3;
+		}
+		while ( v3 );
+	}
+
+	Cmd_EndTokenizedString();
+
+	g_consoleField.cursor = strlen(g_consoleField.buffer);
+	g_consoleField.buffer[g_consoleField.cursor++] = 32;
+	g_consoleField.buffer[g_consoleField.cursor] = 0;
+	g_consoleField.drawWidth = SEH_PrintStrlen(g_consoleField.buffer);
+
+	if ( conDrawInputGlob.matchIndex >= 0 )
+	{
+		if ( conDrawInputGlob.autoCompleteChoice[0] )
+		{
+			conDrawInputGlob.matchIndex = -1;
+			conDrawInputGlob.autoCompleteChoice[0] = 0;
+		}
+	}
+
+	return 1;
 }
 
 /*
@@ -1271,7 +1314,6 @@ void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
 
 		Con_DrawInput(localClientNum);
 	}
-
 	else
 	{
 		con.outputVisible = 0;
