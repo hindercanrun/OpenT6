@@ -25,8 +25,23 @@ Field_Paste
 */
 char Field_Paste(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, field_t *edit)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	const char *ClipboardData = Sys_GetClipboardData();
+	char *v4 = ClipboardData;
+
+	if ( !ClipboardData )
+	{
+		return 0;
+	}
+
+	signed int v6 = strlen(ClipboardData);
+	for (signed int i = 0; i < v6; ++i)
+	{
+		Field_CharEvent(localClientNum, scrPlace, edit, v4[i]);
+	}
+
+	Sys_FreeClipboardData(v4);
+
+	return 1;
 }
 
 /*
@@ -388,8 +403,9 @@ Key_IsCatcherActive
 */
 bool Key_IsCatcherActive(LocalClientNum_t localClientNum, int mask)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (localClientNum == INVALID_LOCAL_CLIENT)
+		return 0;
+	return (mask & keyCatchers) != 0;
 }
 
 /*
@@ -399,7 +415,10 @@ Key_AddCatcher
 */
 void Key_AddCatcher(LocalClientNum_t localClientNum, int orMask)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if ( localClientNum != INVALID_LOCAL_CLIENT )
+	{
+		keyCatchers |= orMask;
+	}
 }
 
 /*
@@ -441,8 +460,7 @@ Key_GetCmdForBinding
 */
 const char *Key_GetCmdForBinding(Bind_t binding)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return g_bindCommands[binding];
 }
 
 /*
@@ -511,16 +529,6 @@ Console_Key
 ==============
 */
 void __cdecl Console_Key(LocalClientNum_t localClientNum, int key)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-Message_Key
-==============
-*/
-void Message_Key(LocalClientNum_t localClientNum, int key)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -615,7 +623,10 @@ CL_ConsoleCharEvent
 */
 void CL_ConsoleCharEvent(LocalClientNum_t localClientNum, int key)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Field_CharEvent(localClientNum, &scrPlaceFull, &g_consoleField, key))
+	{
+		Con_AllowAutoCompleteCycling(1);
+	}
 }
 
 /*
@@ -738,15 +749,5 @@ int Key_WriteBindingsToBuffer(LocalClientNum_t localClientNum, char* buffer, int
 			}
 		}
 	}
-}
-
-/*
-==============
-TRACK_cl_keys
-==============
-*/
-void TRACK_cl_keys()
-{
-	UNIMPLEMENTED(__FUNCTION__);
 }
 

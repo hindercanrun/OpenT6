@@ -1255,9 +1255,9 @@ void Con_DrawInput(LocalClientNum_t localClientNum)
 	}
 
 	conDrawInputGlob.fontHeight = R_TextHeight(cls.consoleFont);
-	conDrawInputGlob.x = con.screenMin.v[0] + 6.0;
-	conDrawInputGlob.y = con.screenMin.v[1] + 6.0;
-	conDrawInputGlob.leftX = con.screenMin.v[0] + 6.0;
+	conDrawInputGlob.x = con.screenMin[0] + 6.0;
+	conDrawInputGlob.y = con.screenMin[1] + 6.0;
+	conDrawInputGlob.leftX = con.screenMin[0] + 6.0;
 
 	// todo
 }
