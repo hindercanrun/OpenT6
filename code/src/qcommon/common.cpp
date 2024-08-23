@@ -527,7 +527,19 @@ Com_PrintStackTrace
 */
 void Com_PrintStackTrace(int code, void (*cb)(const char *))
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Com_Printf(10, "STACKBEGIN -------------------------------------------------------------------\n");
+
+	StackTrace_Walk(1, 0);
+	StackTrace_ResolveSymbols();
+	StackTrace_Generate(0x2000, g_stackTrace);
+
+	Com_Printf(10, "%s", g_stackTrace);
+	Com_Printf(10, "STACKEND ---------------------------------------------------------------------\n");
+
+	if (cb)
+	{
+		cb(g_stackTrace);
+	}
 }
 
 /*
@@ -537,7 +549,7 @@ Com_ErrorAbort
 */
 void Com_ErrorAbort()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Sys_Error("%s", &com_errorMessage);
 }
 
 /*
