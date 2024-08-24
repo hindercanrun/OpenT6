@@ -64,7 +64,7 @@ void PrintMatches(const char *s)
 	if (con_ignoreMatchPrefixOnly && Dvar_GetBool(con_matchPrefixOnly)
 		|| !I_strnicmp(s, s_shortestMatch, strlen(s_shortestMatch)))
 	{
-		if ( I_stristr(s, s_shortestMatch) )
+		if (I_stristr(s, s_shortestMatch))
 		{
 			Com_Printf(0, "    %s\n", s);
 		}
@@ -89,7 +89,23 @@ ReplaceConsoleInputArgument
 */
 void ReplaceConsoleInputArgument(int replaceCount, const char *replacement)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	signed int i;
+
+	if (*replacement)
+	{
+		for (i = strlen(g_consoleField.buffer); i; --i)
+		{
+			if (!isspace(*(i + 18954375)))
+			{
+				break;
+			}
+		}
+
+		if (replaceCount >= i)
+		{
+			I_strncpyz(&g_consoleField.buffer[i - replaceCount], replacement, 256 - (i - replaceCount));
+		}
+	}
 }
 
 /*
@@ -139,8 +155,21 @@ Console_IsScrollUpKey
 */
 bool Console_IsScrollUpKey(int key, int isShiftDown, int isCtrlDown)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	switch (key)
+	{
+	case 206:
+		if (isShiftDown)
+		{
+			return 1;
+		}
+		break;
+	case 183:
+		return 1;
+	case 154:
+		return 1;
+	}
+
+	return tolower(key) == 112 && isCtrlDown;
 }
 
 /*
@@ -150,8 +179,21 @@ Console_IsScrollDownKey
 */
 bool Console_IsScrollDownKey(int key, int isShiftDown, int isCtrlDown)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	switch (key)
+	{
+	case 205:
+		if (isShiftDown)
+		{
+			return 1;
+		}
+		break;
+	case 189:
+		return 1;
+	case 155:
+		return 1;
+	}
+
+	return tolower(key) == 110 && isCtrlDown;
 }
 
 /*
