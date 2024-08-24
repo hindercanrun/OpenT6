@@ -9,7 +9,7 @@ char *GetMemory(unsigned int size)
 {
 	char* result = Z_Malloc(size + 4, "GetMemory", 12);
 
-	if ( result )
+	if (result)
 	{
 		*result = 305419896;
 		result += 4;
@@ -25,8 +25,23 @@ GetClearedMemory
 */
 char *GetClearedMemory(unsigned int size)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	unsigned __int8 *v1 = Z_Malloc(size + 4, "GetMemory", 12);
+
+	if (v1)
+	{
+		char *v3 = (v1 + 4);
+		*v1 = 305419896;
+
+		memset(v1 + 4, 0, size);
+
+		return v3;
+	}
+	else
+	{
+		memset(0, 0, size);
+
+		return 0;
+	}
 }
 
 /*
@@ -36,7 +51,7 @@ FreeMemory
 */
 void FreeMemory(void *ptr)
 {
-	if ( *( ptr - 1 ) == 305419896 )
+	if (*(ptr - 1) == 305419896)
 	{
 		Z_Free(ptr - 4);
 	}
