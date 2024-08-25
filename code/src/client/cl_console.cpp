@@ -2,14 +2,57 @@
 #include "client_public.h"
 
 Console con;
+ConDrawInputGlob conDrawInputGlob;
+field_t g_consoleField;
+clientStatic_t cls;
+ScreenPlacement scrPlaceFull;
 
 int con_inputMaxMatchesShown;
 int g_console_field_width;
 float g_console_char_height;
+int keyCatchers;
+
+bool con_ignoreMatchPrefixOnly;
 
 cmd_function_s Con_ChatModePublic_f_VAR;
 cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
+
+float con_versionColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+
+/*
+==============
+SetupChatField
+==============
+*/
+void SetupChatField(int localClientNum, int teamChat, int widthInPixels)
+{
+	int width;
+	int height;
+	float aspect;
+
+	CL_GetScreenDimensions(&width, &height, &aspect);
+
+	playerKeys[localClientNum].chat_team = teamChat;
+	PlayerKeyState *chatField = &playerKeys[localClientNum];
+
+	Field_Clear(&chatField->chatField);
+
+	chatField->chatField.widthInPixels = widthInPixels;
+	chatField->chatField.fixedSize = 0;
+
+	if ( height <= 768 )
+	{
+		chatField->chatField.charHeight = FLOAT_16_0;
+	}
+	else
+	{
+		chatField->chatField.charHeight = FLOAT_10_0;
+	}
+
+	clientUIActive_t *LocalClientUIGlobals = CL_GetLocalClientUIGlobals(localClientNum);
+	LocalClientUIGlobals->keyCatchers ^= 0x20u;
+}
 
 /*
 ==============
@@ -18,7 +61,10 @@ Con_ChatModePublic_f
 */
 void Con_ChatModePublic_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Com_SessionMode_IsOnlineGame() || Com_SessionMode_IsMode(SESSIONMODE_SYSTEMLINK))
+	{
+		SetupChatField(0, 0, 588);
+	}
 }
 
 /*
@@ -56,7 +102,6 @@ void Con_GetTextCopy(char *text, int maxSize)
 			memcpy(text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufSize - begin);
 			memcpy(&text[con.consoleWindow.textBufSize - begin], con.consoleWindow.circularTextBuffer, end);
 		}
-
 		else
 		{
 			memcpy(text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufPos - begin);
@@ -64,7 +109,6 @@ void Con_GetTextCopy(char *text, int maxSize)
 
 		text[totalSize] = 0;
 	}
-
 	else
 	{
 		*text = 0;
@@ -78,7 +122,24 @@ Con_ResetMessageWindowTimes
 */
 void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	// todo make it nicer to look at
+
+	int v7;
+	Message *v8;
+
+	for (int i = 0; i < msgwnd->activeLineCount; v8->endTime = serverTime + v7)
+	{
+		int lineCount = msgwnd->lineCount;
+		unsigned int v4 = (i + msgwnd->firstLineIndex) % lineCount;
+		MessageLine *v5 = &msgwnd->lines[v4];
+		Message *messages = msgwnd->messages;
+
+		intv7 = messages[v5->messageIndex].endTime - messages[v5->messageIndex].startTime;
+		v8 = &messages[v5->messageIndex];
+		++i;
+
+		v8->startTime = serverTime;
+	}
 }
 
 /*
@@ -108,7 +169,22 @@ Con_TimeNudged
 */
 void Con_TimeNudged(LocalClientNum_t localClientNum, int serverTimeNudge)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int serverTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
+	Con_NudgeMessageWindowTimes(&con.consoleWindow, serverTimeNudge, serverTime);
+
+	LocalClientNum_t v4 = localClientNum;
+	MessageWindow *gamemsgWindows = con.messageBuffer[localClientNum].gamemsgWindows;
+	LocalClientNum_t localClientNuma = 4;
+
+	do
+	{
+		Con_NudgeMessageWindowTimes(gamemsgWindows++, serverTimeNudge, serverTime);
+		--localClientNuma;
+	}
+	while (localClientNuma);
+
+	Con_NudgeMessageWindowTimes(&con.messageBuffer[v4].miniconWindow, serverTimeNudge, serverTime);
+	Con_NudgeMessageWindowTimes(&con.messageBuffer[v4].errorWindow, serverTimeNudge, serverTime);
 }
 
 /*
@@ -131,7 +207,20 @@ Con_ClearNotify
 */
 void Con_ClearNotify(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int *p_textBufPos = &con.messageBuffer[localClientNum].gamemsgWindows[0].textBufPos;
+	int v2 = 4;
+
+	do
+	{
+		*p_textBufPos = 0;
+		p_textBufPos[3] = 0;
+		p_textBufPos[1] = 0;
+		p_textBufPos[2] = 0;
+		p_textBufPos += 13;
+		--v2;
+	}
+
+	while (v2);
 }
 
 /*
@@ -141,13 +230,16 @@ Con_CheckResize
 */
 void Con_CheckResize()
 {
-	float v0 = ScrPlace_ApplyX(&scrPlaceFullUnsafe, 4.0, 1);
+	double v0 = ScrPlace_ApplyX(&scrPlaceFull, 4.0, 1);
 	con.screenMin.v[0] = floor(v0);
-	float v1 = ScrPlace_ApplyY(&scrPlaceFullUnsafe, 4.0, 1);
+
+	double v1 = ScrPlace_ApplyY(&scrPlaceFull, 4.0, 1);
 	con.screenMin.v[1] = floor(v1);
-	float v2 = ScrPlace_ApplyX(&scrPlaceFullUnsafe, -4.0, 3);
+
+	double v2 = ScrPlace_ApplyX(&scrPlaceFull, -4.0, 3);
 	con.screenMax.v[0] = floor(v2);
-	float v3 = ScrPlace_ApplyY(&scrPlaceFullUnsafe, -4.0, 3);
+
+	double v3 = ScrPlace_ApplyY(&scrPlaceFull, -4.0, 3);
 	con.screenMax.v[1] = floor(v3);
 
 	if (cls.consoleFont)
@@ -385,6 +477,30 @@ Con_InitMessageBuffer
 void Con_InitMessageBuffer()
 {
 	UNIMPLEMENTED(__FUNCTION__);
+}
+
+/*
+==============
+CL_TextLineWrapPosition
+==============
+*/
+const char *CL_TextLineWrapPosition(
+	const char *txt,
+	int bufferSize,
+	int pixelsAvailable,
+	Font_s *font,
+	float scale,
+	int lineBroken)
+{
+	if ( lineBroken )
+	{
+		while ( *txt == 32 )
+		++txt;
+	}
+
+	const char *lineWrapPos = R_TextLineWrapPosition(txt, bufferSize, pixelsAvailable, font, scale);
+
+	return *lineWrapPos != 0 ? lineWrapPos : 0;
 }
 
 /*
@@ -655,8 +771,7 @@ CG_SortPlayersAlphabeticallyComparator
 */
 int CG_SortPlayersAlphabeticallyComparator(const void *a, const void *b)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return I_stricmp(*a, *b);
 }
 
 /*
@@ -721,7 +836,36 @@ ConDrawInput_DetailedCmdMatch
 */
 void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *str)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	vec4_t inputHintBoxColor;
+
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen)
+		&& (!conDrawInputGlob.hasExactMatch || !str[conDrawInputGlob.inputTextLen]))
+	{
+		Dvar_GetVec4(con_inputHintBoxColor, &inputHintBoxColor);
+		ConDraw_Box(
+			&inputHintBoxColor,
+			conDrawInputGlob.x - 6.0,
+			conDrawInputGlob.y - 6.0,
+			(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
+			conDrawInputGlob.fontHeight + 12.0);
+
+		ConDrawInput_Text(str, &con_inputCommandMatchColor);
+
+		conDrawInputGlob.y = conDrawInputGlob.fontHeight + conDrawInputGlob.y;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+
+		if (Cmd_Argc() == 2)
+		{
+			int fileCount;
+			const char **AutoCompleteFileList = Cmd_GetAutoCompleteFileList(str, &fileCount, 12);
+
+			if (fileCount)
+			{
+				ConDrawInput_AutoCompleteArg(localClientNum, AutoCompleteFileList, fileCount);
+				FS_FreeFileList(AutoCompleteFileList, 12);
+			}
+		}
+	}
 }
 
 /*
@@ -982,7 +1126,24 @@ Con_DrawOuputWindow
 */
 void Con_DrawOuputWindow()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	vec4_t outputWindowColor;
+
+	float width = con.screenMax[0] - con.screenMin[0];
+	float y = con.screenMin[1] + 32.0;
+	float x = con.screenMin[0];
+	float height = (con.screenMax[1] - con.screenMin[1]) - 32.0;
+
+	Dvar_GetVec4(con_outputWindowColor, &outputWindowColor);
+	ConDraw_Box(&outputWindowColor, x, y, width, height);
+
+	float xa = x + 6.0;
+	float ya = y + 6.0;
+	float heighta = height - 12.0;
+
+	const char *versionString = va("Build %d %s", Com_GetBuildNumber(), "win-x86");
+	SCR_DrawSmallStringExt(xa, ((heighta - 16.0) + ya), versionString, &con_versionColor);
+	Con_DrawOutputScrollBar(xa, ya, width - 12.0, heighta);
+	Con_DrawOutputText(xa, ya);
 }
 
 /*
@@ -1249,6 +1410,10 @@ Con_DrawInput
 */
 void Con_DrawInput(LocalClientNum_t localClientNum)
 {
+	bool isDvarCommand;
+	vec4_t inputBoxColor;
+	vec4_t inputHintBoxColor;
+
 	if (!Key_IsCatcherActive(localClientNum, 1))
 	{
 		return;
@@ -1259,7 +1424,156 @@ void Con_DrawInput(LocalClientNum_t localClientNum)
 	conDrawInputGlob.y = con.screenMin[1] + 6.0;
 	conDrawInputGlob.leftX = con.screenMin[0] + 6.0;
 
-	// todo
+	Dvar_GetVec4(con_inputBoxColor, &inputBoxColor);
+
+	ConDraw_Box(
+		conDrawInputGlob.x - 6.0,
+		conDrawInputGlob.y - 6.0,
+		(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
+		conDrawInputGlob.fontHeight + 12.0,
+		&inputBoxColor);
+
+	const char *console_title = va("%s.%s.%d: %s> ", "1", "0", Com_GetBuildNumber(), Com_GetBuildName());
+	ConDrawInput_TextAndOver(localClientNum, console_title, &con_versionColor);
+
+	conDrawInputGlob.leftX = conDrawInputGlob.x;
+	g_consoleField.widthInPixels = ((con.screenMax[0] - 6.0) - conDrawInputGlob.x);
+	conDrawInputGlob.inputText = Con_TokenizeInput();
+	conDrawInputGlob.inputTextLen = strlen(Con_TokenizeInput());
+	conDrawInputGlob.autoCompleteChoice[0] = 0;
+
+	if (!conDrawInputGlob.inputTextLen)
+	{
+		conDrawInputGlob.mayAutoComplete = 0;
+
+		Field_Draw(localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y, 5, 5);
+LABEL_39:
+		Cmd_EndTokenizedString();
+		return;
+	}
+
+	const char *originalCommand = Con_TokenizeInput();
+	if (Cmd_Argc() > 1 && Con_IsDvarCommand(conDrawInputGlob.inputText))
+	{
+		isDvarCommand = 1;
+		conDrawInputGlob.inputText = Cmd_Argv(1);
+		conDrawInputGlob.inputTextLen = strlen(conDrawInputGlob.inputText);
+
+		if (!conDrawInputGlob.inputTextLen)
+		{
+			conDrawInputGlob.mayAutoComplete = 0;
+
+			Con_DrawInputPrompt(localClientNum);
+			goto LABEL_39;
+		}
+	}
+	else
+	{
+		isDvarCommand = 0;
+	}
+
+	bool con_matchPrefixOnlyDvar = Dvar_GetBool(con_matchPrefixOnly);
+	conDrawInputGlob.hasExactMatch = 0;
+	conDrawInputGlob.matchCount = 0;
+
+	if (con_matchPrefixOnlyDvar)
+	{
+		con_ignoreMatchPrefixOnly = 1;
+
+		Dvar_ForEachName(ConDrawInput_IncrMatchCounter);
+
+		if (!isDvarCommand)
+		{
+			Cmd_ForEach(ConDrawInput_IncrMatchCounter);
+		}
+
+		if (conDrawInputGlob.matchCount <= con_inputMaxMatchesShown
+			|| (conDrawInputGlob.hasExactMatch = 0,
+				conDrawInputGlob.matchCount = 0,
+				con_ignoreMatchPrefixOnly = 0,
+				Dvar_ForEachName(ConDrawInput_IncrMatchCounter),
+				Cmd_ForEach(ConDrawInput_IncrMatchCounter),
+				conDrawInputGlob.matchCount))
+		{
+LABEL_22:
+			int matchCount = conDrawInputGlob.matchCount;
+
+			if (!conDrawInputGlob.matchCount)
+			{
+				Field_Draw(localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y, 5, 5);
+				goto LABEL_39;
+			}
+
+			if (conDrawInputGlob.matchIndex < conDrawInputGlob.matchCount && conDrawInputGlob.autoCompleteChoice[0])
+			{
+				if (conDrawInputGlob.matchIndex >= 0)
+				{
+					Con_DrawAutoCompleteChoice(localClientNum, isDvarCommand, originalCommand);
+LABEL_28:
+					conDrawInputGlob.y = (conDrawInputGlob.y + conDrawInputGlob.fontHeight) + conDrawInputGlob.fontHeight;
+					conDrawInputGlob.x = conDrawInputGlob.leftX;
+
+					Dvar_GetVec4(con_inputHintBoxColor, &inputHintBoxColor);
+
+					if (matchCount <= con_inputMaxMatchesShown)
+					{
+						if (matchCount == 1 || conDrawInputGlob.hasExactMatch && Con_AnySpaceAfterCommand())
+						{
+							Dvar_ForEachName(localClientNum, ConDrawInput_DetailedDvarMatch);
+
+							if (!isDvarCommand)
+							{
+								Cmd_ForEach(localClientNum, ConDrawInput_DetailedCmdMatch);
+							}
+						}
+						else
+						{
+							ConDrawInput_Box(matchCount, &inputHintBoxColor);
+							Dvar_ForEachName(ConDrawInput_DvarMatch);
+
+							if (!isDvarCommand)
+							{
+								Cmd_ForEach(ConDrawInput_CmdMatch);
+							}
+						}
+					}
+					else
+					{
+						const char *tooManyMatchesStr = va("%i matches (too many to show here, press shift+tilde to open full console)", matchCount);
+						ConDrawInput_Box(1, &inputHintBoxColor);
+						ConDrawInput_Text(tooManyMatchesStr, &con_inputDvarMatchColor);
+					}
+
+					goto LABEL_39;
+				}
+			}
+			else
+			{
+				conDrawInputGlob.matchIndex = -1;
+			}
+
+			Con_DrawInputPrompt(v6, localClientNum);
+
+			goto LABEL_28;
+		}
+
+		conDrawInputGlob.hasExactMatch = 0;
+		conDrawInputGlob.matchCount = 0;
+		con_ignoreMatchPrefixOnly = 1;
+	}
+	else
+	{
+		con_ignoreMatchPrefixOnly = 0;
+	}
+
+	Dvar_ForEachName(ConDrawInput_IncrMatchCounter);
+
+	if (!isDvarCommand)
+	{
+		Cmd_ForEach(ConDrawInput_IncrMatchCounter);
+	}
+
+	goto LABEL_22;
 }
 
 /*
@@ -1269,8 +1583,6 @@ Con_CommitToAutoComplete
 */
 char Con_CommitToAutoComplete()
 {
-	char v3;
-
 	if (conDrawInputGlob.matchIndex < 0 || !conDrawInputGlob.autoCompleteChoice[0])
 	{
 		return 0;
@@ -1278,20 +1590,21 @@ char Con_CommitToAutoComplete()
 
 	const char *cmd = Con_TokenizeInput();
 
-	if ( Con_IsDvarCommand(cmd) )
+	if (Con_IsDvarCommand(cmd))
 	{
 		Com_sprintf(g_consoleField.buffer, 256, "%s %s", cmd, conDrawInputGlob.autoCompleteChoice);
 	}
 	else
 	{
 		int v2 = 0;
+		char v3;
 
 		do
 		{
 			v3 = conDrawInputGlob.autoCompleteChoice[v2];
 			g_consoleField.buffer[v2++] = v3;
 		}
-		while ( v3 );
+		while (v3);
 	}
 
 	Cmd_EndTokenizedString();
@@ -1301,9 +1614,9 @@ char Con_CommitToAutoComplete()
 	g_consoleField.buffer[g_consoleField.cursor] = 0;
 	g_consoleField.drawWidth = SEH_PrintStrlen(g_consoleField.buffer);
 
-	if ( conDrawInputGlob.matchIndex >= 0 )
+	if (conDrawInputGlob.matchIndex >= 0)
 	{
-		if ( conDrawInputGlob.autoCompleteChoice[0] )
+		if (conDrawInputGlob.autoCompleteChoice[0])
 		{
 			conDrawInputGlob.matchIndex = -1;
 			conDrawInputGlob.autoCompleteChoice[0] = 0;
