@@ -334,8 +334,21 @@ Con_GetDefaultMsgDuration
 */
 int Con_GetDefaultMsgDuration(print_msg_dest_t dest)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (dest == 1)
+	{
+		float v4 = Dvar_GetFloat(con_minicontime) * 1000.0;
+		return (v4 + 9.313225746154785e-10);
+	}
+	else if (dest == 2)
+	{
+		float v3 = Dvar_GetFloat(con_errormessagetime) * 1000.0;
+		return (v3 + 9.313225746154785e-10);
+	}
+	else
+	{
+		float v2 = Dvar_GetFloat(con_gameMsgWindowNLineCount[dest + 1]) * 1000.0;
+		return (v2 + 9.313225746154785e-10);
+	}
 }
 
 /*
@@ -552,9 +565,39 @@ int CL_AddMessageIcon(char *msg, unsigned int msgLen, unsigned int msgMaxLen, Ma
 Con_AutoCompleteFromList
 ==============
 */
-void Con_AutoCompleteFromList(const char **strings, unsigned int stringCount, const char *prefix, char *completed, unsigned int sizeofCompleted)
+void Con_AutoCompleteFromList(
+	const char **strings,
+	unsigned int stringCount,
+	const char *prefix,
+	char *completed,
+	unsigned int sizeofCompleted)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int v5 = strlen(prefix);
+	*completed = 0;
+
+	for (unsigned int stringIndex = 0; stringIndex < stringCount; ++stringIndex)
+	{
+		const char *string = strings[stringIndex];
+
+		if (!I_strnicmp(prefix, string, v5))
+		{
+			if (*completed)
+			{
+				unsigned int charIndex;
+
+				for (charIndex = v5; string[charIndex] == completed[charIndex] && completed[charIndex]; ++charIndex)
+				{
+					break;
+				}
+
+				completed[charIndex] = 0;
+			}
+			else
+			{
+				I_strncpyz(completed, string, sizeofCompleted);
+			}
+		}
+	}
 }
 
 /*
