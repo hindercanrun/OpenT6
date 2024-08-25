@@ -43,11 +43,11 @@ void SetupChatField(int localClientNum, int teamChat, int widthInPixels)
 
 	if ( height <= 768 )
 	{
-		chatField->chatField.charHeight = FLOAT_16_0;
+		chatField->chatField.charHeight = 16.0f;
 	}
 	else
 	{
-		chatField->chatField.charHeight = FLOAT_10_0;
+		chatField->chatField.charHeight = 10.f;
 	}
 
 	clientUIActive_t *LocalClientUIGlobals = CL_GetLocalClientUIGlobals(localClientNum);
