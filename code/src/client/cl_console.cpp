@@ -19,6 +19,8 @@ cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
 
 float con_versionColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+float con_inputDvarMatchColor[4] = { 1.0f, 1.0f, 0.80000001f, 1.0f };
+float con_inputCommandMatchColor[4] = { 0.80000001f, 0.80000001f, 1.0f, 1.0f };
 
 /*
 ==============
@@ -884,14 +886,7 @@ void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *
 	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen)
 		&& (!conDrawInputGlob.hasExactMatch || !str[conDrawInputGlob.inputTextLen]))
 	{
-		Dvar_GetVec4(con_inputHintBoxColor, &inputHintBoxColor);
-		ConDraw_Box(
-			&inputHintBoxColor,
-			conDrawInputGlob.x - 6.0,
-			conDrawInputGlob.y - 6.0,
-			(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
-			conDrawInputGlob.fontHeight + 12.0);
-
+		ConDrawInput_Box(1, &con_inputHintBoxColor->current.value);
 		ConDrawInput_Text(str, &con_inputCommandMatchColor);
 
 		conDrawInputGlob.y = conDrawInputGlob.fontHeight + conDrawInputGlob.y;
@@ -1159,7 +1154,38 @@ Con_DrawOutputText
 */
 void Con_DrawOutputText(float x, float y)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	float color[4];
+
+	CL_LookupColor(0x37u, color);
+
+	int rowCount = con.visibleLineCount;
+	int firstRow = con.displayLineOffset - con.visibleLineCount;
+
+	if (con.displayLineOffset - con.visibleLineCount < 0)
+	{
+		y = y - (con.fontHeight * firstRow);
+		rowCount = con.displayLineOffset;
+		firstRow = 0;
+	}
+
+	for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex)
+	{
+		int lineIndex = (rowIndex + firstRow + con.consoleWindow.firstLineIndex) % con.consoleWindow.lineCount;
+		y = con.fontHeight + y;
+
+		R_AddCmdDrawConsoleTextInternal(
+			con.consoleWindow.circularTextBuffer,
+			con.consoleWindow.textBufSize,
+			con.consoleWindow.lines[lineIndex].textBufPos,
+			con.consoleWindow.lines[lineIndex].textBufSize,
+			cls.consoleFont,
+			x,
+			y,
+			1.0,
+			1.0,
+			color,
+			0);
+	}
 }
 
 /*
@@ -1176,8 +1202,12 @@ void Con_DrawOuputWindow()
 	float x = con.screenMin[0];
 	float height = (con.screenMax[1] - con.screenMin[1]) - 32.0;
 
-	Dvar_GetVec4(con_outputWindowColor, &outputWindowColor);
-	ConDraw_Box(&outputWindowColor, x, y, width, height);
+	ConDraw_Box(
+		x,
+		y,
+		width,
+		height,
+		&con_outputWindowColor->current.value);
 
 	float xa = x + 6.0;
 	float ya = y + 6.0;
@@ -1453,9 +1483,7 @@ Con_DrawInput
 */
 void Con_DrawInput(LocalClientNum_t localClientNum)
 {
-	bool isDvarCommand;
-	vec4_t inputBoxColor;
-	vec4_t inputHintBoxColor;
+	bool isDvarCommand;%
 
 	if (!Key_IsCatcherActive(localClientNum, 1))
 	{
@@ -1467,15 +1495,7 @@ void Con_DrawInput(LocalClientNum_t localClientNum)
 	conDrawInputGlob.y = con.screenMin[1] + 6.0;
 	conDrawInputGlob.leftX = con.screenMin[0] + 6.0;
 
-	Dvar_GetVec4(con_inputBoxColor, &inputBoxColor);
-
-	ConDraw_Box(
-		conDrawInputGlob.x - 6.0,
-		conDrawInputGlob.y - 6.0,
-		(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
-		conDrawInputGlob.fontHeight + 12.0,
-		&inputBoxColor);
-
+	ConDrawInput_Box(1, &con_inputBoxColor->current.value);
 	const char *console_title = va("%s.%s.%d: %s> ", "1", "0", Com_GetBuildNumber(), Com_GetBuildName());
 	ConDrawInput_TextAndOver(localClientNum, console_title, &con_versionColor);
 
@@ -1556,8 +1576,6 @@ LABEL_28:
 					conDrawInputGlob.y = (conDrawInputGlob.y + conDrawInputGlob.fontHeight) + conDrawInputGlob.fontHeight;
 					conDrawInputGlob.x = conDrawInputGlob.leftX;
 
-					Dvar_GetVec4(con_inputHintBoxColor, &inputHintBoxColor);
-
 					if (matchCount <= con_inputMaxMatchesShown)
 					{
 						if (matchCount == 1 || conDrawInputGlob.hasExactMatch && Con_AnySpaceAfterCommand())
@@ -1571,7 +1589,7 @@ LABEL_28:
 						}
 						else
 						{
-							ConDrawInput_Box(matchCount, &inputHintBoxColor);
+							ConDrawInput_Box(matchCount, &con_inputHintBoxColor->current.value);
 							Dvar_ForEachName(ConDrawInput_DvarMatch);
 
 							if (!isDvarCommand)
@@ -1582,8 +1600,10 @@ LABEL_28:
 					}
 					else
 					{
-						const char *tooManyMatchesStr = va("%i matches (too many to show here, press shift+tilde to open full console)", matchCount);
-						ConDrawInput_Box(1, &inputHintBoxColor);
+						const char *tooManyMatchesStr = va(
+															"%i matches (too many to show here, press shift+tilde to open full console)",
+															matchCount);
+						ConDrawInput_Box(1, &con_inputHintBoxColor->current.value);
 						ConDrawInput_Text(tooManyMatchesStr, &con_inputDvarMatchColor);
 					}
 
