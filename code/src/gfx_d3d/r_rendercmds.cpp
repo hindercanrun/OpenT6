@@ -333,7 +333,7 @@ R_AddCmdDrawTextWithCursorInternal
 */
 void R_AddCmdDrawTextWithCursorInternal(const char *text, int maxChars, Font_s *font, float x, float y, float w, float xScale, float yScale, float rotation, const vec4_t *color, int style, int cursorPos, char cursor, float padding)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	AddBaseDrawTextCmd(text, maxChars, font, x, y, w, xScale, yScale, rotation, color, style, cursorPos, cursor, padding);
 }
 
 /*
@@ -442,9 +442,19 @@ GfxCmdDrawText2D *AddBaseDrawConsoleTextCmd(const char *textPool, int poolSize, 
 R_AddCmdDrawConsoleTextInternal
 ==============
 */
-void __cdecl R_AddCmdDrawConsoleTextInternal(const char *textPool, int poolSize, int firstChar, int charCount, Font_s *font, float x, float y, float xScale, float yScale, const vec4_t *color)
+void R_AddCmdDrawConsoleTextInternal(
+	const char *textPool,
+	int poolSize,
+	int firstChar,
+	int charCount,
+	Font_s *font,
+	float x,
+	float y,
+	float xScale,
+	float yScale,
+	const vec4_t *color)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	AddBaseDrawConsoleTextCmd(textPool, poolSize, firstChar, charCount, font, x, y, xScale, yScale, color, style);
 }
 
 /*
@@ -452,7 +462,22 @@ void __cdecl R_AddCmdDrawConsoleTextInternal(const char *textPool, int poolSize,
 R_AddCmdDrawConsoleTextTypewriterFXInternal
 ==============
 */
-void __cdecl R_AddCmdDrawConsoleTextTypewriterFXInternal(const char *textPool, int poolSize, int firstChar, int charCount, Font_s *font, float x, float y, float xScale, float yScale, const vec4_t *color, int style, int fxBirthTime, int fxLetterTime, int fxDecayStartTime, int fxDecayDuration)
+void R_AddCmdDrawConsoleTextTypewriterFXInternal(
+	const char *textPool,
+	int poolSize,
+	int firstChar,
+	int charCount,
+	Font_s *font,
+	float x,
+	float y,
+	float xScale,
+	float yScale,
+	const vec4_t *color,
+	int style,
+	int fxBirthTime,
+	int fxLetterTime,
+	int fxDecayStartTime,
+	int fxDecayDuration)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -462,7 +487,19 @@ void __cdecl R_AddCmdDrawConsoleTextTypewriterFXInternal(const char *textPool, i
 R_AddCmdDrawConsoleTextSubtitleInternal
 ==============
 */
-void __cdecl R_AddCmdDrawConsoleTextSubtitleInternal(const char *textPool, int poolSize, int firstChar, int charCount, Font_s *font, float x, float y, float xScale, float yScale, const vec4_t *color, int style, const vec4_t *glowColor)
+void R_AddCmdDrawConsoleTextSubtitleInternal(
+	const char *textPool,
+	int poolSize,
+	int firstChar,
+	int charCount,
+	Font_s *font,
+	float x,
+	float y,
+	float xScale,
+	float yScale,
+	const vec4_t *color,
+	int style,
+	const vec4_t *glowColor)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -472,7 +509,25 @@ void __cdecl R_AddCmdDrawConsoleTextSubtitleInternal(const char *textPool, int p
 R_AddCmdDrawConsoleTextPulseFXInternal
 ==============
 */
-void __cdecl R_AddCmdDrawConsoleTextPulseFXInternal(const char *textPool, int poolSize, int firstChar, int charCount, Font_s *font, float x, float y, float xScale, float yScale, const vec4_t *color, int style, const vec4_t *glowColor, int fxBirthTime, int fxLetterTime, int fxDecayStartTime, int fxDecayDuration, Material *fxMaterial, Material *fxMaterialGlow)
+void R_AddCmdDrawConsoleTextPulseFXInternal(
+	const char *textPool,
+	int poolSize,
+	int firstChar,
+	int charCount,
+	Font_s *font,
+	float x,
+	float y,
+	float xScale,
+	float yScale,
+	const vec4_t *color,
+	int style,
+	const vec4_t *glowColor,
+	int fxBirthTime,
+	int fxLetterTime,
+	int fxDecayStartTime,
+	int fxDecayDuration,
+	Material *fxMaterial,
+	Material *fxMaterialGlow)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
