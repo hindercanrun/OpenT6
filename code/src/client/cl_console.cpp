@@ -19,6 +19,7 @@ cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
 
 float con_versionColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+float colorWhite[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 float con_inputDvarMatchColor[4] = { 1.0f, 1.0f, 0.80000001f, 1.0f };
 float con_inputCommandMatchColor[4] = { 0.80000001f, 0.80000001f, 1.0f, 1.0f };
 
@@ -507,9 +508,9 @@ const char *CL_TextLineWrapPosition(
 	float scale,
 	int lineBroken)
 {
-	if ( lineBroken )
+	if (lineBroken)
 	{
-		while ( *txt == 32 )
+		while (*txt == 32)
 		++txt;
 	}
 
@@ -881,8 +882,6 @@ ConDrawInput_DetailedCmdMatch
 */
 void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *str)
 {
-	vec4_t inputHintBoxColor;
-
 	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen)
 		&& (!conDrawInputGlob.hasExactMatch || !str[conDrawInputGlob.inputTextLen]))
 	{
@@ -992,7 +991,6 @@ char Con_CancelAutoComplete()
 
 	conDrawInputGlob.matchIndex = -1;
 	conDrawInputGlob.autoCompleteChoice[0] = 0;
-
 	return 1;
 }
 
@@ -1195,8 +1193,6 @@ Con_DrawOuputWindow
 */
 void Con_DrawOuputWindow()
 {
-	vec4_t outputWindowColor;
-
 	float width = con.screenMax[0] - con.screenMin[0];
 	float y = con.screenMin[1] + 32.0;
 	float x = con.screenMin[0];
@@ -1371,7 +1367,135 @@ Con_OneTimeInit
 */
 void Con_OneTimeInit()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	for (unsigned int i = 0; i < 4; ++i)
+	{
+		sprintf(con_gameMsgWindowNMsgTime_Names[i], "con_gameMsgWindow%dMsgTime", i);
+		sprintf(
+			con_gameMsgWindowNMsgTime_Descs[i],
+			"On screen time for game messages in seconds in game message window %d",
+			i);
+
+		con_gameMsgWindowNMsgTime[i] = _Dvar_RegisterFloat(
+										con_gameMsgWindowNMsgTime_Names[i],
+										defaultGameMessageTimes[i],
+										0.0,
+										3.4028235e38,
+										1u,
+										con_gameMsgWindowNMsgTime_Descs[i]);
+
+		sprintf((28 * i + 18866376), "con_gameMsgWindow%dLineCount", i);
+		sprintf(
+			con_gameMsgWindowNLineCount_Descs[i],
+			"Maximum number of lines of text visible at once in game message window %d",
+			i);
+
+		con_gameMsgWindowNLineCount[i] = _Dvar_RegisterInt(
+											(28 * i + 18866376),
+											defaultGameMessageWindowLineCounts[i],
+											1,
+											9,
+											1u,
+											con_gameMsgWindowNLineCount_Descs[i]);
+
+		char *dvarName = con_gameMsgWindowNScrollTime_Names[i];
+
+		sprintf(dvarName, "con_gameMsgWindow%dScrollTime", i);
+		sprintf(
+			con_gameMsgWindowNScrollTime_Descs[i],
+			"Time to scroll messages when the oldest message is removed in game message window %d",
+			i);
+
+		char *v1 = con_gameMsgWindowNFadeInTime_Names[i];
+		con_gameMsgWindowNScrollTime[i] = _Dvar_RegisterFloat(
+											dvarName,
+											0.25,
+											0.0,
+											3.4028235e38,
+ 											1u,
+											con_gameMsgWindowNScrollTime_Descs[i]);
+
+		sprintf(v1, "con_gameMsgWindow%dFadeInTime", i);
+		sprintf(con_gameMsgWindowNFadeInTime_Descs[i], "Time to fade in new messages in game message window %d", i);
+
+		float value;
+		if (i == 2)
+		{
+			value = 0.75f;
+		}
+		else
+		{
+			value = 0.25f;
+		}
+
+		con_gameMsgWindowNFadeInTime[i] = _Dvar_RegisterFloat(
+											v1,
+											value,
+											0.0,
+											3.4028235e38,
+											1u,
+											con_gameMsgWindowNFadeInTime_Descs[i]);
+
+		sprintf((30 * i + 18867120), "con_gameMsgWindow%dFadeOutTime", i);
+		sprintf(con_gameMsgWindowNFadeOutTime_Descs[i], "Time to fade out old messages in game message window %d", i);
+
+		float v3;
+		if (i == 1)
+		{
+			v3 = 0.0099999998f;
+		}
+		else
+		{
+			v3 = 0.5f;
+		}
+
+		con_gameMsgWindowNFadeOutTime[i] = _Dvar_RegisterFloat(
+											(30 * i + 18867120),
+											v3,
+											0.0099999998,
+											3.4028235e38,
+											1u,
+											con_gameMsgWindowNFadeOutTime_Descs[i]);
+
+		sprintf(con_gameMsgWindowNSplitscreenScale_Names[i], "con_gameMsgWindow%dSplitscreenScale", i);
+		sprintf(con_gameMsgWindowNSplitscreenScale_Descs[i], "Scaling of game message window %d in splitscreen", i);
+
+		con_gameMsgWindowNSplitscreenScale[i] = _Dvar_RegisterFloat(
+													con_gameMsgWindowNSplitscreenScale_Names[i],
+													1.5,
+													0.0,
+													3.4028235e38,
+													1u,
+													con_gameMsgWindowNSplitscreenScale_Descs[i]);
+	}
+
+	con_typewriterColorBase = _Dvar_RegisterVec3(
+								"con_typewriterColorBase",
+								1.0,
+								1.0,
+								1.0,
+								0.0,
+								1.0,
+								0x1000u,
+								"Base color of typewritten objective text.");
+
+	Con_InitMessageWindow(
+		&con.consoleWindow,
+		con.consoleMessages,
+		con.consoleLines,
+		con.consoleText,
+		1024,
+		0,
+		0x8000,
+		0,
+		1,
+		1);
+	Con_InitMessageBuffer();
+
+	con.color = colorWhite;
+
+	Con_CheckResize();
+
+	con.initialized = 1;
 }
 
 /*
@@ -1396,6 +1520,7 @@ void Con_Init()
 	do
 	{
 		Field_Clear((field_t *)(p_widthInPixels - 3));
+
 		float v1 = g_console_char_height;
 		*p_widthInPixels = g_console_field_width;
 		*(p_widthInPixels + 1) = v1;
@@ -1685,7 +1810,6 @@ char Con_CommitToAutoComplete()
 			conDrawInputGlob.autoCompleteChoice[0] = 0;
 		}
 	}
-
 	return 1;
 }
 
