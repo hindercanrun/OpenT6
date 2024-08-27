@@ -361,7 +361,21 @@ Con_UpdateMessage
 */
 void Con_UpdateMessage(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int duration)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	unsigned int messageIndex = msgwnd->messageIndex;
+	int v5 = (msgwnd->messageIndex + 1) % msgwnd->lineCount;
+
+	Message *messages = msgwnd->messages;
+	msgwnd->messageIndex = v5;
+
+	Message *time = &messages[v5];
+	time->startTime = 0;
+
+	if (CL_GetLocalClientGlobals(localClientNum))
+	{
+		time->startTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
+	}
+
+	time->endTime = duration + time->startTime;
 }
 
 /*
@@ -371,7 +385,24 @@ Con_FreeFirstMessageWindowLine
 */
 void Con_FreeFirstMessageWindowLine(MessageWindow *msgwnd)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int win = ++msgwnd->firstLineIndex;
+
+	--msgwnd->activeLineCount;
+
+	if (win == msgwnd->lineCount)
+	{
+		msgwnd->firstLineIndex = 0;
+	}
+
+	if (msgwnd == &con.consoleWindow && --con.displayLineOffset < con.visibleLineCount)
+	{
+		con.displayLineOffset = con.visibleLineCount;
+
+		if (con.consoleWindow.activeLineCount < con.visibleLineCount)
+		{
+			con.displayLineOffset = con.consoleWindow.activeLineCount;
+		}
+	}
 }
 
 /*
@@ -381,8 +412,33 @@ Con_NeedToFreeMessageWindowLine
 */
 bool Con_NeedToFreeMessageWindowLine(MessageWindow *msgwnd, int charCount)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	// messy
+
+	if (!msgwnd->activeLineCount)
+	{
+		return 0;
+	}
+
+	MessageLine *v3 = &msgwnd->lines[msgwnd->firstLineIndex];
+
+	int textBufPos = msgwnd->textBufPos;
+	int v5 = (msgwnd->textBufSize - 1) & (textBufPos + charCount);
+	bool v6 = v5 < textBufPos;
+	int v7 = v3->textBufPos;
+
+	if (v6)
+	{
+		if (v7 < msgwnd->textBufPos && v7 >= v5)
+		{
+			return 0;
+		}
+	}
+	else if (v7 < msgwnd->textBufPos || v7 >= v5)
+	{
+		return 0;
+	}
+
+	return 1;
 }
 
 /*
