@@ -1435,6 +1435,57 @@ Con_OneTimeInit
 */
 void Con_OneTimeInit()
 {
+	con_inputBoxColor = _Dvar_RegisterVec4(
+							"con_inputBoxColor",
+							0.25,
+							0.25,
+							0.2,
+							1.0,
+							0.0,
+							1.0,
+							DVAR_ARCHIVE,
+							"Color of the console input box");
+	con_inputHintBoxColor = _Dvar_RegisterVec4(
+								"con_inputHintBoxColor",
+								0.40000001,
+								0.40000001,
+								0.34999999,
+								1.0,
+								0.0,
+								1.0,
+								DVAR_ARCHIVE,
+								"Color of the console input hint box");
+	con_outputBarColor = _Dvar_RegisterVec4(
+							"con_outputBarColor",
+							1.0,
+							1.0,
+							0.94999999,
+							0.60000002,
+							0.0,
+							1.0,
+							DVAR_ARCHIVE,
+							"Color of the console output slider bar");
+	con_outputSliderColor = _Dvar_RegisterVec4(
+								"con_outputSliderColor",
+								0.15000001,
+								0.15000001,
+								0.1,
+								0.60000002,
+								0.0,
+								1.0,
+								DVAR_ARCHIVE,
+								"Color of the console slider");
+	con_outputWindowColor = _Dvar_RegisterVec4(
+								"con_outputWindowColor",
+								0.34999999,
+								0.34999999,
+								0.30000001,
+								0.75,
+								0.0,
+								1.0,
+								DVAR_ARCHIVE,
+								"Color of the console output");
+
 	for (unsigned int i = 0; i < 4; ++i)
 	{
 		sprintf(con_gameMsgWindowNMsgTime_Names[i], "con_gameMsgWindow%dMsgTime", i);
@@ -1656,7 +1707,21 @@ CL_ReviveMessagePrint
 */
 void CL_ReviveMessagePrint(LocalClientNum_t localClientNum, const char *reviveString, Material *iconShader, float iconWidth, float iconHeight, char *horzFlipIcon)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char reviveMsg[1024];
+
+	int msgLen = CL_AddMessageIcon(reviveMsg, 0, 0x400u, iconShader, iconWidth, iconHeight, horzFlipIcon);
+
+	while (*reviveString)
+	{
+		msgLen = CL_AddMessageChar(reviveMsg, msgLen, 0x400u, *reviveString++);
+	}
+
+	unsigned int reviveMsgLen = CL_AddMessageChar(reviveMsg, msgLen, 0x400u, 10);
+
+	reviveMsg[reviveMsgLen] = 0;
+	int pixelWidth = con.visiblePixelWidth;
+
+	CL_ConsolePrint(localClientNum, 5, reviveMsg, 0, con.visiblePixelWidth, 0);
 }
 
 /*
