@@ -1676,7 +1676,7 @@ Con_DrawInput
 */
 void Con_DrawInput(LocalClientNum_t localClientNum)
 {
-	bool isDvarCommand;%
+	bool isDvarCommand;
 
 	if (!Key_IsCatcherActive(localClientNum, 1))
 	{
