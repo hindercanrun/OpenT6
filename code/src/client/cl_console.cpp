@@ -28,7 +28,7 @@ float con_inputCommandMatchColor[4] = { 0.80000001f, 0.80000001f, 1.0f, 1.0f };
 SetupChatField
 ==============
 */
-void SetupChatField(int localClientNum, int teamChat, int widthInPixels)
+void SetupChatField(LocalClientNum_t localClientNum, int teamChat, int widthInPixels)
 {
 	int width;
 	int height;
@@ -44,7 +44,7 @@ void SetupChatField(int localClientNum, int teamChat, int widthInPixels)
 	chatField->chatField.widthInPixels = widthInPixels;
 	chatField->chatField.fixedSize = 0;
 
-	if ( height <= 768 )
+	if (height <= 768)
 	{
 		chatField->chatField.charHeight = 16.0f;
 	}
@@ -128,9 +128,9 @@ void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 	// todo make it nicer to look at
 
 	int v7;
-	Message *v8;
+	Message *window;
 
-	for (int i = 0; i < msgwnd->activeLineCount; v8->endTime = serverTime + v7)
+	for (int i = 0; i < msgwnd->activeLineCount; window->endTime = serverTime + v7)
 	{
 		int lineCount = msgwnd->lineCount;
 		unsigned int v4 = (i + msgwnd->firstLineIndex) % lineCount;
@@ -138,10 +138,10 @@ void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 		Message *messages = msgwnd->messages;
 
 		intv7 = messages[v5->messageIndex].endTime - messages[v5->messageIndex].startTime;
-		v8 = &messages[v5->messageIndex];
+		window = &messages[v5->messageIndex];
 		++i;
 
-		v8->startTime = serverTime;
+		window->startTime = serverTime;
 	}
 }
 
@@ -150,7 +150,7 @@ void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 Con_TimeJumped
 ==============
 */
-void Con_TimeJumped(int a1, MessageWindow *a2, LocalClientNum_t localClientNum, int serverTime)
+void Con_TimeJumped(LocalClientNum_t localClientNum, int serverTime)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -593,8 +593,20 @@ CL_AddMessageChar
 */
 int CL_AddMessageChar(char *msg, unsigned int msgLen, unsigned int msgMaxLen, char c)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int result;
+
+	if (msgLen + 1 <= msgMaxLen)
+	{
+		result = msgLen + 1;
+		msg[msgLen] = c;
+	}
+	else
+	{
+		msg[msgLen] = c;
+		return msgLen + 1;
+	}
+
+	return result;
 }
 
 /*
@@ -1642,7 +1654,7 @@ void CL_ConsoleFixPosition()
 CL_ReviveMessagePrint
 ==============
 */
-void CL_ReviveMessagePrint(unsigned int a1, LocalClientNum_t localClientNum, const char *reviveString, Material *iconShader, float iconWidth, float iconHeight, char *horzFlipIcon)
+void CL_ReviveMessagePrint(LocalClientNum_t localClientNum, const char *reviveString, Material *iconShader, float iconWidth, float iconHeight, char *horzFlipIcon)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
