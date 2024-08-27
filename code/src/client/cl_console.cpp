@@ -233,17 +233,17 @@ Con_CheckResize
 */
 void Con_CheckResize()
 {
-	double v0 = ScrPlace_ApplyX(&scrPlaceFull, 4.0, 1);
-	con.screenMin.v[0] = floor(v0);
+	float x = ScrPlace_ApplyX(&scrPlaceFull, 4.0, 1);
+	con.screenMin[0] = floor(x);
 
-	double v1 = ScrPlace_ApplyY(&scrPlaceFull, 4.0, 1);
-	con.screenMin.v[1] = floor(v1);
+	float y = ScrPlace_ApplyY(&scrPlaceFull, 4.0, 1);
+	con.screenMin[1] = floor(y);
 
-	double v2 = ScrPlace_ApplyX(&scrPlaceFull, -4.0, 3);
-	con.screenMax.v[0] = floor(v2);
+	float width = ScrPlace_ApplyX(&scrPlaceFull, -4.0, 3);
+	con.screenMax[0] = floor(width);
 
-	double v3 = ScrPlace_ApplyY(&scrPlaceFull, -4.0, 3);
-	con.screenMax.v[1] = floor(v3);
+	float height = ScrPlace_ApplyY(&scrPlaceFull, -4.0, 3);
+	con.screenMax[1] = floor(height);
 
 	if (cls.consoleFont)
 	{
@@ -255,8 +255,8 @@ void Con_CheckResize()
 			fontHeight = con.fontHeight;
 		}
 
-		con.visiblePixelWidth = (((con.screenMax.v[0] - con.screenMin.v[0]) - 10.0) - 18.0);
-		con.visibleLineCount = (((con.screenMax.v[1] - con.screenMin.v[1]) - (2 * fontHeight)) - 24.0) / fontHeight;
+		con.visiblePixelWidth = (((con.screenMax[0] - con.screenMin[0]) - 10.0) - 18.0);
+		con.visibleLineCount = (((con.screenMax[1] - con.screenMin[1]) - (2 * fontHeight)) - 24.0) / fontHeight;
 	}
 	else
 	{
@@ -1666,12 +1666,12 @@ CL_ConsolePrint
 ==============
 */
 void CL_ConsolePrint(
-		LocalClientNum_t localClientNum,
-		int channel,
-		const char *txt,
-		int duration,
-		int pixelWidth,
-		int flags)
+	LocalClientNum_t localClientNum,
+	int channel,
+	const char *txt,
+	int duration,
+	int pixelWidth,
+	int flags)
 {
 	if (!Dvar_GetBool(cl_noprint) && channel != 8)
 	{
