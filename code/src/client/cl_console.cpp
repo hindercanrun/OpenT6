@@ -125,8 +125,6 @@ Con_ResetMessageWindowTimes
 */
 void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 {
-	// todo make it nicer to look at
-
 	int v7;
 	Message *window;
 
@@ -134,10 +132,11 @@ void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 	{
 		int lineCount = msgwnd->lineCount;
 		unsigned int v4 = (i + msgwnd->firstLineIndex) % lineCount;
+
 		MessageLine *v5 = &msgwnd->lines[v4];
 		Message *messages = msgwnd->messages;
 
-		intv7 = messages[v5->messageIndex].endTime - messages[v5->messageIndex].startTime;
+		int v7 = messages[v5->messageIndex].endTime - messages[v5->messageIndex].startTime;
 		window = &messages[v5->messageIndex];
 		++i;
 
@@ -337,21 +336,16 @@ Con_GetDefaultMsgDuration
 */
 int Con_GetDefaultMsgDuration(print_msg_dest_t dest)
 {
-	if (dest == 1)
+	if (dest == CON_DEST_MINICON)
 	{
-		float v4 = Dvar_GetFloat(con_minicontime) * 1000.0;
-		return (v4 + 9.313225746154785e-10);
+		return ((con_minicontime->current.value * 1000.0) + 9.313225746154785e-10);
 	}
-	else if (dest == 2)
+	else if (dest == CON_DEST_ERROR)
 	{
-		float v3 = Dvar_GetFloat(con_errormessagetime) * 1000.0;
-		return (v3 + 9.313225746154785e-10);
+		return ((con_errormessagetime->current.value * 1000.0) + 9.313225746154785e-10);
 	}
-	else
-	{
-		float v2 = Dvar_GetFloat(con_gameMsgWindowNLineCount[dest + 1]) * 1000.0;
-		return (v2 + 9.313225746154785e-10);
-	}
+
+	return ((con_gameMsgWindowNLineCount[dest]->current.value * 1000.0) + 9.313225746154785e-10);
 }
 
 /*
@@ -361,21 +355,16 @@ Con_UpdateMessage
 */
 void Con_UpdateMessage(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int duration)
 {
-	unsigned int messageIndex = msgwnd->messageIndex;
-	int v5 = (msgwnd->messageIndex + 1) % msgwnd->lineCount;
-
-	Message *messages = msgwnd->messages;
-	msgwnd->messageIndex = v5;
-
-	Message *time = &messages[v5];
-	time->startTime = 0;
+	msgwnd->messageIndex = (msgwnd->messageIndex + 1) % msgwnd->lineCount;
+	Message *message = &msgwnd->messages[msgwnd->messageIndex];
+	message->startTime = 0;
 
 	if (CL_GetLocalClientGlobals(localClientNum))
 	{
-		time->startTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
+		message->startTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
 	}
 
-	time->endTime = duration + time->startTime;
+	message->endTime = duration + message->startTime;
 }
 
 /*
@@ -795,7 +784,7 @@ void ConDrawInput_Box(int lines, const vec4_t *color)
 	ConDraw_Box(
 		conDrawInputGlob.x - 6.0,
 		conDrawInputGlob.y - 6.0,
-		(con.screenMax.v[0] - con.screenMin.v[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin.v[0]),
+		(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
 		(lines * conDrawInputGlob.fontHeight) + 12.0,
 		color);
 }
