@@ -125,22 +125,16 @@ Con_ResetMessageWindowTimes
 */
 void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 {
-	int v7;
-	Message *window;
-
-	for (int i = 0; i < msgwnd->activeLineCount; window->endTime = serverTime + v7)
+	for (int lineOffset = 0; lineOffset < msgwnd->activeLineCount; ++lineOffset )
 	{
-		int lineCount = msgwnd->lineCount;
-		unsigned int v4 = (i + msgwnd->firstLineIndex) % lineCount;
+		unsigned int lineIndex = (lineOffset + msgwnd->firstLineIndex) % msgwnd->lineCount;
+		MessageLine *line = &msgwnd->lines[lineIndex];
 
-		MessageLine *v5 = &msgwnd->lines[v4];
-		Message *messages = msgwnd->messages;
+		Message *message = &msgwnd->messages[line->messageIndex];
+		int duration = message->endTime - message->startTime;
 
-		int v7 = messages[v5->messageIndex].endTime - messages[v5->messageIndex].startTime;
-		window = &messages[v5->messageIndex];
-		++i;
-
-		window->startTime = serverTime;
+		message->startTime = serverTime;
+		message->endTime = duration + serverTime;
 	}
 }
 
@@ -151,7 +145,15 @@ Con_TimeJumped
 */
 void Con_TimeJumped(LocalClientNum_t localClientNum, int serverTime)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Con_ResetMessageWindowTimes(&con.consoleWindow, serverTime);
+
+	for (unsigned int gameWindowIndex = 0; gameWindowIndex < 3; ++gameWindowIndex)
+	{
+		Con_ResetMessageWindowTimes(&con.color[4009 * localClientNum - 2473 + 13 * gameWindowIndex], serverTime);
+	}
+
+	Con_ResetMessageWindowTimes(&con.color[4009 * localClientNum - 1122], serverTime);
+	Con_ResetMessageWindowTimes(&con.color[4009 * localClientNum - 53], serverTime);
 }
 
 /*
@@ -174,19 +176,16 @@ void Con_TimeNudged(LocalClientNum_t localClientNum, int serverTimeNudge)
 	int serverTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
 	Con_NudgeMessageWindowTimes(&con.consoleWindow, serverTimeNudge, serverTime);
 
-	LocalClientNum_t v4 = localClientNum;
-	MessageWindow *gamemsgWindows = con.messageBuffer[localClientNum].gamemsgWindows;
-	LocalClientNum_t localClientNuma = 4;
-
-	do
+	for (unsigned int gameWindowIndex = 0; gameWindowIndex < 3; ++gameWindowIndex)
 	{
-		Con_NudgeMessageWindowTimes(gamemsgWindows++, serverTimeNudge, serverTime);
-		--localClientNuma;
+		Con_NudgeMessageWindowTimes(
+			&con.color[4009 * localClientNum - 2473 + 13 * gameWindowIndex],
+			serverTimeNudge,
+			serverTime);
 	}
-	while (localClientNuma);
 
-	Con_NudgeMessageWindowTimes(&con.messageBuffer[v4].miniconWindow, serverTimeNudge, serverTime);
-	Con_NudgeMessageWindowTimes(&con.messageBuffer[v4].errorWindow, serverTimeNudge, serverTime);
+	Con_NudgeMessageWindowTimes(&con.color[4009 * localClientNum - 1122], serverTimeNudge, serverTime);
+	Con_NudgeMessageWindowTimes(&con.color[4009 * localClientNum - 53], serverTimeNudge, serverTime);
 }
 
 /*
