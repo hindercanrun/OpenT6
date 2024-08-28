@@ -4,6 +4,7 @@
 Console con;
 ConDrawInputGlob conDrawInputGlob;
 field_t g_consoleField;
+field_t historyEditLines[32];
 clientStatic_t cls;
 ScreenPlacement scrPlaceFull;
 
@@ -1857,29 +1858,28 @@ Con_Init
 */
 void Con_Init()
 {
-	int *p_widthInPixels;
-
-	cl_deathMessageWidth = Dvar_RegisterInt("cl_deathMessageWidth", 320, 1, 640, 0, "Pixel width of the obituary area");
+	con_restricted = _Dvar_RegisterBool("monkeytoy", 0, DVAR_ARCHIVE, "Restrict console access");
+	con_matchPrefixOnly = _Dvar_RegisterBool(
+							"con_matchPrefixOnly",
+							1,
+							DVAR_ARCHIVE,
+							"Only match the prefix when listing matching Dvars");
+	cl_deathMessageWidth = Dvar_RegisterInt("cl_deathMessageWidth", 320, 1, 640, DVAR_NOFLAG, "Pixel width of the obituary area");
 
 	Field_Clear(&g_consoleField);
 
 	g_consoleField.widthInPixels = g_console_field_width;
 	g_consoleField.charHeight = g_console_char_height;
 	g_consoleField.fixedSize = 1;
-	p_widthInPixels = &historyEditLines[0].widthInPixels;
 
-	// messy asf
-	do
+	for (int i = 0; i < 32; ++i)
 	{
-		Field_Clear((field_t *)(p_widthInPixels - 3));
+		Field_Clear(&historyEditLines[i]);
 
-		float v1 = g_console_char_height;
-		*p_widthInPixels = g_console_field_width;
-		*(p_widthInPixels + 1) = v1;
-		p_widthInPixels[2] = 1;
-		p_widthInPixels += 70;
+		historyEditLines[i].widthInPixels = g_console_field_width;
+		historyEditLines[i].charHeight = g_console_char_height;
+		historyEditLines[i].fixedSize = 1;
 	}
-	while (p_widthInPixels < &dword_125CC14);
 
 	conDrawInputGlob.matchIndex = -1;
 
@@ -1906,7 +1906,7 @@ void CL_ConsolePrint(
 	int pixelWidth,
 	int flags)
 {
-	if (!Dvar_GetBool(cl_noprint) && channel != 8)
+	if (cl_noprint && !cl_noprint->current.enabled && channel != 8)
 	{
 		if (!con.initialized)
 		{
@@ -2025,11 +2025,10 @@ LABEL_39:
 		isDvarCommand = 0;
 	}
 
-	bool con_matchPrefixOnlyDvar = Dvar_GetBool(con_matchPrefixOnly);
 	conDrawInputGlob.hasExactMatch = 0;
 	conDrawInputGlob.matchCount = 0;
 
-	if (con_matchPrefixOnlyDvar)
+	if (con_matchPrefixOnly->current.enabled)
 	{
 		con_ignoreMatchPrefixOnly = 1;
 
