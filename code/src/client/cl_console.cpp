@@ -18,10 +18,10 @@ cmd_function_s Con_ChatModePublic_f_VAR;
 cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
 
-float con_versionColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
-float colorWhite[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-float con_inputDvarMatchColor[4] = { 1.0f, 1.0f, 0.80000001f, 1.0f };
-float con_inputCommandMatchColor[4] = { 0.80000001f, 0.80000001f, 1.0f, 1.0f };
+float con_versionColor[4] = { 1.0, 1.0, 0.0, 1.0 };
+float colorWhite[4] = { 1.0, 1.0, 1.0, 1.0 };
+float con_inputDvarMatchColor[4] = { 1.0, 1.0, 0.8, 1.0 };
+float con_inputCommandMatchColor[4] = { 0.8, 0.8, 1.0, 1.0 };
 
 /*
 ==============
