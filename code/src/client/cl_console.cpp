@@ -495,24 +495,17 @@ Con_GetDestWindow
 */
 MessageWindow *Con_GetDestWindow(LocalClientNum_t localClientNum, print_msg_dest_t dest)
 {
-	if (!dest)
+	switch (dest)
 	{
-		return &con.consoleWindow;
+		case CON_DEST_CONSOLE:
+			return &con.consoleWindow;
+		case CON_DEST_MINICON:
+			return &con.color[4009 * localClientNum - 1122];
+		case CON_DEST_ERROR:
+			return &con.color[4009 * localClientNum - 53];
 	}
 
-	int v4 = dest - 1;
-
-	if (!v4)
-	{
-		return &con.messageBuffer[localClientNum].miniconWindow;
-	}
-
-	if (v4 == 1)
-	{
-		return &con.messageBuffer[localClientNum].errorWindow;
-	}
-
-	return (18520 * localClientNum + 52 * dest + 18941568);
+	return &con.color[4009 * localClientNum - 2512 + 13 * dest];
 }
 
 /*
@@ -532,7 +525,31 @@ Con_UpdateNotifyLine
 */
 void Con_UpdateNotifyLine(LocalClientNum_t localClientNum, int channel, bool lineFeed, int flags)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Con_IsChannelVisible(CON_DEST_CONSOLE, channel, flags))
+	{
+		Con_UpdateMessageWindowLine(&con.consoleWindow, localClientNum, lineFeed, flags);
+	}
+
+	if (Con_IsChannelVisible(CON_DEST_MINICON, channel, flags))
+	{
+		Con_UpdateMessageWindowLine(&con.messageBuffer[localClientNum].miniconWindow, localClientNum, lineFeed, flags);
+	}
+
+	for (int i = 3; i <= 6; ++i)
+	{
+		if ( Con_IsChannelVisible(i, channel, flags) )
+		{
+			Con_UpdateMessageWindowLine(Con_GetDestWindow(localClientNum, i), localClientNum, lineFeed, flags);
+		}
+	}
+
+	if (com_developer->current.integer)
+	{
+		if (Con_IsChannelVisible(CON_DEST_ERROR, channel, flags))
+		{
+			Con_UpdateMessageWindowLine(&con.messageBuffer[localClientNum].errorWindow, localClientNum, lineFeed, flags);
+		}
+	}
 }
 
 /*
