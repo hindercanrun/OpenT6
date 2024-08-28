@@ -536,7 +536,48 @@ Con_InitMessageBuffer
 */
 void Con_InitMessageBuffer()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	for (int localClientNum = 0; localClientNum < 1; ++localClientNum)
+	{
+		MessageBuffer *msgBuf = &con.messageBuffer[localClientNum];
+
+		for (unsigned int gameWindowIndex = 0; gameWindowIndex < 3; ++gameWindowIndex)
+		{
+			Con_InitMessageWindow(
+				&msgBuf->gamemsgWindows[gameWindowIndex],
+				msgBuf->gamemsgMessages[gameWindowIndex],
+				msgBuf->gamemsgLines[gameWindowIndex],
+				msgBuf->gamemsgText[gameWindowIndex],
+				con_gameMsgWindowNLineCount[gameWindowIndex]->current.integer + 3,
+				3,
+				2048,
+				((con_gameMsgWindowNScrollTime[gameWindowIndex]->current.value * 1000.0) + 9.313225746154785e-10),
+				((con_gameMsgWindowNFadeInTime[gameWindowIndex]->current.value * 1000.0) + 9.313225746154785e-10),
+				((con_gameMsgWindowNFadeOutTime[gameWindowIndex]->current.value * 1000.0) + 9.313225746154785e-10));
+		}
+
+		Con_InitMessageWindow(
+			&msgBuf->miniconWindow,
+			msgBuf->miniconMessages,
+			msgBuf->miniconLines,
+			msgBuf->miniconText,
+			con_miniconlines->current.integer,
+			0,
+			4096,
+			0,
+			0,
+			1);
+		Con_InitMessageWindow(
+			&msgBuf->errorWindow,
+			msgBuf->errorMessages,
+			msgBuf->errorLines,
+			msgBuf->errorText,
+			5,
+			0,
+			1024,
+			0,
+			1,
+			1);
+	}
 }
 
 /*
@@ -581,20 +622,9 @@ CL_AddMessageChar
 */
 int CL_AddMessageChar(char *msg, unsigned int msgLen, unsigned int msgMaxLen, char c)
 {
-	int result;
+	msg[msgLen] = c;
 
-	if (msgLen + 1 <= msgMaxLen)
-	{
-		result = msgLen + 1;
-		msg[msgLen] = c;
-	}
-	else
-	{
-		msg[msgLen] = c;
-		return msgLen + 1;
-	}
-
-	return result;
+	return msgLen + 1;
 }
 
 /*
@@ -668,25 +698,19 @@ const char* Con_TokenizeInput()
 {
 	Cmd_TokenizeStringNoEval(g_consoleField.buffer);
 
-	const char* v0 = Cmd_Argv(0);
+	const char *cmd = Cmd_Argv(0);
 
-	if (*v0 == 92 || *v0 == 47)
+	if (*cmd == 92 || *cmd == 47)
 	{
-		++v0;
+		++cmd;
 	}
 
-	if (isspace(*v0))
+	while (isspace(*cmd))
 	{
-		int v1;
-
-		do
-		{
-			v1 = *++v0;
-		}
-		while (isspace(v1));
+		++cmd;
 	}
 
-	return v0;
+	return cmd;
 }
 
 /*
@@ -696,7 +720,22 @@ Con_AnySpaceAfterCommand
 */
 char Con_AnySpaceAfterCommand()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int charIndex;
+
+	for ( charIndex = 0; isspace(g_consoleField.buffer[charIndex]); ++charIndex )
+	{
+		// nothing
+	}
+
+	while (g_consoleField.buffer[charIndex])
+	{
+		if (isspace(g_consoleField.buffer[charIndex]))
+		{
+			return 1;
+		}
+		++charIndex;
+	}
+
 	return 0;
 }
 
@@ -1029,8 +1068,29 @@ Con_CycleAutoComplete
 */
 char Con_CycleAutoComplete(int step)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if ( !conDrawInputGlob.mayAutoComplete
+		|| conDrawInputGlob.matchCount <= 1
+		|| conDrawInputGlob.matchCount >= con_inputMaxMatchesShown
+		|| conDrawInputGlob.hasExactMatch && Con_AnySpaceAfterCommand() )
+	{
+		return 0;
+	}
+
+	conDrawInputGlob.matchIndex += step;
+
+	if (conDrawInputGlob.matchIndex >= 0)
+	{
+		if (conDrawInputGlob.matchIndex >= conDrawInputGlob.matchCount)
+		{
+			conDrawInputGlob.matchIndex = 0;
+		}
+	}
+	else
+	{
+		conDrawInputGlob.matchIndex = conDrawInputGlob.matchCount - 1;
+	}
+
+	return 1;
 }
 
 /*
@@ -1867,8 +1927,7 @@ CL_ConsoleFixPosition
 */
 void CL_ConsoleFixPosition()
 {
-	LocalClientNum_t primary = Com_LocalClients_GetPrimary();
-	CL_ConsolePrint(primary, 0, "\n", 0, 0, 0);
+	CL_ConsolePrint(0, 0, "\n", 0, 0, 0);
 
 	con.displayLineOffset = con.consoleWindow.activeLineCount - 1;
 }
