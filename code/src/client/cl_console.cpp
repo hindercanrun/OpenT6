@@ -19,10 +19,14 @@ cmd_function_s Con_ChatModePublic_f_VAR;
 cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
 
-float con_versionColor[4] = { 1.0, 1.0, 0.0, 1.0 };
-float colorWhite[4] = { 1.0, 1.0, 1.0, 1.0 };
-float con_inputDvarMatchColor[4] = { 1.0, 1.0, 0.8, 1.0 };
-float con_inputCommandMatchColor[4] = { 0.8, 0.8, 1.0, 1.0 };
+dvar_t *con_restricted;
+dvar_t *con_matchPrefixOnly;
+dvar_t *cl_deathMessageWidth;
+
+vec4_t con_versionColor = { 1.0, 1.0, 0.0, 1.0 };
+vec4_t colorWhite = { 1.0, 1.0, 1.0, 1.0 };
+vec4_t con_inputDvarMatchColor = { 1.0, 1.0, 0.8, 1.0 };
+vec4_t con_inputCommandMatchColor = { 0.8, 0.8, 1.0, 1.0 };
 
 /*
 ==============
@@ -1864,7 +1868,7 @@ void Con_Init()
 							1,
 							DVAR_ARCHIVE,
 							"Only match the prefix when listing matching Dvars");
-	cl_deathMessageWidth = Dvar_RegisterInt("cl_deathMessageWidth", 320, 1, 640, DVAR_NOFLAG, "Pixel width of the obituary area");
+	cl_deathMessageWidth = _Dvar_RegisterInt("cl_deathMessageWidth", 320, 1, 640, DVAR_NOFLAG, "Pixel width of the obituary area");
 
 	Field_Clear(&g_consoleField);
 
