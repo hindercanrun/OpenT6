@@ -1079,7 +1079,33 @@ TypewriterSounds
 */
 void TypewriterSounds(LocalClientNum_t localClientNum, const MessageWindow *msgwnd, MessageLine *line)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	// messy
+
+	if (con_typewriterEnabledSounds->current.enabled)
+	{
+		clientActive_t *LocalClientGlobals = CL_GetLocalClientGlobals(localClientNum);
+		int typingStartTime = line->typingStartTime;
+		clientActive_t *v9 = LocalClientGlobals;
+		int v5 = LocalClientGlobals->serverTime - typingStartTime;
+		int lastSoundTime = line->lastTypingSoundTime - typingStartTime;
+		int printCnt = PrintableCharsCount(msgwnd, line);
+		int Int = Dvar_GetInt(con_typewriterPrintSpeed);
+		int v7 = printCnt * Int;
+		int typewriterPrintSpeed = Int;
+		int v8 = Dvar_GetInt(con_typewriterDecayStartTime);
+
+		if (v8 < v7)
+		{
+			v8 = v7;
+		}
+
+		if (v5 <= v8 && v5 <= v7 && lastSoundTime < typewriterPrintSpeed * (v5 / typewriterPrintSpeed))
+		{
+			SND_Play("uin_typewriter", 0, 1.0, (((localClientNum & 3) << 17) | 0x80FFF), 0, 0, 0);
+
+			line->lastTypingSoundTime = v9->serverTime;
+		}
+	}
 }
 
 /*
@@ -1138,9 +1164,63 @@ void Con_DrawMessageWindowOldToNew(LocalClientNum_t localClientNum, MessageWindo
 Con_DrawMessageWindow
 ==============
 */
-void Con_DrawMessageWindow(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int x, int y, int charHeight, int horzAlign, int vertAlign, Font_s *font, vec4_t *color, int textStyle, float msgwndScale, msgwnd_mode_t mode, int textAlignMode)
+void Con_DrawMessageWindow(
+	LocalClientNum_t localClientNum,
+	MessageWindow *msgwnd,
+	int x,
+	int y,
+	int charHeight,
+	int horzAlign,
+	int vertAlign,
+	Font_s *font,
+	vec4_t *color,
+	int textStyle,
+	float msgwndScale,
+	msgwnd_mode_t mode,
+	int textAlignMode)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (CL_GetLocalClientGlobals(localClientNum)->snap.ps.pm_type == 6 || CL_ShouldDisplayHud(localClientNum))
+	{
+		switch (mode)
+		{
+		case MWM_BOTTOMUP_ALIGN_TOP:
+		case MWM_TOPDOWN_ALIGN_BOTTOM:
+			Con_DrawMessageWindowOldToNew(
+				localClientNum,
+				msgwnd,
+				x,
+				y,
+				charHeight,
+				horzAlign,
+				vertAlign,
+				mode == MWM_TOPDOWN_ALIGN_BOTTOM,
+				font,
+				color,
+				textStyle,
+				msgwndScale,
+				textAlignMode);
+			break;
+		case MWM_BOTTOMUP_ALIGN_BOTTOM:
+		case MWM_TOPDOWN_ALIGN_TOP:
+			Con_DrawMessageWindowNewToOld(
+				localClientNum,
+				msgwnd,
+				x,
+				y,
+				charHeight,
+				horzAlign,
+				vertAlign,
+				mode == MWM_BOTTOMUP_ALIGN_BOTTOM,
+				font,
+				color,
+				textStyle,
+				msgwndScale,
+				textAlignMode);
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 /*
@@ -1148,9 +1228,48 @@ void Con_DrawMessageWindow(LocalClientNum_t localClientNum, MessageWindow *msgwn
 Con_DrawGameMessageWindow
 ==============
 */
-void Con_DrawGameMessageWindow(LocalClientNum_t localClientNum, int windowIndex, int xPos, int yPos, int horzAlign, int vertAlign, Font_s *font, float fontScale, vec4_t *color, int textStyle, int textAlignMode, msgwnd_mode_t mode)
+void Con_DrawGameMessageWindow(
+	LocalClientNum_t localClientNum,
+	int windowIndex,
+	int xPos,
+	int yPos,
+	int horzAlign,
+	int vertAlign,
+	Font_s *font,
+	float fontScale,
+	vec4_t *color,
+	int textStyle,
+	int textAlignMode,
+	msgwnd_mode_t mode)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	float msgwndScale;
+
+	if (!cg_paused->current.integer)
+	{
+		if (R_Is3DOn())
+		{
+			msgwndScale = Dvar_GetFloat(con_gameMsgWindowNSplitscreenScale[windowIndex]);
+		}
+		else
+		{
+			msgwndScale = 1.0f;
+		}
+
+		Con_DrawMessageWindow(
+			localClientNum,
+			&con.messageBuffer[localClientNum].gamemsgWindows[windowIndex],
+			xPos,
+			yPos,
+			((fontScale * 48.0) + 9.313225746154785e-10), // ?? dont even know at this point
+			horzAlign,
+			vertAlign,
+			font,
+			color,
+			textStyle,
+			msgwndScale,
+			mode,
+			textAlignMode);
+	}
 }
 
 /*
@@ -1160,7 +1279,48 @@ Con_DrawMiniConsole
 */
 void Con_DrawMiniConsole(LocalClientNum_t localClientNum, int xPos, int yPos, float alpha)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	float msgwndScale;
+	vec4_t color;
+
+	if (R_Is3DOn())
+	{
+		msgwndScale = Dvar_GetFloat(con_MiniConSplitscreenScale);
+	}
+	else
+	{
+		msgwndScale = 1.0f;
+	}
+
+	Font_s *font = UI_GetFontHandle(ScrPlace_GetView(localClientNum), 0, 1.0);
+
+	if (con.messageBuffer[0].miniconWindow.lineCount != Dvar_GetInt(con_miniconlines))
+	{
+		con.messageBuffer[0].miniconWindow.lineCount = Dvar_GetInt(con_miniconlines);
+		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].miniconWindow);
+	}
+
+	color[0] = 1.0f;
+	color[1] = 1.0f;
+	color[2] = 1.0f;
+	color[3] = alpha;
+
+	if (CL_GetLocalClientGlobals(localClientNum)->snap.ps.pm_type == 6 || CL_ShouldDisplayHud(localClientNum))
+	{
+		Con_DrawMessageWindowOldToNew(
+			localClientNum,
+			&con.messageBuffer[localClientNum].miniconWindow,
+			xPos,
+			yPos,
+			12,
+			1,
+			1,
+			0,
+			font,
+			&color,
+			3,
+			msgwndScale,
+			4);
+	}
 }
 
 /*
@@ -1170,7 +1330,32 @@ Con_DrawErrors
 */
 void Con_DrawErrors(LocalClientNum_t localClientNum, int xPos, int yPos, float alpha)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	vec4_t color;
+
+	Font_s *font = UI_GetFontHandle(ScrPlace_GetView(localClientNum), 1, 1.0);
+
+	color[0] = 1.0f;
+	color[1] = 1.0f;
+	color[2] = 1.0f;
+	color[3] = alpha;
+
+	if (CL_GetLocalClientGlobals(localClientNum)->snap.ps.pm_type == 6 || CL_ShouldDisplayHud(localClientNum))
+	{
+		Con_DrawMessageWindowOldToNew(
+			localClientNum,
+			&con.messageBuffer[localClientNum].errorWindow,
+			xPos,
+			yPos,
+			12,
+			1,
+			1,
+			0,
+			font,
+			&color,
+			3,
+			1.0,
+			4);
+	}
 }
 
 /*
