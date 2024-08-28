@@ -12,6 +12,7 @@ int con_inputMaxMatchesShown;
 int g_console_field_width;
 float g_console_char_height;
 int keyCatchers;
+int callDepth;
 
 bool con_ignoreMatchPrefixOnly;
 
@@ -616,8 +617,238 @@ CL_ConsolePrint_AddLine
 */
 char CL_ConsolePrint_AddLine(LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, char color, int flags)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	char result;
+	Font_s *FontHandle;
+	const char *v10;
+	const char *v11;
+	const char *v12;
+	char *v13;
+	char v14;
+	char v15;
+	char v16;
+	unsigned int v17;
+	int v18;
+	unsigned int v19;
+	unsigned int v20;
+	const char *v21;
+	char v22;
+	unsigned int v23;
+	const char *v24;
+	const char *v25;
+	Font_s *font;
+	float xScale;
+	const char *wrapPosition;
+	int atStartOfBrokenLine;
+	char c;
+
+	if (callDepth)
+	{
+		return color;
+	}
+
+	callDepth = 1;
+
+	Con_UpdateNotifyMessage(localClientNum, channel, duration, flags);
+
+	if (channel != con.prevChannel)
+	{
+		if (con.lineOffset)
+		{
+			Con_UpdateNotifyLine(localClientNum, con.prevChannel, 1, flags);
+
+			con.lineOffset = 0;
+
+			if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+			{
+				++con.displayLineOffset;
+			}
+		}
+	}
+
+	if (channel == 2 || channel == 3 || channel == 5 || channel == 4)
+	{
+		FontHandle = UI_GetFontHandle(ScrPlace_GetView(localClientNum), channel != 3 ? 0 : 4, 0.25);
+		font = FontHandle;
+		xScale = R_NormalizedTextScale(FontHandle, 0.25);
+	}
+	else
+	{
+		FontHandle = cls.consoleFont;
+		font = cls.consoleFont;
+		xScale = 1.0f;
+	}
+
+	if (!pixelWidth)
+	{
+		pixelWidth = con.visiblePixelWidth;
+	}
+
+	v10 = R_TextLineWrapPosition(txt, 512 - con.lineOffset, pixelWidth, FontHandle, xScale);
+	wrapPosition = *v10 != 0 ? v10 : 0;
+
+	if (txt == wrapPosition && con.lineOffset)
+	{
+		Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
+
+		con.lineOffset = 0;
+
+		if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+		{
+			++con.displayLineOffset;
+		}
+
+		v11 = R_TextLineWrapPosition(txt, 512, pixelWidth, FontHandle, xScale);
+		wrapPosition = *v11 != 0 ? v11 : 0;
+	}
+
+	v12 = txt;
+	v13 = txt;
+	atStartOfBrokenLine = 0;
+
+	while ( *v13 )
+	{
+		v14 = *v13++;
+		c = v14;
+
+		if (v14 == 10)
+		{
+			if (!wrapPosition)
+			{
+				goto LABEL_71;
+			}
+
+			if (font)
+			{
+				if (wrapPosition == v13)
+				{
+					goto LABEL_71;
+				}
+			}
+		}
+		else
+		{
+			if (v14 == 94)
+			{
+				if (v13)
+				{
+					v15 = *v13;
+
+					if (*v13 != 94 && (v15 >= 48 && v15 <= 57 || v15 == 70))
+					{
+						v16 = *v13;
+						con.textTempLine[con.lineOffset++] = 94;
+						con.textTempLine[con.lineOffset] = v16;
+						v17 = con.lineOffset + 1;
+						color = v16;
+						con.lineOffset = v17;
+						++v13;
+						atStartOfBrokenLine = 0;
+						goto LABEL_70;
+					}
+				}
+
+				if (*v13 == 72 || *v13 == 73)
+				{
+					con.textTempLine[con.lineOffset++] = 94;
+					v18 = v13[3];
+					memcpy(&con.textTempLine[con.lineOffset], v13, v18 + 4);
+					v19 = con.lineOffset + v18 + 4;
+					con.lineOffset = v19;
+					v13 += v18 + 4;
+					atStartOfBrokenLine = 0;
+					goto LABEL_70;
+				}
+			}
+
+			else if (v14 == 32 && atStartOfBrokenLine)
+			{
+				goto LABEL_70;
+			}
+
+			if (con.lineOffset >= 0x200)
+			{
+				v14 = c;
+			}
+
+			con.textTempLine[con.lineOffset] = v14;
+			v20 = con.lineOffset + 1;
+			con.lineOffset = v20;
+			atStartOfBrokenLine = 0;
+		}
+
+LABEL_70:
+		if (v13 == wrapPosition)
+		{
+LABEL_71:
+			Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
+
+			con.lineOffset = 0;
+
+			if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+			{
+				++con.displayLineOffset;
+			}
+
+			if (c != 10)
+			{
+				v22 = color;
+				atStartOfBrokenLine = 1;
+
+				if (color != 55)
+				{
+					if (color < 48 || color > 57)
+					{
+						v22 = color;
+					}
+
+					con.textTempLine[con.lineOffset] = 94;
+					*(con.lineOffset + 18932977) = v22;
+					v23 = con.lineOffset + 2;
+					con.lineOffset = v23;
+				}
+			}
+
+			v24 = v13;
+
+			if (atStartOfBrokenLine && *v13 == 32)
+			{
+				do
+				{
+					++v24;
+				}
+				while (*v24 == 32);
+			}
+
+			v25 = R_TextLineWrapPosition(v24, 512 - con.lineOffset, pixelWidth, font, xScale);
+			v12 = txt;
+			wrapPosition = *v25 != 0 ? v25 : 0;
+		}
+	}
+
+	if (con.lineOffset)
+	{
+		if (channel == 2 || channel == 3 || channel == 5 || channel == 4)
+		{
+			Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
+
+			con.lineOffset = 0;
+
+			if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+			{
+				++con.displayLineOffset;
+			}
+		}
+		else
+		{
+			Con_UpdateNotifyLine(localClientNum, channel, 0, flags);
+		}
+	}
+
+	--callDepth;
+	result = color;
+	con.prevChannel = channel;
+
+	return result;
 }
 
 /*
