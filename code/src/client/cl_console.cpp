@@ -20,6 +20,12 @@ cmd_function_s Con_ChatModePublic_f_VAR;
 cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
 
+dvar_t *con_inputBoxColor;
+dvar_t *con_inputHintBoxColor;
+dvar_t *con_outputBarColor;
+dvar_t *con_outputSliderColor;
+dvar_t *con_outputWindowColor;
+dvar_t *con_typewriterColorBase;
 dvar_t *con_restricted;
 dvar_t *con_matchPrefixOnly;
 dvar_t *cl_deathMessageWidth;
@@ -169,7 +175,34 @@ Con_NudgeMessageWindowTimes
 */
 void Con_NudgeMessageWindowTimes(MessageWindow *msgwnd, int serverTimeNudge, int serverTime)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int lastMessageIndex = -1;
+
+	for (int lineOffset = 0; lineOffset < msgwnd->activeLineCount; ++lineOffset)
+	{
+		unsigned int lineIndex = (lineOffset + msgwnd->firstLineIndex) % msgwnd->lineCount;
+		MessageLine *line = &msgwnd->lines[lineIndex];
+
+		if (line->messageIndex != lastMessageIndex)
+		{
+			int lastMessageIndex = line->messageIndex;
+			Message *message = &msgwnd->messages[line->messageIndex];
+			message->startTime += serverTimeNudge;
+			message->endTime += serverTimeNudge;
+
+			if (message->startTime < 0)
+			{
+				message->endTime -= message->startTime;
+				message->startTime = 0;
+			}
+
+			if (message->startTime > serverTime + 1000)
+			{
+				int duration = message->endTime - message->startTime;
+				message->startTime = serverTime + 1000;
+				message->endTime = duration + message->startTime;
+			}
+		}
+	}
 }
 
 /*
@@ -226,7 +259,6 @@ void Con_ClearNotify(LocalClientNum_t localClientNum)
 		p_textBufPos += 13;
 		--v2;
 	}
-
 	while (v2);
 }
 
@@ -437,12 +469,62 @@ bool Con_NeedToFreeMessageWindowLine(MessageWindow *msgwnd, int charCount)
 
 /*
 ==============
+Con_FreeFirstMessageWindowLine
+==============
+*/
+void Con_FreeFirstMessageWindowLine(MessageWindow *msgwnd)
+{
+	--msgwnd->activeLineCount;
+
+	if (++msgwnd->firstLineIndex == msgwnd->lineCount)
+	{
+		msgwnd->firstLineIndex = 0;
+	}
+
+	int activeLineCount;
+	if (msgwnd == &con.consoleWindow && --con.displayLineOffset < con.visibleLineCount)
+	{
+		if (con.consoleWindow.activeLineCount < con.visibleLineCount)
+		{
+			activeLineCount = con.consoleWindow.activeLineCount;
+		}
+		else
+		{
+			activeLineCount = con.visibleLineCount;
+			con.displayLineOffset = activeLineCount;
+		}
+	}
+}
+
+/*
+==============
 Con_CopyCurrentConsoleLineText
 ==============
 */
 void Con_CopyCurrentConsoleLineText(MessageWindow *msgwnd, MessageLine *msgLine)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	while (Con_NeedToFreeMessageWindowLine(msgwnd, con.lineOffset + 1))
+	{
+		Con_FreeFirstMessageWindowLine(msgwnd);
+	}
+
+	unsigned int poolRemaining = msgwnd->textBufSize - msgwnd->textBufPos;
+
+	if ( con.lineOffset > poolRemaining )
+	{
+		memcpy(&msgwnd->circularTextBuffer[msgwnd->textBufPos], con.textTempLine, poolRemaining);
+		memcpy(msgwnd->circularTextBuffer, &con.textTempLine[poolRemaining], con.lineOffset - poolRemaining);
+	}
+	else
+	{
+		memcpy(&msgwnd->circularTextBuffer[msgwnd->textBufPos], con.textTempLine, con.lineOffset);
+	}
+
+	msgLine->textBufPos = msgwnd->textBufPos;
+	msgLine->textBufSize = con.lineOffset;
+	msgwnd->textBufPos = (msgwnd->textBufSize - 1) & (con.lineOffset + msgwnd->textBufPos);
+	msgwnd->circularTextBuffer[msgwnd->textBufPos] = 10;
+	msgwnd->textBufPos = (msgwnd->textBufSize - 1) & (msgwnd->textBufPos + 1);
 }
 
 /*
@@ -1747,9 +1829,9 @@ Con_DrawOuputWindow
 */
 void Con_DrawOuputWindow()
 {
+	float x = con.screenMin[0];
 	float width = con.screenMax[0] - con.screenMin[0];
 	float y = con.screenMin[1] + 32.0;
-	float x = con.screenMin[0];
 	float height = (con.screenMax[1] - con.screenMin[1]) - 32.0;
 
 	ConDraw_Box(
@@ -1796,12 +1878,11 @@ Con_PageDown
 */
 void Con_PageDown()
 {
-	int v0 = con.displayLineOffset + 2;
 	con.displayLineOffset = con.consoleWindow.activeLineCount;
 
-	if (v0 < con.consoleWindow.activeLineCount)
+	if (con.displayLineOffset + 2 < con.consoleWindow.activeLineCount)
 	{
-		con.displayLineOffset = v0;
+		con.displayLineOffset = con.displayLineOffset + 2;
 	}
 }
 
@@ -1933,9 +2014,9 @@ void Con_OneTimeInit()
 							"Color of the console input box");
 	con_inputHintBoxColor = _Dvar_RegisterVec4(
 								"con_inputHintBoxColor",
-								0.40000001,
-								0.40000001,
-								0.34999999,
+								0.4,
+								0.4,
+								0.34,
 								1.0,
 								0.0,
 								1.0,
@@ -1945,27 +2026,27 @@ void Con_OneTimeInit()
 							"con_outputBarColor",
 							1.0,
 							1.0,
-							0.94999999,
-							0.60000002,
+							0.94,
+							0.6,
 							0.0,
 							1.0,
 							DVAR_ARCHIVE,
 							"Color of the console output slider bar");
 	con_outputSliderColor = _Dvar_RegisterVec4(
 								"con_outputSliderColor",
-								0.15000001,
-								0.15000001,
 								0.1,
-								0.60000002,
+								0.1,
+								0.1,
+								0.6,
 								0.0,
 								1.0,
 								DVAR_ARCHIVE,
 								"Color of the console slider");
 	con_outputWindowColor = _Dvar_RegisterVec4(
 								"con_outputWindowColor",
-								0.34999999,
-								0.34999999,
-								0.30000001,
+								0.34,
+								0.34,
+								0.3,
 								0.75,
 								0.0,
 								1.0,

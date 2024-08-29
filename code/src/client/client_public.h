@@ -31,6 +31,7 @@ int Con_GetDefaultMsgDuration(print_msg_dest_t dest);
 void Con_UpdateMessage(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int duration);
 void Con_FreeFirstMessageWindowLine(MessageWindow *msgwnd);
 bool Con_NeedToFreeMessageWindowLine(MessageWindow *msgwnd, int charCount);
+void Con_FreeFirstMessageWindowLine(MessageWindow *msgwnd);
 void Con_CopyCurrentConsoleLineText(MessageWindow *msgwnd, MessageLine *msgLine);
 int LatestActiveTypewrittenLineIdx(MessageWindow *msgwnd);
 int PrintableCharsCount(const MessageWindow *msgwnd, MessageLine *line);
