@@ -535,8 +535,39 @@ LatestActiveTypewrittenLineIdx
 */
 int LatestActiveTypewrittenLineIdx(MessageWindow *msgwnd)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int result;
+
+	int activeLineCount = msgwnd->activeLineCount;
+	if (!activeLineCount)
+	{
+		return -1;
+	}
+
+	int v3 = activeLineCount - 1;
+	if (v3 < 0)
+	{
+		return -1;
+	}
+
+	int lineCount = msgwnd->lineCount;
+	MessageLine *lines = msgwnd->lines;
+
+	for (int i = v3 + msgwnd->firstLineIndex; ; --i)
+	{
+		result = i % lineCount;
+
+		if ((lines[i % lineCount].flags & 1) != 0 )
+		{
+			break;
+		}
+
+		if (--v3 < 0)
+		{
+			return -1;
+		}
+	}
+
+	return result;
 }
 
 /*
