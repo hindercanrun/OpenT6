@@ -15,6 +15,7 @@ int keyCatchers;
 int callDepth;
 
 bool con_ignoreMatchPrefixOnly;
+const float con_outputBarSize = 10.0f;
 
 cmd_function_s Con_ChatModePublic_f_VAR;
 cmd_function_s Con_Clear_f_VAR;
@@ -926,16 +927,9 @@ LABEL_71:
 
 	if (con.lineOffset)
 	{
-		if (channel == 2 || channel == 3 || channel == 5 || channel == 4)
+		if (channel == 2 || channel == 3 || channel == 4 || channel == 5)
 		{
-			Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
-
-			con.lineOffset = 0;
-
-			if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
-			{
-				++con.displayLineOffset;
-			}
+			Con_Linefeed(localClientNum, channel, flags);
 		}
 		else
 		{
@@ -1358,7 +1352,41 @@ Con_DrawAutoCompleteChoice
 */
 void Con_DrawAutoCompleteChoice(LocalClientNum_t localClientNum, bool isDvarCommand, const char *originalCommand)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char colorCodedLine[256];
+
+	int v5;
+	if (isDvarCommand)
+	{
+		v5 = sprintf(colorCodedLine, "^2%s ", originalCommand);
+	}
+	else
+	{
+		v5 = 0;
+	}
+
+	int cursorPos;
+	if (con_matchPrefixOnly->current.enabled)
+	{
+		cursorPos = Con_GetAutoCompleteColorCodedStringContiguous(
+												conDrawInputGlob.autoCompleteChoice,
+												conDrawInputGlob.inputText,
+												conDrawInputGlob.inputTextLen,
+												&colorCodedLine[v5]);
+	}
+	else
+	{
+		cursorPos = Con_GetAutoCompleteColorCodedStringDiscontiguous(
+												conDrawInputGlob.autoCompleteChoice,
+												conDrawInputGlob.inputText,
+												conDrawInputGlob.inputTextLen,
+												&colorCodedLine[v5]);
+	}
+
+	int x = conDrawInputGlob.x;
+	int y = conDrawInputGlob.y;
+	int drawLen = SEH_PrintStrlen(colorCodedLine);
+
+	Field_DrawTextOverride(localClientNum, &g_consoleField, x, y, 5, 5, colorCodedLine, drawLen, cursorPos);
 }
 
 /*
@@ -1773,12 +1801,68 @@ void Con_ToggleConsoleOutput()
 
 /*
 ==============
+Con_DrawOutputVersion
+==============
+*/
+void Con_DrawOutputVersion(float x, float y, float width, float height)
+{
+	const char *versionString = va("Build %d %s", Com_GetBuildNumber(), "win-x86");
+	SCR_DrawSmallStringExt(x, ((height - 16.0) + y), versionString, &con_versionColor);
+}
+
+/*
+==============
 Con_DrawOutputScrollBar
 ==============
 */
 void Con_DrawOutputScrollBar(float x, float y, float width, float height)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	float xa = (x + width) - 10.0;
+	ConDraw_Box(xa, y, 10.0, height, &con_outputBarColor->current.value);
+
+	if (con.consoleWindow.activeLineCount > con.visibleLineCount)
+	{
+		float scale = 1.0 / (con.consoleWindow.activeLineCount - con.visibleLineCount);
+		float v7 = (con.displayLineOffset - con.visibleLineCount) * scale;
+
+		float v8;
+		if ((v7 - 1.0) < 0.0)
+		{
+			v8 = (con.displayLineOffset - con.visibleLineCount) * scale;
+		}
+		else
+		{
+			v8 = 1.0f;
+		}
+
+		float v6;
+		if ((0.0 - v7) < 0.0)
+		{
+			v6 = v8;
+		}
+		else
+		{
+			v6 = 0.0f;
+		}
+
+		float v5 = ceil(((con.visibleLineCount * scale) * height));
+
+		float h;
+		if ( (10.0 - v5) < 0.0 )
+		{
+			h = v5;
+		}
+		else
+		{
+			h = con_outputBarSize;
+		}
+
+		ConDraw_Box(xa, ((((y + height) - h) - y) * v6) + y, 10.0, h, &con_outputSliderColor->current.value);
+	}
+	else
+	{
+		ConDraw_Box(xa, y, 10.0, height, &con_outputSliderColor->current.value);
+	}
 }
 
 /*
@@ -1835,20 +1919,20 @@ void Con_DrawOuputWindow()
 	float height = (con.screenMax[1] - con.screenMin[1]) - 32.0;
 
 	ConDraw_Box(
-		x,
-		y,
-		width,
+		con.screenMin[0],
+		con.screenMin[1] + 32.0,
+		con.screenMax[0] - con.screenMin[0],
 		height,
 		&con_outputWindowColor->current.value);
 
 	float xa = x + 6.0;
 	float ya = y + 6.0;
-	float heighta = height - 12.0;
+	float widtha = width - (6.0 * 2.0);
+	float heighta = height - (6.0 * 2.0);
 
-	const char *versionString = va("Build %d %s", Com_GetBuildNumber(), "win-x86");
-	SCR_DrawSmallStringExt(xa, ((heighta - 16.0) + ya), versionString, &con_versionColor);
-	Con_DrawOutputScrollBar(xa, ya, width - 12.0, heighta);
-	Con_DrawOutputText(xa, ya);
+	Con_DrawOutputVersion(xa, ya, widtha, heighta);
+	Con_DrawOutputScrollBar(xa, ya, widtha, heighta);
+	Con_DrawOutputText(xa, ya, widtha, heighta - ((6.0 * 2.0) + 16.0));
 }
 
 /*
@@ -2250,6 +2334,23 @@ void CL_ConsolePrint(
 		Sys_EnterCriticalSection(CRITSECT_CONSOLE);
 		CL_ConsolePrint_AddLine(localClientNum, channel, txt, duration, pixelWidth, 55, flags);
 		Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
+	}
+}
+
+/*
+==============
+Con_Linefeed
+==============
+*/
+void Con_Linefeed(int localClientNum, int channel, int flags)
+{
+	Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
+
+	con.lineOffset = 0;
+
+	if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+	{
+		++con.displayLineOffset;
 	}
 }
 
