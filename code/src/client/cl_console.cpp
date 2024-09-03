@@ -21,15 +21,15 @@ cmd_function_s Con_ChatModePublic_f_VAR;
 cmd_function_s Con_Clear_f_VAR;
 cmd_function_s Con_Echo_f_VAR;
 
-dvar_t *con_inputBoxColor;
-dvar_t *con_inputHintBoxColor;
-dvar_t *con_outputBarColor;
-dvar_t *con_outputSliderColor;
-dvar_t *con_outputWindowColor;
-dvar_t *con_typewriterColorBase;
-dvar_t *con_restricted;
-dvar_t *con_matchPrefixOnly;
-dvar_t *cl_deathMessageWidth;
+const dvar_t *con_inputBoxColor;
+const dvar_t *con_inputHintBoxColor;
+const dvar_t *con_outputBarColor;
+const dvar_t *con_outputSliderColor;
+const dvar_t *con_outputWindowColor;
+const dvar_t *con_typewriterColorBase;
+const dvar_t *con_restricted;
+const dvar_t *con_matchPrefixOnly;
+const dvar_t *cl_deathMessageWidth;
 
 vec4_t con_versionColor = { 1.0, 1.0, 0.0, 1.0 };
 vec4_t colorWhite = { 1.0, 1.0, 1.0, 1.0 };
