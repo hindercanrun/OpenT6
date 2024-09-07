@@ -575,11 +575,10 @@ char R_Cinematic_IsInProgress(int id);
 char R_Cinematic_IsPreloading(int id);
 void R_Cinematic_GetDebugInfo(const char **name, int *bytesUsed);
 void R_Cinematic_ForceRelinquishIO();
-void R_Cinematic_FreeBuffers();
 
-//t6/code/src/gfx_d3d/r_cinematic_bink.cpp
+// t6/code/src/gfx_d3d/r_cinematic_bink.cpp
 const char *R_Cinematic_CheckBinkError();
-void CinematicHunk_Open(CinematicHunk *hunk, void *memory, int size);
+void CinematicHunk_Open(CinematicHunk *hunk, const char *memory, int size);
 void CinematicHunk_Close(CinematicHunk *hunk);
 void CinematicHunk_Reset(CinematicHunk *hunk);
 int CinematicHunk_GetFreeSpace(CinematicHunk *hunk);

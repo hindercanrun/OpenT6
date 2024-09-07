@@ -1,6 +1,8 @@
 #include "types.h"
 #include "gfx_d3d_public.h"
 
+CinematicGlob cinematicGlob;
+
 /*
 ==============
 duck_Initialize
@@ -28,7 +30,14 @@ R_Cinematic_MemoryInit
 */
 void R_Cinematic_MemoryInit(CinematicInfo *cinematicInfo)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	cinematicGlob.bytesAllocated = cinematicInfo->moviePlayer->GetMainBytesNeeded(cinematicInfo->playbackFlags);
+	cinematicGlob.masterBufferBase = cinematicGlob.memPool;
+	cinematicInfo->moviePlayer->InitMemory(
+		cinematicGlob.memPool,
+		cinematicGlob.bytesAllocated,
+		0,
+		0,
+		cinematicInfo->playbackFlags);
 }
 
 /*
@@ -38,7 +47,9 @@ R_Cinematic_CancelQueuedMovie
 */
 void R_Cinematic_CancelQueuedMovie(CinematicInfo *info)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	info->commonflags.packed &= ~1u;
+	info->id = 0;
+	info->name[0] = 0;
 }
 
 /*
@@ -80,7 +91,18 @@ StreamThread_OpenMovie
 */
 void StreamThread_OpenMovie(int msAllotted, void *user)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	CinematicGlob *queue = cinematicGlob.queue;
+
+	if (!*(user + 516))
+	{
+		queue = &cinematicGlob;
+	}
+
+	cinematicGlob.asyncOpenData.outMovieHandle = R_Cinematic_OpenMovie_Now(
+													&queue->current,
+													user,
+													*(user + 128),
+													*(user + 516));
 }
 
 /*
@@ -140,8 +162,7 @@ R_Cinematic_GetPlayingId
 */
 int R_Cinematic_GetPlayingId()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return cinematicGlob.current.id;
 }
 
 /*
@@ -215,8 +236,18 @@ R_Cinematic_IsAnyPlaying
 */
 char R_Cinematic_IsAnyPlaying()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	Sys_EnterCriticalSection(CRITSECT_CINEMATIC);
+
+	if ( cinematicGlob.current.id || cinematicGlob.queue[0].id )
+	{
+		Sys_LeaveCriticalSection(CRITSECT_CINEMATIC);
+		return 1;
+	}
+	else
+	{
+		Sys_LeaveCriticalSection(CRITSECT_CINEMATIC);
+		return 0;
+	}
 }
 
 /*
@@ -248,7 +279,9 @@ R_Cinematic_GetDebugInfo
 */
 void R_Cinematic_GetDebugInfo(const char **name, int *bytesUsed)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	*name = cinematicGlob.current.name;
+	*bytesUsed = cinematicGlob.bytesAllocated;
+	*bytesUsed += nullptr;
 }
 
 /*
@@ -258,16 +291,9 @@ R_Cinematic_ForceRelinquishIO
 */
 void R_Cinematic_ForceRelinquishIO()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-R_Cinematic_FreeBuffers
-==============
-*/
-void R_Cinematic_FreeBuffers()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+	if (cinematicGlob.current.moviePlayer)
+	{
+		cinematicGlob.current.moviePlayer->ForceRelinquishIO();
+	}
 }
 

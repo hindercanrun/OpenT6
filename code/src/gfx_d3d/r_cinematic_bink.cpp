@@ -15,8 +15,7 @@ R_Cinematic_CheckBinkError
 */
 const char *R_Cinematic_CheckBinkError()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return BinkGetError();
 }
 
 /*
@@ -24,7 +23,7 @@ const char *R_Cinematic_CheckBinkError()
 CinematicHunk_Open
 ==============
 */
-void CinematicHunk_Open(CinematicHunk *hunk, void *memory, int size)
+void CinematicHunk_Open(CinematicHunk *hunk, const char *memory, int size)
 {
 	hunk->base = memory;
 	hunk->atFront = memory;
