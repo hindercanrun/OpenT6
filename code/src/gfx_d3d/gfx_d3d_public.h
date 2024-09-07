@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/gfx_d3d/rb_backend.cpp
+//t6/code/src/gfx_d3d/rb_backend.cpp
 void TRACK_rb_backend();
 void RB_SetIdentity();
 void R_SetVertex2d(GfxVertex *vert, float x, float y, float s, float t, unsigned int color);
@@ -107,7 +107,7 @@ void RB_RenderThread(unsigned int threadContext);
 
 //#include "gfx_d3d/rb_backend.h"
 
-//t6/code/src_noserver/gfx_d3d/rb_corona.cpp
+//t6/code/src/gfx_d3d/rb_corona.cpp
 void RB_TessCoronaBillboard(Corona *corona, GfxColor color, float radius, int query);
 void RB_DrawCoronaQuerySprite(Corona *corona);
 GfxLightCorona *RB_FindBestCoronaToSpawn(CoronaState *state);
@@ -118,7 +118,7 @@ void RB_DrawCoronas(LocalClientNum_t localClientNum);
 void RB_ResetCoronas();
 void RB_DrawWaypoint(const GfxViewInfo *viewInfo, Material *material, GfxColor color, vec3_t *origin, float radius, bool screenSize, bool alignBottom, bool forceNear);
 
-//t6/code/src_noserver/gfx_d3d/rb_debug.cpp
+//t6/code/src/gfx_d3d/rb_debug.cpp
 void TRACK_rb_debug();
 int RB_AddDebugLine(const vec3_t *start, const vec3_t *end, const vec4_t *color, bool depthTest, int vertCount, int vertLimit, GfxPointVertex *verts);
 int RB_EndDebugLines(int vertCount, const GfxPointVertex *verts);
@@ -139,13 +139,13 @@ void RB_DrawCollisionPolygon(int vertCount, const vec3_t *verts, const vec4_t *f
 materialCommands_t *RB_GetCmd();
 void __cdecl RB_EndCollisionPolygons();
 
-//t6/code/src_noserver/gfx_d3d/rb_depthprepass.cpp
+//t6/code/src/gfx_d3d/rb_depthprepass.cpp
 void R_DepthPrepassCallback(const void *userData, GfxCmdBufContext context, const GfxViewInfo *viewInfo);
 void R_DepthPrepass(int a1, const GfxViewInfo *viewInfo, GfxCmdBuf *cmdBuf);
 void RB_DrawDepthPrepassCommandBuffer(int a1, const GfxBackEndData *data, const GfxViewInfo *viewInfo);
 void R_DrawDepthCmd(DrawDepthWorkerCmd *cmd);
 
-//t6/code/src_noserver/gfx_d3d/rb_draw3d.cpp
+//t6/code/src/gfx_d3d/rb_draw3d.cpp
 void RB_DrawWaypoints(const LocalClientNum_t localClientNum, const GfxViewInfo *viewInfo);
 void R_CalcGameTimeVec(float gameTime, vec4_t *out);
 void R_ShowTris(GfxCmdBufContext context, const GfxDrawSurfListInfo *info);
@@ -192,10 +192,10 @@ void RB_StandardDrawCommands(const GfxViewInfo *viewInfo);
 void RB_Draw3DInternal();
 void R_DrawPostBlur(const GfxViewInfo *viewInfo, GfxCmdBuf *cmdBuf, GfxCmdBufSourceState renderTarget);
 
-//t6/code/src_noserver/gfx_d3d/rb_fog.cpp
+//t6/code/src/gfx_d3d/rb_fog.cpp
 void R_SetFrameFog(float input, GfxCmdBufInput *a2, const vec4_t *viewOrigin);
 
-//t6/code/src_noserver/gfx_d3d/rb_imagefilter.cpp
+//t6/code/src/gfx_d3d/rb_imagefilter.cpp
 void RB_VirtualToSceneRadius(float radius, float *radiusX, float *radiusY);
 int RB_GaussianFilterPoints1D(float pixels, int srcRes, int dstRes, int tapLimit, float *tapOffsets, float *tapWeights);
 int *RB_GenerateGaussianFilter1D(int a1, float pixels, int *res, int axis);
@@ -207,11 +207,11 @@ void RB_FilterImage(int a1, GfxImageFilter *filter);
 void __cdecl RB_GaussianFilterImage(float radius, unsigned __int8 srcRenderTargetId, unsigned __int8 dstRenderTargetId);
 void RB_GaussianFilter(float radiusX, float radiusY, unsigned __int8 srcRenderTargetId, unsigned __int8 dstRenderTargetId, unsigned __int8 tmpRenderTargetId);
 
-//t6/code/src_noserver/gfx_d3d/rb_imagetouch.cpp
+//t6/code/src/gfx_d3d/rb_imagetouch.cpp
 int RB_CompareTouchImages(const void *e0, const void *e1);
 void RB_TouchAllImages();
 
-//t6/code/src_noserver/gfx_d3d/rb_light.cpp
+//t6/code/src/gfx_d3d/rb_light.cpp
 void R_CalculateLightGridColorFromCoeffs(const __m128 *coeffs, const vec3_t *dir, vec4_t *energy);
 void R_DecodeLightGridCoeffsWeighted(const GfxCompressedLightGridCoeffs *compressedCoeffs, GfxDecodedLightGridColors *decodedColors, float weight);
 unsigned __int8 *R_DecodeLightGridColorsWeighted(int a1, int a2, float a3);
@@ -232,7 +232,7 @@ unsigned __int8 R_LightGridLookup(const GfxLightGrid *lightGrid, const vec3_t *s
 unsigned int R_GetLightingAtPoint(const GfxLightGrid *remoteLightGrid, const vec3_t *samplePos, unsigned __int16 dest, float *destVis, GfxLightingSH *destSH, GfxModelLightExtrapolation extrapolateBehavior, bool useHeroLighting);
 void R_GetAverageLightingAtPoint(unsigned int *a1, const vec3_t *samplePos, float primaryLightFraction, vec3_t *outColor);
 
-//t6/code/src_noserver/gfx_d3d/rb_postfx.cpp
+//t6/code/src/gfx_d3d/rb_postfx.cpp
 bool RB_UsingElectrifiedFX(const GfxViewInfo *viewInfo);
 bool RB_UsingTransportedFX(const GfxViewInfo *viewInfo);
 bool RB_UsingWaterSheetingFX(const GfxViewInfo *viewInfo);
@@ -260,7 +260,7 @@ void RB_BlurSceneFX(const GfxViewInfo *viewInfo);
 void RB_AdditionalPostFX(__m128 a1, const GfxViewInfo *viewInfo);
 void RB_BloomLDR(const GfxViewInfo *viewInfo);
 
-//t6/code/src_noserver/gfx_d3d/rb_query.cpp
+//t6/code/src/gfx_d3d/rb_query.cpp
 unsigned int RB_CalcOcclusionQuerySamples();
 void RB_TessRectBillboard(const vec3_t *inPos, bool isWorldPos, float widthInPixels, float heightInPixels, GfxColor color, float depthBias);
 float RB_GetSampleRectRelativeArea(const vec3_t *position, int widthInPixels, int heightInPixels);
@@ -274,7 +274,7 @@ unsigned __int16 RB_AllocOcclusionQuery(float localClientNum, LocalClientNum_t a
 
 //#include "gfx_d3d/rb_query_d3d.h"
 
-//t6/code/src_noserver/gfx_d3d/rb_shade.cpp
+//t6/code/src/gfx_d3d/rb_shade.cpp
 void RB_ClearPixelShader();
 void RB_ClearVertexShader();
 void RB_ClearVertexDecl();
@@ -291,13 +291,13 @@ void RB_EndTessSurface();
 void RB_TessOverflow();
 void RB_SetTessTechnique(const Material *material, unsigned __int8 techType);
 
-//t6/code/src_noserver/gfx_d3d/rb_showcollision.cpp
+//t6/code/src/gfx_d3d/rb_showcollision.cpp
 void TRACK_rb_showcollision();
 void BuildFrustumPlanes(const GfxViewParms *viewParms, cplane_s *frustumPlanes);
 void RB_DrawCollisionPoly(int numPoints, vec3_t *points, const vec4_t *colorFloat);
 void RB_ShowCollision(const GfxViewParms *viewParms);
 
-//t6/code/src_noserver/gfx_d3d/rb_sky.cpp
+//t6/code/src/gfx_d3d/rb_sky.cpp
 GfxVertex *RB_SetTessQuad(GfxColor color);
 void TRACK_rb_sky();
 float R_UpdateOverTime(float fCurrent, float fGoal, int iFadeInTime, int iFadeOutTime, int frametime);
@@ -309,17 +309,17 @@ void RB_DrawBlindAndGlare(SunFlareDynamic *sunFlare, int frameTime);
 void RB_DrawSun(LocalClientNum_t localClientNum);
 void RB_DrawSunPostEffects(const GfxViewInfo *viewInfo, LocalClientNum_t localClientNum, float sunVisibilityAdjust);
 
-//t6/code/src_noserver/gfx_d3d/rb_spotshadow.cpp
+//t6/code/src/gfx_d3d/rb_spotshadow.cpp
 void R_DrawSpotShadowMapCallback(const void *userData, GfxCmdBufContext context);
 void R_DrawSpotShadowMap(int a1, const GfxViewInfo *viewInfo, unsigned int spotShadowIndex, GfxCmdBuf *cmdBuf);
 void RB_SpotShadowMaps(const GfxBackEndData *data, const GfxViewInfo *viewInfo);
 void RB_DrawSpotShadowOverlay();
 
-//t6/code/src_noserver/gfx_d3d/rb_state.cpp
+//t6/code/src/gfx_d3d/rb_state.cpp
 void TRACK_rb_state();
 void RB_InitSceneViewport();
 
-//t6/code/src_noserver/gfx_d3d/rb_stats.cpp
+//t6/code/src/gfx_d3d/rb_stats.cpp
 const char *RB_Stats_GetStageName(GfxPrimStatsStage s);
 const char *RB_Stats_GetTargetName(GfxPrimStatsTarget t);
 int RB_GetCounterSum(GfxPrimStatsCounters counter, GfxPrimStatsStage stageFrom, GfxPrimStatsStage stageTo, GfxPrimStatsTarget tgtFrom, GfxPrimStatsTarget tgtTo);
@@ -335,14 +335,14 @@ void RB_TrackGeoIndex(GfxFrameStats *stats, int geoIndexCount);
 void RB_TrackFxIndex(GfxFrameStats *stats, int fxIndexCount);
 void RB_Stats_Accumulate(GfxFrameStats *dest, const GfxFrameStats *src);
 
-//t6/code/src_noserver/gfx_d3d/rb_sunshadow.cpp
+//t6/code/src/gfx_d3d/rb_sunshadow.cpp
 void TRACK_rb_sunshadow();
 void RB_SunShadowMaps(const GfxBackEndData *data, const GfxViewInfo *viewInfo);
 void RB_GetShadowOverlayDepthBounds(float *nearDepth, float *farDepth);
 int RB_SetSunShadowOverlayScaleAndBias();
 void RB_DrawSunShadowOverlay();
 
-//t6/code/src_noserver/gfx_d3d/rb_tess.cpp
+//t6/code/src/gfx_d3d/rb_tess.cpp
 void RB_ShowTess(GfxCmdBufContext context, const vec3_t *center, const char *tessName, const vec4_t *color);
 void R_SetVertexDeclTypeNormal(GfxCmdBufState *state, MaterialVertexDeclType vertDeclType);
 void R_SetVertexDeclTypeWorldSurface(GfxCmdBufState *state);
@@ -370,7 +370,7 @@ unsigned int R_TessTrianglesList(const GfxDrawSurfListArgs *listArgs);
 void R_SetBModelPlacement(GfxCmdBufContext context, const GfxSurface *surface, const GfxScaledPlacement *remotePlacement);
 unsigned int R_TessBModel(const GfxDrawSurfListArgs *listArgs);
 
-//t6/code/src_noserver/gfx_d3d/r_add_bsp.cpp
+//t6/code/src/gfx_d3d/r_add_bsp.cpp
 unsigned int R_GetVisLightsMask(const GfxSurface *surface, const vec4_t *dynamicSpotLightPlanes, const GfxLight *visibleLights, int visibleLightCount);
 void R_InitBspDrawSurfRegions(BspSurfRegions *regions, BspSurfRegionSetupInfo *setupInfo, int setupInfoCount, const GfxViewParms *viewParms);
 void R_AddAllBspDrawSurfacesRangeCamera(unsigned int beginSurface, unsigned int endSurface, BspSurfRegions *bspSurfRegions, LocalClientNum_t localClientNum, const GfxLight *visibleLights, int visibleLightCount, TestForSunShadowList sunShadowListTest);
@@ -387,7 +387,7 @@ void R_AddAllBspDrawSurfacesSpotShadow(unsigned int spotShadowIndex, unsigned in
 
 //#include "gfx_d3d/r_add_cmdbuf.h"
 
-//t6/code/src_noserver/gfx_d3d/r_add_staticmodel.cpp
+//t6/code/src/gfx_d3d/r_add_staticmodel.cpp
 void R_SkinStaticModelsShadowForLod(const XModel *model, unsigned __int16 *list, unsigned int count, unsigned int surfType, unsigned int lod, GfxSModelDrawSurfData *surfData);
 void R_SkinStaticModelsShadow(const XModel *model, unsigned __int16 (*staticModelLodList)[4][128], unsigned __int16 (*staticModelLodCount)[4], GfxSModelDrawSurfData *surfData);
 void R_ShowCountsStaticModel(int smodelIndex, int lod);
@@ -413,10 +413,10 @@ void R_AddAllStaticModelSurfacesCamera(int viewIndex, int viewInfoIndex, int tel
 
 //#include "gfx_d3d/r_add_staticmodel.h"
 
-//t6/code/src_noserver/gfx_d3d/r_adszscale.cpp
+//t6/code/src/gfx_d3d/r_adszscale.cpp
 void R_SetADSZScaleConstants(GfxCmdBufInput *input, float adsZScale);
 
-//t6/code/src_noserver/gfx_d3d/r_bsp.cpp
+//t6/code/src/gfx_d3d/r_bsp.cpp
 MaterialUsage *R_GetMaterialUsageData(const Material *material);
 void R_CreateMaterialList();
 void R_ShutdownMaterialUsage();
@@ -431,7 +431,7 @@ signed int R_GetDebugReflectionProbeLocs(vec3_t *locArray, unsigned int maxCount
 
 //#include "gfx_d3d/r_bsp_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_bsp_load_obj.cpp
+//t6/code/src/gfx_d3d/r_bsp_load_obj.cpp
 bool ParseKVPFileFloatKVP(char *kvpFile, char *kvp, vec3_t *vec);
 bool ParseKVPFileVec3KVP(char *kvpFile, char *kvp, vec3_t *vec);
 void TRACK_r_bsp_load_obj();
@@ -531,7 +531,7 @@ void R_InitSortStaticModelsByModel();
 void R_PostLoadEntities();
 GfxWorld *R_LoadWorldInternal(const char *a1, const char *name);
 
-//t6/code/src_noserver/gfx_d3d/r_buffers.cpp
+//t6/code/src/gfx_d3d/r_buffers.cpp
 void TRACK_r_buffers();
 char *R_LockVertexBuffer(ID3D11DeviceContext *device, ID3D11Buffer *handle, int offset, int bytes, int lockFlags);
 void R_UnlockVertexBuffer(ID3D11DeviceContext *device, ID3D11Buffer *handle);
@@ -549,7 +549,7 @@ void R_FreeStaticVertexBuffer(ID3D11Buffer *vb);
 void R_FreeStaticIndexBuffer(ID3D11Buffer *ib);
 void R_ShutdownSkinnedVertexBuffers();
 
-//t6/code/src_noserver/gfx_d3d/r_cinematic.cpp
+//t6/code/src/gfx_d3d/r_cinematic.cpp
 void duck_Initialize();
 void duck_Update();
 void R_Cinematic_MemoryInit(CinematicInfo *cinematicInfo);
@@ -577,7 +577,7 @@ void R_Cinematic_GetDebugInfo(const char **name, int *bytesUsed);
 void R_Cinematic_ForceRelinquishIO();
 void R_Cinematic_FreeBuffers();
 
-//t6/code/src_noserver/gfx_d3d/r_cinematic_bink.cpp
+//t6/code/src/gfx_d3d/r_cinematic_bink.cpp
 const char *R_Cinematic_CheckBinkError();
 void CinematicHunk_Open(CinematicHunk *hunk, void *memory, int size);
 void CinematicHunk_Close(CinematicHunk *hunk);
@@ -589,8 +589,8 @@ void *CinematicHunk_Alloc(CinematicHunk *hunk, int size);
 // void **BinkMoviePlayer::GetMaxTextureBytesNeeded();
 // unsigned int BinkMoviePlayer::GetMainBytesNeeded(unsigned int playbackFlags);
 // GfxImage *BinkMoviePlayer::R_Cinematic_BlackRendererImages();
-// void __cdecl BinkMoviePlayer::InitMemory(void *mainMemory, unsigned int mainBytes, void *textureMemory, unsigned int textureBytes, unsigned int playbackFlags);
-// void BinkMoviePlayer::Destroy(CinematicHunk *notthis);
+// void __cdecl BinkMoviePlayer::InitMemory(char *mainMemory, unsigned int mainBytes, void *textureMemory, unsigned int textureBytes, unsigned int playbackFlags);
+// void BinkMoviePlayer::Destroy();
 // void BinkMoviePlayer::R_Cinematic_ReleaseImages(CinematicTextureSet *textureSet);
 // int BinkMoviePlayer::MakeBinkTexturePC(unsigned int width, unsigned int height, int sysMem, DXGI_FORMAT format, unsigned int pixel_size, ID3D11Texture2D **out_texture, void **out_ptr, unsigned int *out_pitch, unsigned int *out_size);
 // HRESULT BinkMoviePlayer::R_Cinematic_MakeBinkDrawTextures(unsigned int a1, unsigned int *a2);
@@ -603,13 +603,13 @@ void *CinematicHunk_Alloc(CinematicHunk *hunk, int size);
 // int BinkMoviePlayer::GetBufferFillPercentage(void *handle);
 // bool BinkMoviePlayer::IsUnderrun(void *notthis);
 // int BinkMoviePlayer::R_Cinematic_BinkWaitAsyncDecode(BINK *bink, int waitMs);
-// bool BinkMoviePlayer::IsReadyToStart(void *notthis);
+// bool BinkMoviePlayer::IsReadyToStart(BINK *handle);
 // void BinkMoviePlayer::StreamThread_DoBackgroundIO_Bink(int msAllotted, void *user, int id);
 // void BinkMoviePlayer::StartPlayback(void *handle, unsigned int playbackFlags);
 // const char *BinkMoviePlayer::AdvanceFrame();
 // void BinkMoviePlayer::R_Cinematic_Lock_textures(D3D11_MAPPED_SUBRESOURCE *p_m, int a2, int a3);
-// void BinkMoviePlayer::R_Cinematic_BinkLaunchAsyncDecode;
-// void BinkMoviePlayer::DoFrameSync;
+// const char *BinkMoviePlayer::R_Cinematic_BinkLaunchAsyncDecode();
+// void BinkMoviePlayer::DoFrameSync();
 // void BinkMoviePlayer::UpdateMoviesAndImages(D3D11_MAPPED_SUBRESOURCE *a1, int a2, bool forceWait);
 // char BinkMoviePlayer::ForceRelinquishIO();
 // void *BinkMoviePlayer::Bink_Alloc_Alt(unsigned int bytes);
@@ -622,13 +622,13 @@ void *CinematicHunk_Alloc(CinematicHunk *hunk, int size);
 // BINK *BinkMoviePlayer::OpenPath(char *a1, const char *filepath, unsigned int playbackFlags);
 // void BinkMoviePlayer::StopPlayback(void *handle);
 MoviePlayerFunctions *R_Cinematic_GetBinkFunctions();
-int launch_async_bink_drawCallback(D3D11_MAPPED_SUBRESOURCE *a1, jqBatch *batch);
+int launch_async_bink_drawCallback(jqBatch *batch);
 
-//t6/code/src_noserver/gfx_d3d/r_cmdbuf.cpp
+//t6/code/src/gfx_d3d/r_cmdbuf.cpp
 void R_ShutdownCmdBuf(GfxCmdBuf *cmdBuf);
 void R_InitContext(const GfxBackEndData *data, GfxCmdBuf *cmdBuf);
 
-//t6/code/src_noserver/gfx_d3d/r_compile_shader.cpp
+//t6/code/src/gfx_d3d/r_compile_shader.cpp
 void Material_EmitShaderString(GfxAssembledShaderText *prog, const char *string);
 void Material_AddShaderFile(GfxAssembledShaderText *prog, const char *shaderFileName, unsigned int srcLine);
 char Material_FindCachedShaderText(const char *filename, const char **data, unsigned int *byteCount);
@@ -640,7 +640,7 @@ bool Material_GenerateShaderString_r(GfxAssembledShaderText *prog, const char *s
 unsigned int Material_GenerateShaderString(GfxAssembledShaderText *prog, const char *shaderName, const char *shaderType, char *shaderString, int sizeofShaderString);
 ID3D10Blob *Material_CompileShader(const char *shaderName, const char *shaderType, const char *entryPoint, const char *target, ShaderStats *stats, unsigned int *shaderChecksum);
 
-//t6/code/src_noserver/gfx_d3d/r_debug.cpp
+//t6/code/src/gfx_d3d/r_debug.cpp
 void TRACK_r_debug();
 void R_AddDebugPolygonInternal(PolySet *polySet, int pointCount, const vec3_t *points, const vec4_t *faceColor, bool faceDepthTest, const vec4_t *edgeColor, bool edgeDepthTest);
 void __cdecl R_AddDebugPolygon(DebugGlobals *debugGlobalsEntry, int pointCount, const vec3_t *points, const vec4_t *faceColor, int faceDepthTest, const vec4_t *edgeColor, bool edgeDepthTest);
@@ -662,11 +662,11 @@ void R_CopyDebugSpheres(trDebugSphere_t *clSpheres, int clSphereCnt, trDebugSphe
 void R_AddDebugAxis(DebugGlobals *debugGlobalsEntry, const vec3_t *origin, const vec3_t *axis, float length, int doDepthTest);
 void R_AddDebugPolygonOutline(DebugGlobals *debugGlobalsEntry, int pointCount, const vec3_t *points, const vec4_t *color, int doDepthTest);
 
-//t6/code/src_noserver/gfx_d3d/r_debug_alloc.cpp
+//t6/code/src/gfx_d3d/r_debug_alloc.cpp
 void R_DebugAlloc(void **memPtr, int size, const char *name);
 void R_DebugFree(void **dataPtr);
 
-//t6/code/src_noserver/gfx_d3d/r_dobj_skin.cpp
+//t6/code/src/gfx_d3d/r_dobj_skin.cpp
 int R_PreSkinXSurface(const GfxModelSurfaceInfo *surfaceInfo, unsigned __int8 *surfPos);
 unsigned int R_GetSkinSurfaceBufferSize(GfxSceneEntity *sceneEnt, const DObj *obj);
 void R_GetPartBitsForSurfaceAndBoneIndex(XSurface *xsurf, unsigned int boneIndex, int *partBits);
@@ -675,7 +675,7 @@ void R_FlagXModelAsSkinned(GfxSceneEntity *sceneEnt, unsigned int surfaceCount);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxSceneEntity *localSceneEnt, const DObj *obj, DObjAnimMat *boneMatrix, int waitForCullState);
 void R_SkinGfxEntityCmd(void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_dpvs.cpp
+//t6/code/src/gfx_d3d/r_dpvs.cpp
 // int DpvsCachedCell::Compare(const void *lhs, const void *rhs);
 void TRACK_r_dpvs();
 void R_GetSidePlaneNormals(const vec3_t *winding, unsigned int vertexCount, vec3_t *normals);
@@ -778,19 +778,19 @@ void R_DpvsGetVisibleCells(int cameraCellIndex);
 
 //#include "gfx_d3d/r_dpvs.h"
 
-//t6/code/src_noserver/gfx_d3d/r_dpvs_dynmodel.cpp
+//t6/code/src/gfx_d3d/r_dpvs_dynmodel.cpp
 void R_CullDynModelInCell(const unsigned int *dynEntCellBits, unsigned int dynEntClientWordCount, DynEntityPose *dynModelList, const DpvsPlane *planes, int planeCount, unsigned __int8 *dynEntVisData);
 void R_AddCellDynModelSurfacesInFrustumCmd(void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_dpvs_entity.cpp
+//t6/code/src/gfx_d3d/r_dpvs_entity.cpp
 void R_AddEntitySurfacesInFrustum(GfxSceneEntity *sceneEnt, const DpvsPlane *planes, int planeCount, unsigned __int8 *entVisData);
 void R_ForceAddEntitySurfacesInFrustum(GfxSceneEntity *sceneEnt, unsigned __int8 *entVisData);
 
-//t6/code/src_noserver/gfx_d3d/r_dpvs_sceneent.cpp
+//t6/code/src/gfx_d3d/r_dpvs_sceneent.cpp
 void R_AddCellSceneEntSurfacesInFrustum(unsigned int localClientNum, unsigned int cellIndex, const DpvsPlane *planes, int planeCount, int frustumPlaneCount, unsigned int viewIndex);
 void R_AddCellSceneEntSurfacesInFrustumCmd(void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_dpvs_static.cpp
+//t6/code/src/gfx_d3d/r_dpvs_static.cpp
 int R_CullBoxLeaf(const vec3_t *mins, const vec3_t *maxs, DpvsClipPlanes *planes);
 char TestOccluders(const vec3_t *bounds, int numOccluders, vec4_t *plane);
 vec4_t *TestOccludersPartial(const vec3_t *bounds, int *numOccludersPtr, vec4_t *plane);
@@ -798,7 +798,7 @@ int R_AddAabbTreeSurfacesInFrustum_r(int a1, DpvsClipPlanes *a2, DpvsClipPlanes 
 int R_AddCellStaticSurfacesInFrustum(const DpvsPlanes *planes);
 void R_AddCellStaticSurfacesInFrustumCmd(void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_drawsurf.cpp
+//t6/code/src/gfx_d3d/r_drawsurf.cpp
 GfxWorld *R_SetPrimaryLightShadowSurfaces();
 int R_GetWorldDrawSurf(GfxSurface *worldSurf);
 void R_SortWorldSurfaces();
@@ -824,14 +824,14 @@ GfxPackedVertex *R_GetCodeMeshVerts(unsigned __int16 baseVertex);
 GfxWorldVertex *R_GetMarkMeshVerts(unsigned __int16 baseVertex);
 void R_SortDrawSurfs(int a1, GfxDrawSurf *drawSurfList);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_bsp.cpp
+//t6/code/src/gfx_d3d/r_draw_bsp.cpp
 void R_SetStreamsForBspSurface(GfxCmdBufPrimState *state, const srfTriangles_t *tris);
 void R_DrawTrianglesLit(GfxTrianglesDrawStream *drawStream, GfxCmdBufState *state);
 void R_DrawTriangles(GfxTrianglesDrawStream *drawStream, GfxCmdBufState *state);
 void R_DrawBspDrawSurfsLit(const unsigned int *primDrawSurfPos, GfxCmdBufContext context);
 void R_DrawBspDrawSurfs(const unsigned int *primDrawSurfPos, GfxCmdBufContext context);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_lit.cpp
+//t6/code/src/gfx_d3d/r_draw_lit.cpp
 void R_DrawSonarCallback(const void *__formal, GfxCmdBufContext context, const GfxViewInfo *viewInfo);
 void R_DrawSonar(int a1, const GfxViewInfo *viewInfo, GfxCmdBuf *cmdBuf);
 void R_DrawLitQuasiOpaqueCallback(const void *__formal, GfxCmdBufContext context, const GfxViewInfo *viewInfo);
@@ -852,7 +852,7 @@ void R_DrawLitCmd(int a1, char *a2, int a3, DrawLitWorkerCmd *cmd);
 void R_DrawLitBspCmd(int a1, char *a2, int a3, DrawLitWorkerCmd *cmd);
 void R_DrawLitStaticModelCmd(int a1, char *a2, int a3, DrawLitWorkerCmd *cmd);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_material.cpp
+//t6/code/src/gfx_d3d/r_draw_material.cpp
 unsigned __int8 RemoveShadowTech(unsigned __int8 srcTech);
 int R_SetPrepassMaterial(GfxCmdBufContext context, GfxDrawSurf drawSurf, unsigned __int8 techType);
 int R_SetMaterial(GfxCmdBufContext context, GfxDrawSurf drawSurf, const Material **techType);
@@ -864,19 +864,19 @@ int R_SetLitTechniqueNoShaderConstantSet(const GfxCmdBufContext context, const G
 void R_SetGameTime(GfxCmdBufSourceState *source, float gameTime);
 int R_UpdateMaterialTime(GfxCmdBufSourceState *source, float materialTime, float burn);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_method.cpp
+//t6/code/src/gfx_d3d/r_draw_method.cpp
 void R_SetDefaultLitTechTypes();
 void R_InitDrawMethod();
 void R_UpdateDrawMethod(GfxBackEndData *data);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_model_util.cpp
+//t6/code/src/gfx_d3d/r_draw_model_util.cpp
 void R_SetStreamsForXModelSurface(const XSurface *localSurf, GfxCmdBufState *state);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_shadowablelight.cpp
+//t6/code/src/gfx_d3d/r_draw_shadowablelight.cpp
 void R_SetLightProperties(unsigned int a1, float source, GfxCmdBufSourceState *a3, const GfxLight *light, const GfxLightDef *def, LightHasShadowMap hasShadowMap, float spotShadowFade);
 void R_SetShadowableLight(const char *a1, GfxCmdBufSourceState *source, unsigned int shadowableLightIndex);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_staticmodel.cpp
+//t6/code/src/gfx_d3d/r_draw_staticmodel.cpp
 void R_SetStaticModelVertexBuffer(GfxCmdBufPrimState *primState, XSurface *xsurf);
 void R_SetStaticModelIndexBuffer(GfxCmdBufPrimState *primState, XSurface *xsurf);
 void R_DrawStaticModelUnlitNoPrepass(GfxStaticModelDrawStream *drawStream);
@@ -893,11 +893,11 @@ void R_DrawStaticModelSkinnedSurfLit(const unsigned int *primDrawSurfPos, GfxCmd
 void R_DrawStaticModelSkinnedSurf(const unsigned int *primDrawSurfPos, GfxCmdBufContext context, const GfxDrawSurfListInfo *info);
 void R_DrawStaticModelSurf(const unsigned int *primDrawSurfPos, GfxCmdBufContext context, const GfxDrawSurfListInfo *info);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_sunshadow.cpp
+//t6/code/src/gfx_d3d/r_draw_sunshadow.cpp
 void R_DrawSunShadowMapCallback(const void *userData, GfxCmdBufContext context);
 void R_DrawSunShadowMap(int a1, const GfxViewInfo *viewInfo, unsigned int partitionIndex, GfxCmdBuf *cmdBuf);
 
-//t6/code/src_noserver/gfx_d3d/r_draw_xmodel.cpp
+//t6/code/src/gfx_d3d/r_draw_xmodel.cpp
 void R_GetWorldMatrixForModelSurf(const GfxModelRigidSurface *modelSurf, const __m128 eyeOffset, vector4 *worldMat, const XSurface *__formal, const GfxModelRigidSurfacePiece *piece);
 const GfxModelRigidSurface *R_GetLocalModelSurfaceOnly(const GfxBackEndData *data, GfxDrawSurf drawSurf);
 unsigned int R_DrawXModelSurfLitInternal(const XSurface *a1, const GfxModelRigidSurfacePiece *a2, const GfxDrawSurf *drawSurfList, unsigned int drawSurfCount, GfxCmdBufContext context);
@@ -909,7 +909,7 @@ XSurface *R_DrawXModelSurf(const XSurface *a1, const GfxModelRigidSurfacePiece *
 
 //#include "gfx_d3d/r_draw_xmodel.h"
 
-//t6/code/src_noserver/gfx_d3d/r_dvars.cpp
+//t6/code/src/gfx_d3d/r_dvars.cpp
 void R_RegisterDvars();
 bool R_CheckDvarModified(const dvar_t *dvar);
 double R_GetDefaultNearClip();
@@ -919,7 +919,7 @@ void DvarBlock_SetWSI();
 void DvarBlock_SetVcBloom();
 void DvarBlock_SetVcColor();
 
-//t6/code/src_noserver/gfx_d3d/r_extracam.cpp
+//t6/code/src/gfx_d3d/r_extracam.cpp
 void CreateExtraCamRenderTargets(eExtraCamResolution resConfig, int location);
 void R_ExtraCam_Init(int location);
 void R_ExtraCam_Shutdown();
@@ -928,12 +928,12 @@ unsigned int R_ExtraCam_RenderTargetHeight(bool usingMultiExtraCam);
 BOOL R_ExtraCam_GfxResourcesReady();
 void RB_ExtraCam_SetSampler(GfxCmdBufSourceState *cmdBufSrcState);
 
-//t6/code/src_noserver/gfx_d3d/r_fog.cpp
+//t6/code/src/gfx_d3d/r_fog.cpp
 void R_SetFogFromServer(LocalClientNum_t localClientNum, float start, float r, float g, float b, float density, float heightDensity, float baseHeight, float fogColorScale, float sunFogColorR, float sunFogColorG, float sunFogColorB, float sunFogDirX, float sunFogDirY, float sunFogDirZ, float sunFogStartAng, float sunFogEndAng, float fogMaxOpacity);
 void R_GetFogSettings(float *fogSettings);
 void R_SwitchFog(LocalClientNum_t localClientNum, int fogvar, int startTime, int transitionTime);
 
-//t6/code/src_noserver/gfx_d3d/r_font.cpp
+//t6/code/src/gfx_d3d/r_font.cpp
 Glyph *R_GetCharacterGlyph(Font_s *font, unsigned int letter);
 int R_GetKerningAmount(Font_s *font, int previousLetter, int letter);
 unsigned int R_FontGetRandomLetter(Font_s *font, int seed);
@@ -949,7 +949,7 @@ int R_TextHeight(Font_s *font);
 const char *R_TextLineWrapPosition(const char *text, int bufferSize, int pixelsAvailable, Font_s *font, float scale);
 int R_ConsoleTextWidth(const char *textPool, int poolSize, int firstChar, int charCount, Font_s *font);
 
-//t6/code/src_noserver/gfx_d3d/r_fonticon.cpp
+//t6/code/src/gfx_d3d/r_fonticon.cpp
 FontIconEntry *R_GetFontIconEntryByHash(int fontIconNameHash, int size);
 FontIconAlias *R_GetFontAliasEntry(char *fontIconAlias);
 void R_GetFontIconEntryInfo(LocalClientNum_t localClientNum, char *fontIconName, int size, Material **iconShader, float *iconWidth, float *iconHeight);
@@ -958,10 +958,10 @@ void R_GetFontIconEntryInfo(LocalClientNum_t localClientNum, char *fontIconName,
 
 //#include "gfx_d3d/r_font_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_font_load_obj.cpp
+//t6/code/src/gfx_d3d/r_font_load_obj.cpp
 Font_s *R_LoadFont(const char *fontName, int imageTrack);
 
-//t6/code/src_noserver/gfx_d3d/r_gpu_timer.cpp
+//t6/code/src/gfx_d3d/r_gpu_timer.cpp
 void R_GPU_CalcDerivedTimers(GPUTimerFrame *timerFrame);
 void R_GPU_CalcTimers(GPUTimerFrame *timerFrame);
 void R_GPU_FreeInterveningTimeStamps(int lastReadIndex, int readIndex);
@@ -972,7 +972,7 @@ void R_GPU_BeginTimer(GPUTimerId timerId);
 void R_GPU_EndTimer();
 void R_GPU_DrawTimers();
 
-//t6/code/src_noserver/gfx_d3d/r_image.cpp
+//t6/code/src/gfx_d3d/r_image.cpp
 void TRACK_r_image();
 void Image_TrackTotalMemory(GfxImage *image, int platform, int memory);
 void R_AddImageToList(XAssetHeader header, void *data);
@@ -998,7 +998,7 @@ GfxImage *Image_Register_FastFile(const char *imageName);
 GfxImage *Image_Register();
 void R_EnumImages(void (*func)(XAssetHeader, void *), void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_image_load_common.cpp
+//t6/code/src/gfx_d3d/r_image_load_common.cpp
 unsigned int Image_GetCardMemoryAmountForMipLevel(DXGI_FORMAT format, unsigned int mipWidth, unsigned int mipHeight, unsigned int mipDepth);
 unsigned int Image_GetCardMemoryAmount(unsigned int imageFlags, DXGI_FORMAT format, unsigned int width, unsigned int height, unsigned int depth);
 int Image_SourceBytesPerSlice_PC(DXGI_FORMAT format, int width, int height);
@@ -1015,7 +1015,7 @@ void Image_SetupAndLoad(GfxImage *image, int width, int height, int depth, int i
 
 //#include "gfx_d3d/r_image_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_image_load_obj.cpp
+//t6/code/src/gfx_d3d/r_image_load_obj.cpp
 unsigned __int8 Image_GetPcStreamedMips(GfxImageFileHeader *fileHeader);
 int Image_GetPicmipUsed(const GfxImage *image);
 void Image_SetupFromFile(GfxImage *image, const GfxImageFileHeader *fileHeader, DXGI_FORMAT imageFormat, void *initData);
@@ -1042,10 +1042,10 @@ void Image_LoadLightmapIntensity(GfxImage* image);
 GfxImage *Image_LoadBuiltin(const char *name, unsigned __int8 semantic, int imageTrack);
 GfxImage *__cdecl Image_Load(const char *name, int semantic, int imageTrack);
 
-//t6/code/src_noserver/gfx_d3d/r_image_wavelet.cpp
+//t6/code/src/gfx_d3d/r_image_wavelet.cpp
 void TRACK_r_image_wavelet();
 
-//t6/code/src_noserver/gfx_d3d/r_init.cpp
+//t6/code/src/gfx_d3d/r_init.cpp
 void TRACK_r_init();
 const char *R_ErrorDescription(int hr);
 bool R_IsNullRenderer();
@@ -1073,7 +1073,7 @@ void R_Init();
 void R_InitOnce();
 void R_InitThreads();
 
-//t6/code/src_noserver/gfx_d3d/r_light.cpp
+//t6/code/src/gfx_d3d/r_light.cpp
 GfxLightDef *R_RegisterLightDef_LoadObj(const char *name);
 GfxLightDef *R_RegisterLightDef_FastFile(const char *name);
 GfxLightDef *R_RegisterLightDef();
@@ -1094,11 +1094,11 @@ void R_GetBspLightSurfs(const GfxLight *visibleLights, int visibleCount);
 
 //#include "gfx_d3d/r_light_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_light_load_obj.cpp
+//t6/code/src/gfx_d3d/r_light_load_obj.cpp
 const unsigned __int8 *R_LoadLightImage(const unsigned __int8 *readPos, GfxLightImage *lightImage);
 GfxLightDef *R_LoadLightDef(const char *name);
 
-//t6/code/src_noserver/gfx_d3d/r_marks.cpp
+//t6/code/src/gfx_d3d/r_marks.cpp
 int R_ChopPolyBehindPlane(int inPointCount, const FxModelMarkPoint *inPoints, FxModelMarkPoint *outPoints, const vec4_t *plane);
 int R_ChopWorldPolyBehindPlane(int inPointCount, const FxWorldMarkPoint *inPoints, FxWorldMarkPoint *outPoints, const vec4_t *plane, float epsilon);
 bool R_Mark_MaterialAllowsMarks(const Material *markReceiverMaterialHandle, const Material *markMaterialHandle);
@@ -1140,7 +1140,7 @@ bool R_MarkFragments_StaticModels(MarkInfo *markInfo);
 bool R_MarkFragments_Models(MarkInfo *markInfo);
 void R_MarkFragments_Go(MarkInfo *markInfo, void (*callback)(void *, int, FxMarkTri *, int, FxMarkPoint *, const vec3_t *, const vec3_t *), void *callbackContext, int maxTris, FxMarkTri *tris, int maxPoints, FxMarkPoint *points);
 
-//t6/code/src_noserver/gfx_d3d/r_material.cpp
+//t6/code/src/gfx_d3d/r_material.cpp
 void TRACK_r_material();
 unsigned __int8 *Material_Alloc(int size);
 void Load_CreateStateBits(const unsigned int (*pLoadBits)[2], GfxStateBits *stateBits);
@@ -1186,14 +1186,14 @@ void R_InitAssets_PostMapFastfileLoad(int a1, int a2);
 
 //#include "gfx_d3d/r_material.h"
 
-//t6/code/src_noserver/gfx_d3d/r_material_consts.cpp
+//t6/code/src/gfx_d3d/r_material_consts.cpp
 void R_RegisterShaderConst(unsigned int buffer, unsigned int offset, const vec4_t *value, GfxShaderConstantBlock *consts);
 void R_GetPixelLiteralConsts(int a1, int a2, int mtl, const Material *argCount, const MaterialPass *pass, GfxShaderConstantBlock *pixelLiteralConsts);
 int R_ComparePixelConsts(const Material **material, const MaterialPass **pass);
 
 //#include "gfx_d3d/r_material_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_material_load_obj.cpp
+//t6/code/src/gfx_d3d/r_material_load_obj.cpp
 int Material_GetTypeByPrefix(const char *name);
 int Material_GetTypeByTechsetPrefix(const char *name);
 const char *Material_GetPrefix(unsigned int materialType);
@@ -1311,15 +1311,15 @@ Material *Material_Load(LocalClientNum_t a1, const char *fullAssetName, int imag
 void Material_SortInternal(Material **sortedMaterials, unsigned int materialCount);
 void Material_Sort();
 
-//t6/code/src_noserver/gfx_d3d/r_material_pass_load_obj.cpp
+//t6/code/src/gfx_d3d/r_material_pass_load_obj.cpp
 int R_IsMaterialPassMatch(MaterialPass *pass, VertexConstantMappingEntry *entry);
 int R_IsMaterialPassConflict(unsigned int argCount, const MaterialShaderArgument *arg, VertexConstantMappingEntry *entry);
 void R_MaterialPrecompilePass(VertexConstantMappingEntry *a1, MaterialPass *pass);
 
-//t6/code/src_noserver/gfx_d3d/r_mem_track.cpp
+//t6/code/src/gfx_d3d/r_mem_track.cpp
 void R_Track_Init();
 
-//t6/code/src_noserver/gfx_d3d/r_meshdata.cpp
+//t6/code/src/gfx_d3d/r_meshdata.cpp
 void R_BeginMeshVerts(GfxMeshData *mesh);
 char R_ReserveMeshIndices(GfxMeshData *mesh, int indexCount, r_double_index_t **indicesOut);
 char R_ReserveMeshVerts(GfxMeshData *mesh, int vertCount, unsigned __int16 *baseVertex);
@@ -1328,7 +1328,7 @@ void R_ResetMesh(GfxMeshData *mesh);
 void R_SetQuadMeshData(GfxMeshData *mesh, float x, float y, float w, float h, float s0, float t0, float s1, float t1, unsigned int color);
 void R_SetQuadMesh(GfxQuadMeshData *quadMesh, float x, float y, float w, float h, float s0, float t0, float s1, float t1, unsigned int color);
 
-//t6/code/src_noserver/gfx_d3d/r_model.cpp
+//t6/code/src/gfx_d3d/r_model.cpp
 void TRACK_r_model();
 unsigned __int8 *Hunk_AllocXModelPrecache(int size);
 unsigned __int8 *Hunk_AllocXModelPrecacheColl(int size);
@@ -1341,7 +1341,7 @@ int R_SkinAndBoundSceneEnt(GfxSceneEntity *sceneEnt);
 void XSurfaceReleaseResources(XSurface *surf);
 void XSurfaceRenderString(const vec3_t *pos, const char *string);
 
-//t6/code/src_noserver/gfx_d3d/r_model_lighting.cpp
+//t6/code/src/gfx_d3d/r_model_lighting.cpp
 unsigned int R_ModelLightingIndexFromHandle(unsigned __int16 handle);
 void R_SetModelLightingConsts(unsigned __int16 handle, vec4_t *coordsAndVis, vec4_t *sh0, vec4_t *sh1, vec4_t *sh2);
 void R_SetStaticModelLightingConsts(unsigned __int16 handle, unsigned __int8 visibility, const GfxLightingSHQuantized *encodedLightingSH, vec4_t *coordsAndVis, vec4_t *sh0, vec4_t *sh1, vec4_t *sh2);
@@ -1362,12 +1362,12 @@ unsigned int R_AllocModelLighting(float z, const vec3_t *lightingOrigin, float l
 
 //#include "gfx_d3d/r_model_lighting.h"
 
-//t6/code/src_noserver/gfx_d3d/r_model_lod.cpp
+//t6/code/src/gfx_d3d/r_model_lod.cpp
 double R_GetBaseLodDist(const vec3_t *origin);
 double R_GetAdjustedLodDistExtracam(float *pDist, XModelLodRampType lodRampType, const vec3_t *origin, float scale);
 double R_GetAdjustedLodDist(float dist, XModelLodRampType lodRampType);
 
-//t6/code/src_noserver/gfx_d3d/r_model_pose.cpp
+//t6/code/src/gfx_d3d/r_model_pose.cpp
 DObjAnimMat *R_DObjCalcPose(const GfxSceneEntity *sceneEnt, const DObj *obj, int *partBits);
 void R_SetNoDraw(GfxSceneEntity *sceneEnt, GfxSceneEntity *localSceneEnt);
 DObjAnimMat *R_UpdateSceneEntBounds(int a1, GfxSceneEntity *sceneEnt, GfxSceneEntity **pLocalSceneEnt, const DObj **pObj, int waitForCullState);
@@ -1375,7 +1375,7 @@ void R_UpdateGfxEntityBoundsCmd(void *data);
 int R_SkinSceneModel(int a1, int a2, int drawInfo, XModelDrawInfo *model, const XModel *obj, const DObj *pose, const cpose_t *placement, const GfxPlacement *scale, float gfxEntIndex, unsigned int noLodCullOut, int a11);
 void R_ModelSkelCmd(const char *a1, void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_model_skin.cpp
+//t6/code/src/gfx_d3d/r_model_skin.cpp
 void R_Tension(float *tensionData, const unsigned int vertCount, GfxPackedVertex *vertsOut, unsigned __int16 *triIndices, const unsigned int triCount, float *tensionBuffer);
 DWORD EndBench();
 void BenchSurf(const XSurface *surf, const DObjSkelMat *mat);
@@ -1383,14 +1383,14 @@ void R_SkinXSurfaceRigid(const XSurface *surf);
 void R_SkinXSurfaceWeight(const GfxPackedVertex *inVerts, const XSurfaceVertexInfo *vertexInfo);
 void R_SkinXModelCmd(int a1, void *data);
 
-//t6/code/src_noserver/gfx_d3d/r_outdoor.cpp
+//t6/code/src/gfx_d3d/r_outdoor.cpp
 void Outdoor_ApplyBoundingBox(const vec3_t *outdoorMin, const vec3_t *outdoorMax);
 unsigned int Outdoor_UpdateTransforms();
 void R_RegisterOutdoorImage(const vec3_t *a1, GfxWorld *world, const vec3_t *outdoorMin);
 int Outdoor_ComputeTexels(int a1);
 void R_GenerateOutdoorImage(GfxImage *outdoorImage);
 
-//t6/code/src_noserver/gfx_d3d/r_perf_timer.cpp
+//t6/code/src/gfx_d3d/r_perf_timer.cpp
 void R_Perf_GetTimerAverageAndMaxMs(PerfTimerFrameHistory *timerFrameHistory, PerfTimerStyle *timerStyle, unsigned int timerId, float *averageMs, float *maxMs);
 void R_Perf_GetFrameAverageAndMaxMs(PerfTimerFrameHistory *timerFrameHistory, PerfTimerStyle *timerStyle, float *averageMs, float *maxMs);
 void R_Perf_ResetDraw();
@@ -1398,7 +1398,7 @@ void R_Perf_DrawTimers(PerfTimerFrameHistory *timerFrameHistory, PerfTimerStyle 
 
 //#include "gfx_d3d/r_pix_profile.h"
 
-//t6/code/src_noserver/gfx_d3d/r_pointlights.cpp
+//t6/code/src/gfx_d3d/r_pointlights.cpp
 void GenerateLightGridBasisDirs();
 void GatherIncidentEnergyInSpaceForLightFromDir(const vec3_t *energy, const vec3_t *lightFromDir, vec3_t *incidentEnergy);
 void AddLightGridLightingForDir(vec3_t *lightingForDir, GfxDecodedLightGridColors *colors);
@@ -1406,13 +1406,13 @@ bool EvaluateHeroLightForGrid(const GfxHeroLight *light, const vec3_t *xyz, vec3
 void R_AdjustLightColorSamples(GfxDecodedLightGridColors *colors);
 void R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *packed, const vec3_t *heroPos);
 
-//t6/code/src_noserver/gfx_d3d/r_pretess.cpp
+//t6/code/src/gfx_d3d/r_pretess.cpp
 void R_InitDrawSurfListInfo(GfxDrawSurfListInfo *info);
 void R_EmitDrawSurfList(float drawSurfs, const GfxDrawSurf *a2, unsigned int drawSurfCount, GfxBackEndData *data);
 unsigned int R_GetKeyCount(const GfxDrawSurf *drawSurfs, unsigned int drawSurfCount, unsigned int primarySortKey);
 void R_MergeAndEmitDrawSurfLists(float firstStage, unsigned int a2, unsigned int stageCount, GfxBackEndData *data);
 
-//t6/code/src_noserver/gfx_d3d/r_primarylights.cpp
+//t6/code/src/gfx_d3d/r_primarylights.cpp
 unsigned int R_AddPotentiallyShadowedLight(const GfxViewInfo *viewInfo, unsigned int shadowableLightIndex, GfxCandidateShadowedLight *candidateLights, unsigned int candidateLightCount);
 void R_AddShadowedLightToShadowHistory(GfxShadowedLightHistory *shadowHistory, unsigned int shadowableLightIndex, float fadeDelta);
 void R_FadeOutShadowHistoryEntries(GfxShadowedLightHistory *shadowHistory, float fadeDelta);
@@ -1437,11 +1437,11 @@ void R_ShowPrimaryLightBsp(const GfxSurface *surface, unsigned int primaryLightI
 
 //#include "gfx_d3d/r_primarylights_cull.h"
 
-//t6/code/src_noserver/gfx_d3d/r_qrcode.cpp
+//t6/code/src/gfx_d3d/r_qrcode.cpp
 void RB_QRCode_SetShaderConstants(GfxCmdBufSourceState *source, const GfxQRCodeBackend *rbQRCode);
 void R_QRCode_SetupBackendData(GfxQRCodeBackend *qrcodeBackend);
 
-//t6/code/src_noserver/gfx_d3d/r_reflection_probe.cpp
+//t6/code/src/gfx_d3d/r_reflection_probe.cpp
 void R_GetReflectionProbePosition(unsigned int index, vec3_t *pos);
 void R_SetBlackProbe(unsigned __int8 *to, unsigned int size);
 GfxImage *R_GenerateReflectionImageFromRawData(const unsigned __int8 *rawPixels, const int probeIndex, int probeHighMipSize);
@@ -1450,7 +1450,7 @@ void R_GenerateReflectionImages(GfxReflectionProbe *probes, const DiskGfxReflect
 
 //#include "gfx_d3d/r_reflection_probe_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_rendercmds.cpp
+//t6/code/src/gfx_d3d/r_rendercmds.cpp
 void TRACK_r_rendercmds();
 void R_InitGlassRenderBuffers(int numIndices, int numVerts, int vertexSize);
 void R_InitTempSkinBuf(unsigned int maxVerts);
@@ -1515,7 +1515,7 @@ bool R_UpdateFrontEndDvarOptions();
 void R_BeginFrame();
 void R_InitRenderThread();
 
-//t6/code/src_noserver/gfx_d3d/r_rendertarget.cpp
+//t6/code/src/gfx_d3d/r_rendertarget.cpp
 void AssertUninitializedRenderTarget(const GfxRenderTarget *renderTarget);
 void R_AssignImageToRenderTargetDepthStencil(GfxRenderTarget *renderTarget, GfxImage *image, DXGI_FORMAT format);
 void R_AssignImageToRenderTargetColor(GfxRenderTarget *renderTarget, GfxImage *image, DXGI_FORMAT format);
@@ -1530,7 +1530,7 @@ void R_ShutdownUI3DRenderTarget(bool freePingPongBuffer);
 void __cdecl R_ResizeSunShadowmapRenderTarget_PC();
 void __cdecl R_ResizeSpotShadowmapRenderTarget_PC();
 
-//t6/code/src_noserver/gfx_d3d/r_rope_render.cpp
+//t6/code/src/gfx_d3d/r_rope_render.cpp
 void SetupVertex(const __m128 *pos, const __m128 *normal, const __m128 *tangent, const GfxColor *color, PackedTexCoords texCoord, GfxPackedVertex *v);
 void R_Rope_GenerateVerts_Internal(const RopeGenerateVertsCmd *cmd);
 void R_Rope_GenerateVerts_Camera(RopeGenerateVertsCmd *cmd);
@@ -1540,7 +1540,7 @@ unsigned __int8 R_Rope_CalcVisibility(const vec3_t *mins, const vec3_t *maxs, Lo
 const Material *R_Rope_GetMaterialFromGfxWorld();
 RopeRenderInfo *R_Rope_GetInfo();
 
-//t6/code/src_noserver/gfx_d3d/r_scene.cpp
+//t6/code/src/gfx_d3d/r_scene.cpp
 GfxScene *R_GetScene();
 unsigned int R_AllocSceneDObj();
 unsigned int R_AllocSceneModel();
@@ -1659,7 +1659,7 @@ void R_SetupVisibilityEarly(const GfxViewParms *viewParmsDpvs, unsigned int rend
 int r_add_draw_callsCallback(jqBatch *batch);
 void R_RenderExtraCam(const GfxExtraCamParms *a1, const refdef_t *refdef, int frameTime, const GfxExtraCamParms *extraCamParms);
 
-//t6/code/src_noserver/gfx_d3d/r_screenshot.cpp
+//t6/code/src/gfx_d3d/r_screenshot.cpp
 void TRACK_r_screenshot();
 void R_CubemapShotFlipVerticalBuffer(unsigned __int8 *buffer);
 void R_CubemapShotWriteTargaHeader(const int res, unsigned __int8 *fileBuffer);
@@ -1679,7 +1679,7 @@ void R_EndCubemapShot(void *notthis);
 
 //#include "gfx_d3d/r_setstate_d3d.h"
 
-//t6/code/src_noserver/gfx_d3d/r_shade.cpp
+//t6/code/src/gfx_d3d/r_shade.cpp
 void R_SetVertexShaderConstantFromLiteral(GfxCmdBufState *state, unsigned int buffer, unsigned int offset, unsigned int size, const float *literal);
 void R_SetPixelShaderConstantFromLiteral(GfxCmdBufState *state, unsigned int buffer, unsigned int offset, unsigned int size, const float *literal);
 const float *R_GetCodeConstant(const GfxCmdBufContext *context, unsigned int constant);
@@ -1705,7 +1705,7 @@ int R_SetVertexData(GfxCmdBufState *state, const void *data, int vertexCount, in
 
 //#include "gfx_d3d/r_shade.h"
 
-//t6/code/src_noserver/gfx_d3d/r_shader_constant_set.cpp
+//t6/code/src/gfx_d3d/r_shader_constant_set.cpp
 void R_InitShaderConstantSet(ShaderConstantSet *scs);
 BOOL R_ShaderConstantSetIsUsed(const ShaderConstantSet *scs);
 void R_CopyShaderConstantSet(const ShaderConstantSet *scs_src, ShaderConstantSet *scs_dst);
@@ -1740,22 +1740,22 @@ int R_AllocShaderConstantSet(ShaderConstantSet *scs, const char *name);
 
 //#include "gfx_d3d/r_skinnedverts_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_sky.cpp
+//t6/code/src/gfx_d3d/r_sky.cpp
 void R_RegisterSunDvars(const char *a1, dvarType_t a2);
 void R_SetSunFromDvars(sunflare_t *sun);
 void R_LoadSunThroughDvars(const char *sunName, sunflare_t *sun);
 void R_FlushSun();
 
-//t6/code/src_noserver/gfx_d3d/r_skybox.cpp
+//t6/code/src/gfx_d3d/r_skybox.cpp
 void R_RegisterSkyboxModel();
 void R_ClearSkyboxModel();
 void R_AddSkyboxModel(const vec3_t *eyePos);
 XModel *R_MapGetSkyboxModel();
 
-//t6/code/src_noserver/gfx_d3d/r_sky_load_obj.cpp
+//t6/code/src/gfx_d3d/r_sky_load_obj.cpp
 void R_LoadSun(const char *name, sunflare_t *sun);
 
-//t6/code/src_noserver/gfx_d3d/r_spotshadow.cpp
+//t6/code/src/gfx_d3d/r_spotshadow.cpp
 void R_SetViewParmsForLight(const GfxLight *light, GfxViewParms *viewParms);
 void R_GetSpotShadowLookupMatrix(const GfxViewParms *shadowViewParms, int usingGridTiling, int usingFullShadowBuffer, unsigned int spotShadowIndex, unsigned int tileCount, GfxMatrix *lookupMatrix);
 void R_AddSpotShadowModelEntities(LocalClientNum_t localClientNum, unsigned int primaryLightIndex, const GfxLight *light);
@@ -1763,12 +1763,12 @@ void R_EmitSpotShadowMapSurfs(const char *a1, GfxViewInfo *viewInfo);
 void R_GenerateAllSortedSpotShadowDrawSurfs(GfxViewInfo *viewInfo, int viewIndex);
 char __cdecl R_AddSpotShadowsForLight(GfxViewInfo *viewInfo, GfxLight *light, unsigned int shadowableLightIndex, unsigned int totalSpotLightCount, float spotShadowFade);
 
-//t6/code/src_noserver/gfx_d3d/r_sprite.cpp
+//t6/code/src/gfx_d3d/r_sprite.cpp
 void R_BuildQuadStampCodeMeshVerts(Material *material, const vec3_t *viewAxis, const vec3_t *origin, const vec3_t *left, const vec3_t *up, const unsigned __int8 *rgbaColor, float s0, float t0, float s1, float t1);
 void R_GenerateQuadStampCodeMeshVerts(Material *material, const vec3_t *viewAngles, const vec3_t *origin, float worldRadius, const unsigned __int8 *rgbaColor, float frameFrac);
 void R_GenerateQuadStampCodeMeshVertsArray(Material *material, renderQuad_t *quads, int numQuads, vec3_t *viewAxis);
 
-//t6/code/src_noserver/gfx_d3d/r_state.cpp
+//t6/code/src/gfx_d3d/r_state.cpp
 void R_ChangeDepthHackNearClip(GfxCmdBufSourceState *source, unsigned int depthHackFlags);
 void R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *source, const GfxScaledPlacement *placement);
 void R_ChangeObjectPlacementRemote(GfxCmdBufSourceState *a1, const GfxScaledPlacement *a2);
@@ -1826,7 +1826,7 @@ void R_SetTexFilter();
 
 //#include "gfx_d3d/r_state.h"
 
-//t6/code/src_noserver/gfx_d3d/r_state_utils.cpp
+//t6/code/src/gfx_d3d/r_state_utils.cpp
 void R_InitCmdBufSourceState(GfxCmdBufSourceState *source, const GfxCmdBufInput *input, int cameraView);
 void R_SetDebugShaderFeatures(GfxCmdBufSourceState *source);
 void R_PixStartNamedRenderTarget(unsigned __int8 renderTargetId);
@@ -1841,14 +1841,14 @@ void R_BeginView(GfxCmdBufSourceState *source, const GfxSceneDef *sceneDef, cons
 void R_SetShadowLookupMatrix(GfxCmdBufSourceState *source, const GfxMatrix *matrix);
 void R_InitGlobalCmdBufState();
 
-//t6/code/src_noserver/gfx_d3d/r_staticmodel.cpp
+//t6/code/src/gfx_d3d/r_staticmodel.cpp
 int FindStaticModelIndex(const vec3_t *pos);
 void HideStaticModel(unsigned int smodelIndex);
 void UnhideStaticModel(unsigned int smodelIndex);
 
 //#include "gfx_d3d/r_staticmodel_load_db.h"
 
-//t6/code/src_noserver/gfx_d3d/r_staticmodel_load_obj.cpp
+//t6/code/src/gfx_d3d/r_staticmodel_load_obj.cpp
 int R_CellForPoint(const vec3_t *origin);
 unsigned int R_FindNearestReflectionProbeInCell(int cellIndex, const vec3_t *origin);
 unsigned int R_FindNearestReflectionProbe(const GfxWorldDraw *worldDraw, const vec3_t *origin);
@@ -1867,7 +1867,7 @@ unsigned int R_CalcReflectionProbeIndex(const GfxWorld *world, const vec3_t *ori
 void R_SetStaticModelReflectionProbe(const vec3_t *a1, const GfxWorld *world, const GfxStaticModelInst *smodelInst, GfxStaticModelDrawInst *smodelDrawInst);
 void R_CreateStaticModel(XModel *model, const vec3_t *origin, const vec3_t *axis, float scale, GfxStaticModelDrawInst *smodelDrawInst, GfxStaticModelInst *smodelInst, unsigned int staticModelFlags);
 
-//t6/code/src_noserver/gfx_d3d/r_sunshadow.cpp
+//t6/code/src/gfx_d3d/r_sunshadow.cpp
 void R_CalcBoxVsCylinderRayMinBox(const vec3_t *box0, const vec3_t *box1, const vec3_t *origin, const vec3_t *forward, float radius, vec3_t *outBox0, vec3_t *outBox1);
 void R_GetSceneExtentsAlongDir(const vec3_t *cameraOrigin, const vec3_t *origin, const vec3_t *forward, float *nearCap, float *farCap);
 void R_GetSunAxes(vec3_t *sunAxis);
@@ -1889,7 +1889,7 @@ void R_SetupSunShadowMaps(const GfxViewParms *viewParms, GfxSunShadow *sunShadow
 
 //#include "gfx_d3d/r_types_d3d.h"
 
-//t6/code/src_noserver/gfx_d3d/r_ui3d.cpp
+//t6/code/src/gfx_d3d/r_ui3d.cpp
 GfxUI3DStack *R_GetUI3DStack();
 void R_UI3DStack_Push(GfxUI3DStack *stack, int val);
 void R_UI3DStack_Pop(GfxUI3DStack *stack);
@@ -1909,7 +1909,7 @@ void RB_UI3D_RenderToTexture(const void *cmds, const GfxUI3DBackend *rbUI3D, con
 void R_UI3D_OnetimeInit(int width, int height, int pmemLocation, bool allocatePingPongBuffer);
 void R_UI3D_PerframeInit();
 
-//t6/code/src_noserver/gfx_d3d/r_utils.cpp
+//t6/code/src/gfx_d3d/r_utils.cpp
 int R_HashAssetName(const char *name);
 unsigned int R_HashString(const char *string, unsigned int hash);
 void *R_AllocGlobalVariable(unsigned int bytes, const char *name);
@@ -1920,19 +1920,19 @@ double FresnelTerm(float n0, float n1, float cosIncidentAngle);
 char R_GetClearColor(vec4_t *unpackedRgba);
 int R_PickEntityBone(unsigned int a1, int traceMask, const vec3_t *org, const vec3_t *dir, int boneIndex, const char **boneName);
 
-//t6/code/src_noserver/gfx_d3d/r_warn.cpp
+//t6/code/src/gfx_d3d/r_warn.cpp
 void R_UpdateFrameRate();
 void R_WarnOncePerFrame(float warnType, GfxWarningType ap);
 void R_WarnInitDvars(dvarType_t a1, dvarType_t a2);
 
-//t6/code/src_noserver/gfx_d3d/r_wind.cpp
+//t6/code/src/gfx_d3d/r_wind.cpp
 void R_SetWindDirection(vec3_t *dir, float speed);
 void R_SetVariantWindSpringAngle(unsigned int index, float angle);
 void R_SetVariantWindRustleAngle(unsigned int windIndex, const vec3_t *angles);
 void R_SetWindShaderConstants(GfxCmdBufInput *input);
 void R_CopyWindStateToBackEnd();
 
-//t6/code/src_noserver/gfx_d3d/r_workercmds.cpp
+//t6/code/src/gfx_d3d/r_workercmds.cpp
 int r_add_bspCallback_Implementation(jqBatch *batch, void *data);
 int r_add_bsp_sunCallback_Implementation(jqBatch *batch, void *data);
 int r_add_staticmodelCallback_Implementation(jqBatch *batch, void *data);
@@ -1977,7 +1977,7 @@ int fx_marks_drawCallback(jqBatch *batch);
 int fx_update_spotCallback(jqBatch *batch);
 int fx_spawnCallback(jqBatch *batch);
 
-//t6/code/src_noserver/gfx_d3d/r_workercmds_common.cpp
+//t6/code/src/gfx_d3d/r_workercmds_common.cpp
 void R_ProcessCmd_UpdateFxSpotLight(FxCmd *cmd);
 void R_ProcessCmd_UpdateFxNonDependent(FxCmd *cmd);
 void R_DrawEffects(FxCmd *cmd);
@@ -1994,7 +1994,7 @@ void R_SkelGfxModelInit();
 void R_SkelGfxModelDelayed(GfxSceneModel *sceneModel);
 void R_SkelGfxModelFinish();
 
-//t6/code/src_noserver/gfx_d3d/r_xsurface.cpp
+//t6/code/src/gfx_d3d/r_xsurface.cpp
 int XSurfaceGetNumVerts(const XSurface *surface);
 int XSurfaceGetNumTris(const XSurface *surface);
 void XSurfaceGetVerts(const XSurface *surf, float *pVert, float *pTexCoord, float *pNormal);
