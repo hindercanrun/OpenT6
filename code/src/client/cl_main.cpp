@@ -4,6 +4,77 @@
 #include <qcommon/qcommon_public.h>
 #include <gfx_d3d/gfx_d3d_public.h>
 
+cmd_function_s CL_ExecControllerBindings_f_VAR;
+cmd_function_s CL_Live_ShowFriendsList_VAR;
+cmd_function_s CL_Live_MutePlayer_VAR;
+cmd_function_s CL_AnimateUI_f_VAR;
+cmd_function_s CL_ResetSelectedPlayerXuid_f_VAR;
+cmd_function_s CL_Setenv_f_VAR;
+cmd_function_s CL_ForwardToServer_f_VAR;
+cmd_function_s CL_Configstrings_f_VAR;
+cmd_function_s CL_Clientinfo_f_VAR;
+cmd_function_s CL_PlayLogo_f_VAR;
+cmd_function_s CL_ShowIP_f_VAR;
+cmd_function_s CL_startMultiplayer_f_VAR;
+cmd_function_s CL_startSingleplayer_f_VAR;
+cmd_function_s CL_startZombies_f_VAR;
+cmd_function_s CL_SelectStringTableEntryInDvar_f_VAR;
+cmd_function_s CL_ResetStats_f_VAR;
+cmd_function_s CL_Command_DisableAllButPrimaryClients_VAR;
+cmd_function_s CL_Command_DisableAllClients_VAR;
+cmd_function_s CL_Command_SetClientBeingUsedAndPrimary_VAR;
+cmd_function_s CL_Command_SetClientBeingUsedAndPrimaryAndActive_VAR;
+cmd_function_s CL_Command_SetClientBeingUsed_VAR;
+cmd_function_s CL_Command_SetClientBeingUsedAndActive_VAR;
+cmd_function_s CL_Command_SetClientNotBeingUsed_VAR;
+cmd_function_s CL_Command_SetClientPrimary_VAR;
+cmd_function_s CL_Command_SignClientOutOfUI_VAR;
+cmd_function_s CL_LoadGump_VAR;
+cmd_function_s CL_FlushGump_VAR;
+cmd_function_s CL_FlushGumps_VAR;
+cmd_function_s CL_SetupViewport_f_VAR;
+cmd_function_s CL_Live_StartPartyHost_VAR;
+cmd_function_s CL_Live_StartParty_VAR;
+cmd_function_s CL_Live_StartPrivateParty_VAR;
+cmd_function_s CL_Live_StartLocalPrivateParty_VAR;
+cmd_function_s CL_Live_StopParty_VAR;
+cmd_function_s CL_Live_StopPartyKeepPartyTogether_VAR;
+cmd_function_s CL_Live_StopPrivateParty_VAR;
+cmd_function_s CL_Live_StopAllParties_VAR;
+cmd_function_s CL_Live_PartySwitchLobbies_VAR;
+cmd_function_s CL_Live_PartyPlay_VAR;
+cmd_function_s CL_Live_PartyMapVeto_VAR;
+cmd_function_s CL_Live_UpdatePartyMapPacks_VAR;
+cmd_function_s CL_Live_UpdatePartyState_VAR;
+cmd_function_s CL_Live_SessionUpdate_VAR;
+cmd_function_s CL_Live_PartyMapReady_VAR;
+cmd_function_s CL_Live_SessionUpdatePrivacy_VAR;
+cmd_function_s CL_UpdateLevelHunkUsage_VAR;
+cmd_function_s CL_CubemapShot_f_VAR;
+cmd_function_s CL_Live_ShowGamerCard_VAR;
+cmd_function_s CL_Live_DisbandPartyAfterRound_VAR;
+cmd_function_s CL_VoiceFail_f_VAR;
+cmd_function_s CL_ForceVoiceFail_f_VAR;
+cmd_function_s CL_Command_SignClientIn_VAR;
+cmd_function_s CL_ChooseNextPlaylist_VAR;
+cmd_function_s CL_ChoosePreviousPlaylist_VAR;
+cmd_function_s CL_Connect_f_VAR;
+cmd_function_s CL_Connect_f_VAR_SERVER;
+cmd_function_s CL_Disconnect_f_VAR;
+cmd_function_s CL_Disconnect_f_VAR_SERVER;
+cmd_function_s CL_Reconnect_f_VAR;
+cmd_function_s CL_Reconnect_f_VAR_SERVER;
+cmd_function_s CL_Vid_Restart_f_VAR;
+cmd_function_s CL_Vid_Restart_f_VAR_SERVER;
+cmd_function_s CL_CheckInvite_f_VAR;
+cmd_function_s CL_CheckInvite_f_VAR_SERVER;
+cmd_function_s CL_SkipLevel_f_VAR;
+cmd_function_s CL_SkipLevel_f_VAR_SERVER;
+cmd_function_s CL_Snd_Restart_f_VAR;
+cmd_function_s CL_Snd_Restart_f_VAR_SERVER;
+cmd_function_s dwInstantSendTestMessage_VAR;
+cmd_function_s UI_KeyClearStates_f_VAR;
+
 /*
 ==============
 CL_AnyLocalClientsRunning
@@ -1390,7 +1461,98 @@ CL_RegisterCommands
 */
 void CL_RegisterCommands()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	CL_Project_RegisterCommands();
+	CL_Platform_RegisterCommands();
+	CG_RegisterDvars();
+
+	Cmd_AddCommandInternal("execcontrollerbindings", CL_ExecControllerBindings_f, &CL_ExecControllerBindings_f_VAR);
+	Cmd_AddCommandInternal("xshowfriendslist", CL_Live_ShowFriendsList, &CL_Live_ShowFriendsList_VAR);
+	Cmd_AddCommandInternal("xmuteplayer", nullptr, &CL_Live_MutePlayer_VAR);
+	Cmd_AddCommandInternal("ui_animate", CL_AnimateUI_f, &CL_AnimateUI_f_VAR);
+	Cmd_AddCommandInternal("ui_resetSelectedPlayerXuid", CL_ResetSelectedPlayerXuid_f, &CL_ResetSelectedPlayerXuid_f_VAR);
+	Cmd_AddCommandInternal("setenv", CL_Setenv_f, &CL_Setenv_f_VAR);
+	Cmd_AddCommandInternal("cmd", CL_ForwardToServer_f, &CL_ForwardToServer_f_VAR);
+	Cmd_AddCommandInternal("configstrings", CL_Configstrings_f, &CL_Configstrings_f_VAR);
+	Cmd_AddCommandInternal("clientinfo", CL_Clientinfo_f, &CL_Clientinfo_f_VAR);
+	Cmd_AddCommandInternal("logo", CL_PlayLogo_f, &CL_PlayLogo_f_VAR);
+	Cmd_AddCommandInternal("showip", nullptr, &CL_ShowIP_f_VAR);
+	Cmd_AddCommandInternal("startMultiplayer", CL_startMultiplayer_f, &CL_startMultiplayer_f_VAR);
+	Cmd_AddCommandInternal("startSingleplayer", CL_startSingleplayer_f, &CL_startSingleplayer_f_VAR);
+	Cmd_AddCommandInternal("startZombies", CL_startZombies_f, &CL_startZombies_f_VAR);
+	Cmd_AddCommandInternal(
+		"selectStringTableEntryInDvar",
+		CL_SelectStringTableEntryInDvar_f,
+		&CL_SelectStringTableEntryInDvar_f_VAR);
+	Cmd_AddCommandInternal("resetStats", CL_ResetStats_f, &CL_ResetStats_f_VAR);
+	Cmd_AddCommandInternal(
+		"disableallbutprimaryclients",
+		CL_Command_DisableAllButPrimaryClients,
+		&CL_Command_DisableAllButPrimaryClients_VAR);
+	Cmd_AddCommandInternal("disableallclients", CL_Command_DisableAllClients, &CL_Command_DisableAllClients_VAR);
+	Cmd_AddCommandInternal(
+		"setclientbeingusedandprimary",
+		CL_Command_SetClientBeingUsedAndPrimary,
+		&CL_Command_SetClientBeingUsedAndPrimary_VAR);
+	Cmd_AddCommandInternal(
+		"setclientbeingusedandprimaryandactive",
+		CL_Command_SetClientBeingUsedAndPrimaryAndActive,
+		&CL_Command_SetClientBeingUsedAndPrimaryAndActive_VAR);
+	Cmd_AddCommandInternal("setclientbeingused", CL_Command_SetClientBeingUsed, &CL_Command_SetClientBeingUsed_VAR);
+	Cmd_AddCommandInternal(
+		"setclientbeingusedandactive",
+		CL_Command_SetClientBeingUsedAndActive,
+		&CL_Command_SetClientBeingUsedAndActive_VAR);
+	Cmd_AddCommandInternal("setclientnotbeingused", CL_Command_DisableAllClients, &CL_Command_SetClientNotBeingUsed_VAR);
+	Cmd_AddCommandInternal("setclientprimary", CL_Command_SetClientPrimary, &CL_Command_SetClientPrimary_VAR);
+	Cmd_AddCommandInternal("signclientout", CL_Command_SignClientOutOfUI, &CL_Command_SignClientOutOfUI_VAR);
+	Cmd_AddCommandInternal("LoadGump", CL_LoadGump, &CL_LoadGump_VAR);
+	Cmd_AddCommandInternal("FlushGump", CL_FlushGump, &CL_FlushGump_VAR);
+	Cmd_AddCommandInternal("FlushGumps", CL_FlushGump, &CL_FlushGumps_VAR);
+	Cmd_AddCommandInternal("setupviewport", CL_SetupViewport_f, &CL_SetupViewport_f_VAR);
+	Cmd_AddCommandInternal("xstartpartyhost", CL_Live_StartPartyHost, &CL_Live_StartPartyHost_VAR);
+	Cmd_AddCommandInternal("xstartparty", CL_Live_StartParty, &CL_Live_StartParty_VAR);
+	Cmd_AddCommandInternal("xstartprivateparty", CL_Live_StartPrivateParty, &CL_Live_StartPrivateParty_VAR);
+	Cmd_AddCommandInternal("xstartlocalprivateparty", CL_Live_StartLocalPrivateParty, &CL_Live_StartLocalPrivateParty_VAR);
+	Cmd_AddCommandInternal("xstopparty", CL_Live_StopParty, &CL_Live_StopParty_VAR);
+	Cmd_AddCommandInternal(
+		"xstoppartykeeptogether",
+		CL_Live_StopPartyKeepPartyTogether,
+		&CL_Live_StopPartyKeepPartyTogether_VAR);
+	Cmd_AddCommandInternal("xstopprivateparty", CL_Live_StopPrivateParty, &CL_Live_StopPrivateParty_VAR);
+	Cmd_AddCommandInternal("xstopallparties", CL_Live_StopAllParties, &CL_Live_StopAllParties_VAR);
+	Cmd_AddCommandInternal("xpartyswitchlobbies", CL_Live_PartySwitchLobbies, &CL_Live_PartySwitchLobbies_VAR);
+	Cmd_AddCommandInternal("xpartygo", CL_Live_PartyPlay, &CL_Live_PartyPlay_VAR);
+	Cmd_AddCommandInternal("xpartyveto", CL_Live_PartyMapVeto, &CL_Live_PartyMapVeto_VAR);
+	Cmd_AddCommandInternal("xupdatepartymappacks", CL_Live_UpdatePartyMapPacks, &CL_Live_UpdatePartyMapPacks_VAR);
+	Cmd_AddCommandInternal("xupdatepartystate", CL_Live_UpdatePartyState, &CL_Live_UpdatePartyState_VAR);
+	Cmd_AddCommandInternal("xsessionupdate", CL_Live_SessionUpdate, &CL_Live_SessionUpdate_VAR);
+	Cmd_AddCommandInternal("xpartyready", CL_Live_PartyMapReady, &CL_Live_PartyMapReady_VAR);
+	Cmd_AddCommandInternal("xsessionupdateprivacy", CL_Live_SessionUpdatePrivacy, &CL_Live_SessionUpdatePrivacy_VAR);
+	Cmd_AddCommandInternal("updatehunkusage", CL_UpdateLevelHunkUsage, &CL_UpdateLevelHunkUsage_VAR);
+	Cmd_AddCommandInternal("cubemapShot", CL_CubemapShot_f, &CL_CubemapShot_f_VAR);
+	Cmd_AddCommandInternal("xshowgamercard", CL_Live_ShowGamerCard, &CL_Live_ShowGamerCard_VAR);
+	Cmd_AddCommandInternal("xpartydisbandafterround", CL_Live_DisbandPartyAfterRound, &CL_Live_DisbandPartyAfterRound_VAR);
+	Cmd_AddCommandInternal("voicefail", CL_VoiceFail_f, &CL_VoiceFail_f_VAR);
+	Cmd_AddCommandInternal("forcevoicefail", CL_ForceVoiceFail_f, &CL_ForceVoiceFail_f_VAR);
+	Cmd_AddCommandInternal("signclientin", CL_Command_SignClientIn, &CL_Command_SignClientIn_VAR);
+	Cmd_AddCommandInternal("xplaylistchoosegame", CL_ChooseNextPlaylist, &CL_ChooseNextPlaylist_VAR);
+	Cmd_AddCommandInternal("xplaylistchoosepreviousgame", CL_ChoosePreviousPlaylist, &CL_ChoosePreviousPlaylist_VAR);
+	Cmd_AddCommandInternal("connect", nullptr, &CL_Connect_f_VAR);
+	Cmd_AddServerCommandInternal("connect", CL_Connect_f, &CL_Connect_f_VAR_SERVER);
+	Cmd_AddCommandInternal("disconnect", nullptr, &CL_Disconnect_f_VAR);
+	Cmd_AddServerCommandInternal("disconnect", &CL_Disconnect_f, &CL_Disconnect_f_VAR_SERVER);
+	Cmd_AddCommandInternal("reconnect", nullptr, &CL_Reconnect_f_VAR);
+	Cmd_AddServerCommandInternal("reconnect", CL_Reconnect_f, &CL_Reconnect_f_VAR_SERVER);
+	Cmd_AddCommandInternal("vid_restart", nullptr, &CL_Vid_Restart_f_VAR);
+	Cmd_AddServerCommandInternal("vid_restart", CL_Vid_Restart_f, &CL_Vid_Restart_f_VAR_SERVER);
+	Cmd_AddCommandInternal("checkinvite", nullptr, &CL_CheckInvite_f_VAR);
+	Cmd_AddServerCommandInternal("checkinvite", nullptr, &CL_CheckInvite_f_VAR_SERVER);
+	Cmd_AddCommandInternal("skip_level", nullptr, &CL_SkipLevel_f_VAR);
+	Cmd_AddServerCommandInternal("skip_level", CL_SkipLevel_f, &CL_SkipLevel_f_VAR_SERVER);
+	Cmd_AddCommandInternal("snd_restart", nullptr, &CL_Snd_Restart_f_VAR);
+	Cmd_AddServerCommandInternal("snd_restart", CL_Snd_Restart_f, &CL_Snd_Restart_f_VAR_SERVER);
+	Cmd_AddCommandInternal("sendinstantmessage", dwInstantSendTestMessage, &dwInstantSendTestMessage_VAR);
+	Cmd_AddCommandInternal("clearKeyStates", UI_KeyClearStates_f, &UI_KeyClearStates_f_VAR);
 }
 
 /*
