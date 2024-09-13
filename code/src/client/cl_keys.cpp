@@ -4,9 +4,21 @@
 #include <client_mp/client_mp_public.h>
 
 PlayerKeyState playerKeys[MAX_LOCAL_CLIENTS];
+field_t g_consoleField;
 
 bool con_ignoreMatchPrefixOnly;
 char s_shortestMatch[1024];
+const char *keynames[256];
+int keyCatchers;
+
+cmd_function_s Key_Bind_f_VAR;
+cmd_function_s Key_Bind2_f_VAR;
+cmd_function_s Key_Unbind_f_VAR;
+cmd_function_s Key_Unbind2_f_VAR;
+cmd_function_s Key_Unbindall_f_VAR;
+cmd_function_s Key_Unbindall2_f_VAR;
+cmd_function_s Key_Bindlist_f_VAR;
+cmd_function_s Key_UpdateMustHaveBindings_f_VAR;
 
 /*
 ==============
@@ -203,8 +215,7 @@ Key_GetOverstrikeMode
 */
 int Key_GetOverstrikeMode(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return playerKeys[localClientNum].overstrikeMode;
 }
 
 /*
@@ -214,7 +225,7 @@ Key_SetOverstrikeMode
 */
 void Key_SetOverstrikeMode(LocalClientNum_t localClientNum, int state)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	playerKeys[localClientNum].overstrikeMode = state;
 }
 
 /*
@@ -224,8 +235,14 @@ Key_IsDown
 */
 int Key_IsDown(LocalClientNum_t localClientNum, int keynum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (keynum == -1)
+	{
+		return 0;
+	}
+	else
+	{
+		return playerKeys[localClientNum].keys[keynum].down;
+	}
 }
 
 /*
@@ -298,9 +315,7 @@ Key_GetBinding
 */
 Bind_t Key_GetBinding(LocalClientNum_t localClientNum, int keynum, BindIndex_t index)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	Bind_t tmp;
-	return tmp;
+	return playerKeys[localClientNum].keys[keynum].binding[index];
 }
 
 /*
@@ -353,7 +368,7 @@ Key_UpdateMustHaveBindings_f
 */
 void Key_UpdateMustHaveBindings_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Key_BindMustHaveCommands(LOCAL_CLIENT_FIRST);
 }
 
 /*
@@ -361,10 +376,13 @@ void Key_UpdateMustHaveBindings_f()
 Key_GetCommandAssignment
 ==============
 */
-int __cdecl Key_GetCommandAssignment(LocalClientNum_t localClientNum, Bind_t binding, int *twokeys, BindIndex_t bindNum)
+int Key_GetCommandAssignment(
+	LocalClientNum_t localClientNum,
+	Bind_t binding,
+	int *twokeys,
+	BindIndex_t bindNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return Key_GetCommandAssignmentInternal(localClientNum, binding, twokeys, bindNum, 0);
 }
 
 /*
@@ -424,8 +442,13 @@ CL_IsKeyPressed
 */
 int CL_IsKeyPressed(const LocalClientNum_t localClientNum, const char *keyName)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int v2 = Key_StringToKeynum(localClientNum, keyName, 0);
+	if (v2 < 0)
+	{
+		return 0;
+	}
+
+	return playerKeys[localClientNum].keys[v2].down;
 }
 
 /*
@@ -446,7 +469,9 @@ Key_IsCatcherActive
 bool Key_IsCatcherActive(LocalClientNum_t localClientNum, int mask)
 {
 	if (localClientNum == INVALID_LOCAL_CLIENT)
+	{
 		return 0;
+	}
 	return (mask & keyCatchers) != 0;
 }
 
@@ -570,7 +595,17 @@ char Field_CharEvent(LocalClientNum_t localClientNum, const ScreenPlacement *scr
 Console_Key
 ==============
 */
-void __cdecl Console_Key(LocalClientNum_t localClientNum, int key)
+void Console_Key(LocalClientNum_t localClientNum, int key)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+}
+
+/*
+==============
+Message_Key
+==============
+*/
+void Message_Key(LocalClientNum_t localClientNum, int key)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -645,7 +680,16 @@ CL_InitKeyCommands
 */
 void CL_InitKeyCommands()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Cmd_AddCommandInternal("bind", Key_Bind_f, &Key_Bind_f_VAR);
+	Cmd_AddCommandInternal("bind2", Key_Bind2_f, &Key_Bind2_f_VAR);
+	Cmd_AddCommandInternal("unbind", Key_Unbind_f, &Key_Unbind_f_VAR);
+	Cmd_AddCommandInternal("unbind2", Key_Unbind2_f, &Key_Unbind2_f_VAR);
+	Cmd_AddCommandInternal("unbindall", Key_Unbindall_f, &Key_Unbindall_f_VAR);
+	Cmd_AddCommandInternal("unbindall2", Key_Unbindall2_f, &Key_Unbindall2_f_VAR);
+	Cmd_AddCommandInternal("bindlist", Key_Bindlist_f, &Key_Bindlist_f_VAR);
+	Cmd_AddCommandInternal("updateMustHaveBindings", Key_UpdateMustHaveBindings_f, &Key_UpdateMustHaveBindings_f_VAR);
+
+	memset(keynames, 0, sizeof(keynames));
 }
 
 /*

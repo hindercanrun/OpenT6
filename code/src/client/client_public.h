@@ -268,9 +268,9 @@ Bind_t Key_GetBinding(LocalClientNum_t localClientNum, int keynum, BindIndex_t i
 int Key_GetCommandAssignmentInternal(LocalClientNum_t localClientNum, Bind_t binding, int *twokeys, BindIndex_t bindNum, int gamePadOnly);
 int Key_GetSafeFreeKey(LocalClientNum_t localClientNum, BindIndex_t bindNum);
 int Key_GetMouseKeyboardCommandAssignment(LocalClientNum_t localClientNum, Bind_t binding, int *twokeys, BindIndex_t bindNum);
-void __cdecl Key_BindMustHaveCommands(LocalClientNum_t localClientNum);
+void Key_BindMustHaveCommands(LocalClientNum_t localClientNum);
 void Key_UpdateMustHaveBindings_f();
-int __cdecl Key_GetCommandAssignment(LocalClientNum_t localClientNum, Bind_t binding, int *twokeys, BindIndex_t bindNum);
+int Key_GetCommandAssignment(LocalClientNum_t localClientNum, Bind_t binding, int *twokeys, BindIndex_t bindNum);
 void Key_Unbind_f();
 void Key_Unbind2_f();
 void Key_Unbindall_f();
