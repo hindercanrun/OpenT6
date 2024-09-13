@@ -235,14 +235,11 @@ Key_IsDown
 */
 int Key_IsDown(LocalClientNum_t localClientNum, int keynum)
 {
-	if (keynum == -1)
-	{
-		return 0;
-	}
-	else
+	if (!keynum == -1)
 	{
 		return playerKeys[localClientNum].keys[keynum].down;
 	}
+	return 0;
 }
 
 /*
@@ -690,6 +687,10 @@ void CL_InitKeyCommands()
 	Cmd_AddCommandInternal("updateMustHaveBindings", Key_UpdateMustHaveBindings_f, &Key_UpdateMustHaveBindings_f_VAR);
 
 	memset(keynames, 0, sizeof(keynames));
+
+	// todo
+	
+	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
