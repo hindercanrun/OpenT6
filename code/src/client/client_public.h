@@ -512,14 +512,14 @@ void Con_InitGameMsgChannels();
 void Con_InitChannels();
 void Con_ShutdownChannels();
 
-//t6/code/src/client/screen_placement.cpp
+// t6/code/src/client/screen_placement.cpp
 ScreenPlacement *ScrPlace_GetView(const LocalClientNum_t localClientNum);
 ScreenPlacement *ScrPlace_GetViewWritable(const LocalClientNum_t localClientNum);
 ScreenPlacement *ScrPlace_GetViewUIContext(const UIContextIndex_t contextIndex);
 ScreenPlacement *ScrPlace_GetViewUIContextWritable(const UIContextIndex_t contextIndex);
 double ScrPlace_HiResGetScaleY();
 vec2_t *ScrPlace_CalcSafeAreaOffsets(float *a1, float *a2, float viewportY, float viewportWidth, float horzAspectScale, float vertAspectScale, float safeAreaRatioHorz, float safeAreaRatioVert, float virtualViewableMin, float virtualViewableMax, vec2_t *a11, vec2_t *a12);
-void ScrPlace_SetupFloatViewport(vec2_t *a1, vec2_t *a2, ScreenPlacement *scrPlace, float viewportX, float viewportY, float viewportWidth, float viewportHeight, float aspect, bool splitScreen);
+void ScrPlace_SetupFloatViewport(ScreenPlacement *scrPlace, float viewportX, float viewportY, float viewportWidth, float viewportHeight, float aspect, bool splitScreen);
 void ScrPlace_SetupViewport(ScreenPlacement *scrPlace, int viewportX, int viewportY, int viewportWidth, int viewportHeight, float aspect, bool splitScreen);
 void ScrPlace_SetupUnsafeViewport(ScreenPlacement *scrPlace, int viewportX, int viewportY, int viewportWidth, int viewportHeight, float aspect, bool splitScreen);
 double ScrPlace_ApplyX(const ScreenPlacement *scrPlace, float x, int horzAlign);
@@ -527,7 +527,7 @@ double ScrPlace_ApplyY(const ScreenPlacement *scrPlace, float y, int vertAlign);
 double ScrPlace_ApplyW(const ScreenPlacement *scrPlace, float w, int horzAlign);
 double ScrPlace_ApplyH(const ScreenPlacement *scrPlace, float h, int vertAlign);
 void ApplySplitscreenScaling(float *x, float *y, float *w, float *h, float hudSplitscreenScale);
-void ScrPlace_ApplyRect(float *a1, const ScreenPlacement *scrPlace, float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
+void ScrPlace_ApplyRect(const ScreenPlacement *scrPlace, float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
 void ScrPlace_SetLegacySplitscreenScaling();
 void ScrPlace_SetNormalSplitscreenScaling();
 void ScrPlace_Init();
