@@ -138,16 +138,16 @@ Con_ResetMessageWindowTimes
 */
 void Con_ResetMessageWindowTimes(MessageWindow *msgwnd, int serverTime)
 {
-	for (int lineOffset = 0; lineOffset < msgwnd->activeLineCount; ++lineOffset )
+	for (int lineOffset = 0; lineOffset < msgwnd->activeLineCount; ++lineOffset)
 	{
-		unsigned int lineIndex = (lineOffset + msgwnd->firstLineIndex) % msgwnd->lineCount;
+		unsigned int lineIndex = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
 		MessageLine *line = &msgwnd->lines[lineIndex];
 
 		Message *message = &msgwnd->messages[line->messageIndex];
-		int duration = message->endTime - message->startTime;
 
+		int duration = message->endTime - message->startTime;
 		message->startTime = serverTime;
-		message->endTime = duration + serverTime;
+		message->endTime = serverTime + duration;
 	}
 }
 
@@ -180,12 +180,13 @@ void Con_NudgeMessageWindowTimes(MessageWindow *msgwnd, int serverTimeNudge, int
 
 	for (int lineOffset = 0; lineOffset < msgwnd->activeLineCount; ++lineOffset)
 	{
-		unsigned int lineIndex = (lineOffset + msgwnd->firstLineIndex) % msgwnd->lineCount;
+		unsigned int lineIndex = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
 		MessageLine *line = &msgwnd->lines[lineIndex];
 
 		if (line->messageIndex != lastMessageIndex)
 		{
-			int lastMessageIndex = line->messageIndex;
+			lastMessageIndex = line->messageIndex;
+
 			Message *message = &msgwnd->messages[line->messageIndex];
 			message->startTime += serverTimeNudge;
 			message->endTime += serverTimeNudge;
@@ -200,7 +201,7 @@ void Con_NudgeMessageWindowTimes(MessageWindow *msgwnd, int serverTimeNudge, int
 			{
 				int duration = message->endTime - message->startTime;
 				message->startTime = serverTime + 1000;
-				message->endTime = duration + message->startTime;
+				message->endTime = message->startTime + duration;
 			}
 		}
 	}
@@ -248,19 +249,20 @@ Con_ClearNotify
 */
 void Con_ClearNotify(LocalClientNum_t localClientNum)
 {
-	int *p_textBufPos = &con.messageBuffer[localClientNum].gamemsgWindows[0].textBufPos;
-	int v2 = 4;
+	int *textBufPos = &con.messageBuffer[localClientNum].gamemsgWindows[0].textBufPos;
 
-	do
+	const int windowCount = 4;
+	const int offset = 13;
+
+	for (int i = 0; i < windowCount; ++i)
 	{
-		*p_textBufPos = 0;
-		p_textBufPos[3] = 0;
-		p_textBufPos[1] = 0;
-		p_textBufPos[2] = 0;
-		p_textBufPos += 13;
-		--v2;
+		textBufPos[0] = 0; // reset textBufPos
+		textBufPos[1] = 0;
+		textBufPos[2] = 0;
+		textBufPos[3] = 0;
+
+		textBufPos += offset;
 	}
-	while (v2);
 }
 
 /*
@@ -374,16 +376,18 @@ Con_GetDefaultMsgDuration
 */
 int Con_GetDefaultMsgDuration(print_msg_dest_t dest)
 {
+	const float floatAdjustment = 9.313225746154785e-10f;
+
 	if (dest == CON_DEST_MINICON)
 	{
-		return ((con_minicontime->current.value * 1000.0) + 9.313225746154785e-10);
+		return static_cast<int>(con_minicontime->current.value * 1000.0f + floatAdjustment);
 	}
 	else if (dest == CON_DEST_ERROR)
 	{
-		return ((con_errormessagetime->current.value * 1000.0) + 9.313225746154785e-10);
+		return static_cast<int>(con_errormessagetime->current.value * 1000.0f + floatAdjustment);
 	}
 
-	return ((con_gameMsgWindowNLineCount[dest]->current.value * 1000.0) + 9.313225746154785e-10);
+	return static_cast<int>(con_gameMsgWindowNLineCount[dest]->current.value * 1000.0f + floatAdjustment);
 }
 
 /*
@@ -439,33 +443,36 @@ Con_NeedToFreeMessageWindowLine
 */
 bool Con_NeedToFreeMessageWindowLine(MessageWindow *msgwnd, int charCount)
 {
-	// messy
-
-	if (!msgwnd->activeLineCount)
+	if (msgwnd->activeLineCount == 0)
 	{
-		return 0;
+		return false;
 	}
 
-	MessageLine *v3 = &msgwnd->lines[msgwnd->firstLineIndex];
+	MessageLine *firstLine = &msgwnd->lines[msgwnd->firstLineIndex];
 
-	int textBufPos = msgwnd->textBufPos;
-	int v5 = (msgwnd->textBufSize - 1) & (textBufPos + charCount);
-	bool v6 = v5 < textBufPos;
-	int v7 = v3->textBufPos;
+	int currentBufPos = msgwnd->textBufPos;
+	int newBufPos = (msgwnd->textBufSize - 1) & (currentBufPos + charCount);
 
-	if (v6)
+	bool wrappedAround = newBufPos < currentBufPos;
+
+	int firstLineBufPos = firstLine->textBufPos;
+
+	if (wrappedAround)
 	{
-		if (v7 < msgwnd->textBufPos && v7 >= v5)
+		if (firstLineBufPos >= newBufPos && firstLineBufPos < currentBufPos)
 		{
-			return 0;
+			return false;
 		}
 	}
-	else if (v7 < msgwnd->textBufPos || v7 >= v5)
+	else
 	{
-		return 0;
+		if (firstLineBufPos >= newBufPos || firstLineBufPos < currentBufPos)
+		{
+			return false;
+		}
 	}
 
-	return 1;
+	return true;
 }
 
 /*
@@ -996,12 +1003,13 @@ const char* Con_TokenizeInput()
 
 	const char *cmd = Cmd_Argv(0);
 
-	if (*cmd == 92 || *cmd == 47)
+	// check if cmd starts with a backwards or forwards slash
+	if (*cmd == '\\' || *cmd == '/')
 	{
 		++cmd;
 	}
 
-	while (isspace(*cmd))
+	while (isspace(static_cast<unsigned char>(*cmd)))
 	{
 		++cmd;
 	}
@@ -1016,14 +1024,15 @@ Con_AnySpaceAfterCommand
 */
 char Con_AnySpaceAfterCommand()
 {
-	int charIndex;
+	int charIndex = 0;
 
-	for ( charIndex = 0; isspace(g_consoleField.buffer[charIndex]); ++charIndex )
+	while (isspace(g_consoleField.buffer[charIndex]))
 	{
-		// nothing
+		++charIndex;
 	}
 
-	while (g_consoleField.buffer[charIndex])
+	// Check the buffer for a space
+	while (g_consoleField.buffer[charIndex] != '\0')
 	{
 		if (isspace(g_consoleField.buffer[charIndex]))
 		{
@@ -2393,7 +2402,7 @@ void Con_DrawInput(LocalClientNum_t localClientNum)
 	conDrawInputGlob.leftX = conDrawInputGlob.x;
 	g_consoleField.widthInPixels = ((con.screenMax[0] - 6.0) - conDrawInputGlob.x);
 	conDrawInputGlob.inputText = Con_TokenizeInput();
-	conDrawInputGlob.inputTextLen = strlen(Con_TokenizeInput());
+	conDrawInputGlob.inputTextLen = strlen(conDrawInputGlob.inputText);
 	conDrawInputGlob.autoCompleteChoice[0] = 0;
 
 	if (!conDrawInputGlob.inputTextLen)
