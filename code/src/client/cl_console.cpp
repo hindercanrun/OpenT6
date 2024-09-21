@@ -10,6 +10,8 @@
 
 #define COMMAND_HISTORY 32
 
+#define	NUM_CON_TIMES 4
+
 Console con;
 ConDrawInputGlob conDrawInputGlob;
 field_t g_consoleField;
@@ -264,10 +266,9 @@ void Con_ClearNotify(LocalClientNum_t localClientNum)
 {
 	int *textBufPos = &con.messageBuffer[localClientNum].gamemsgWindows[0].textBufPos;
 
-	const int windowCount = 4;
 	const int offset = 13;
 
-	for (int i = 0; i < windowCount; ++i)
+	for (int i = 0; i < NUM_CON_TIMES; ++i)
 	{
 		textBufPos[0] = 0; // reset textBufPos
 		textBufPos[1] = 0;
@@ -2087,6 +2088,8 @@ void Con_DrawOutputText(float x, float y)
 /*
 ==============
 Con_DrawOuputWindow
+
+Draws the fullscreen console
 ==============
 */
 void Con_DrawOuputWindow()
@@ -2096,6 +2099,7 @@ void Con_DrawOuputWindow()
 	float y = con.screenMin[1] + 32.0;
 	float height = (con.screenMax[1] - con.screenMin[1]) - 32.0;
 
+	// draw the background
 	ConDraw_Box(
 		con.screenMin[0],
 		con.screenMin[1] + 32.0,
@@ -2108,6 +2112,7 @@ void Con_DrawOuputWindow()
 	float widtha = width - (6.0 * 2.0);
 	float heighta = height - (6.0 * 2.0);
 
+	// draw the version number
 	Con_DrawOutputVersion(xa, ya, widtha, heighta);
 	Con_DrawOutputScrollBar(xa, ya, widtha, heighta);
 	Con_DrawOutputText(xa, ya, widtha, heighta - ((6.0 * 2.0) + 16.0));
