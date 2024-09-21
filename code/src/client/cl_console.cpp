@@ -1,6 +1,15 @@
 #include "types.h"
 #include "client_public.h"
 
+// in order from highest priority to lowest
+// if none of the catchers are active, bound key strings will be executed
+#define KEYCATCH_CONSOLE		0x0001
+#define	KEYCATCH_UI				0x0002
+#define	KEYCATCH_MESSAGE		0x0004
+#define	KEYCATCH_CGAME			0x0008
+
+#define COMMAND_HISTORY 32
+
 Console con;
 ConDrawInputGlob conDrawInputGlob;
 field_t g_consoleField;
@@ -9,7 +18,7 @@ clientStatic_t cls;
 ScreenPlacement scrPlaceFull;
 
 int con_inputMaxMatchesShown;
-int g_console_field_width;
+int g_console_field_width = 78;
 float g_console_char_height;
 int keyCatchers;
 int callDepth;
@@ -26,6 +35,10 @@ const dvar_t *con_inputHintBoxColor;
 const dvar_t *con_outputBarColor;
 const dvar_t *con_outputSliderColor;
 const dvar_t *con_outputWindowColor;
+const dvar_t *con_errormessagetime;
+const dvar_t *con_minicontime;
+const dvar_t *con_miniconlines;
+const dvar_t *con_typewriterPrintSpeed;
 const dvar_t *con_typewriterColorBase;
 const dvar_t *con_restricted;
 const dvar_t *con_matchPrefixOnly;
@@ -268,6 +281,8 @@ void Con_ClearNotify(LocalClientNum_t localClientNum)
 /*
 ==============
 Con_CheckResize
+
+If the line width has changed, reformat the buffer.
 ==============
 */
 void Con_CheckResize()
@@ -289,7 +304,7 @@ void Con_CheckResize()
 		int fontHeight = R_TextHeight(cls.consoleFont);
 		con.fontHeight = fontHeight;
 
-		if (fontHeight <= 0)
+		if (fontHeight <= 0) // video hasn't been initialized yet
 		{
 			fontHeight = con.fontHeight;
 		}
@@ -584,8 +599,42 @@ PrintableCharsCount
 */
 int PrintableCharsCount(const MessageWindow *msgwnd, MessageLine *line)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (!line || line->textBufSize <= 0)
+	{
+		return 0;
+	}
+
+	int bufferPos = 0;
+	int printedCount = 0;
+	int usedCharCount = 0;
+
+	while (bufferPos < line->textBufSize)
+	{
+		unsigned int decodedLetter = SEH_DecodeLetter(
+			msgwnd->circularTextBuffer[(bufferPos + line->textBufPos) & (msgwnd->textBufSize - 1)],
+			msgwnd->circularTextBuffer[(bufferPos + line->textBufPos + 1) & (msgwnd->textBufSize - 1)],
+			msgwnd->circularTextBuffer[(bufferPos + line->textBufPos + 2) & (msgwnd->textBufSize - 1)],
+			&usedCharCount
+		);
+
+		bufferPos += usedCharCount;
+		++printedCount;
+
+		if (decodedLetter == '^')
+		{
+			char nextChar = msgwnd->circularTextBuffer[(bufferPos + line->textBufPos) & (msgwnd->textBufSize - 1)];
+			if (nextChar != '^' && (isdigit(nextChar) || nextChar == 'F'))
+			{
+				++bufferPos;
+			}
+		}
+
+		if (bufferPos >= line->textBufSize)
+		{
+			break;
+		}
+	}
+	return printedCount;
 }
 
 /*
@@ -593,10 +642,42 @@ int PrintableCharsCount(const MessageWindow *msgwnd, MessageLine *line)
 GetNextValidPrintTimeForLine
 ==============
 */
-int GetNextValidPrintTimeForLine(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int flags)
+int GetNextValidPrintTimeForLine(
+	LocalClientNum_t localClientNum,
+	MessageWindow *msgwnd,
+	int flags)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if ((flags & 1) == 0)
+	{
+		return 0;
+	}
+
+	int serverTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
+	int activeLineIdx = LatestActiveTypewrittenLineIdx(msgwnd);
+
+	if (activeLineIdx == -1)
+	{
+		return serverTime + 250;
+	}
+
+	MessageLine* activeLine = &msgwnd->lines[activeLineIdx];
+
+	int typingDuration = 0;
+
+	if ((activeLine->flags & 1) != 0)
+	{
+		int printableChars = PrintableCharsCount(msgwnd, activeLine);
+		int printSpeed = con_typewriterPrintSpeed->current.integer;
+		typingDuration = printableChars * printSpeed;
+	}
+
+	int eventTime = activeLine->typingStartTime + typingDuration + 150;
+
+	if (eventTime - serverTime < 250)
+	{
+		return serverTime + 250;
+	}
+	return eventTime;
 }
 
 /*
@@ -604,9 +685,59 @@ int GetNextValidPrintTimeForLine(LocalClientNum_t localClientNum, MessageWindow 
 Con_UpdateMessageWindowLine
 ==============
 */
-void Con_UpdateMessageWindowLine(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int linefeed, int flags)
+void Con_UpdateMessageWindowLine(
+	LocalClientNum_t localClientNum,
+	MessageWindow *msgwnd,
+	int linefeed,
+	int flags)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	unsigned int firstLineIndex = msgwnd->firstLineIndex;
+	unsigned int messageIndex = msgwnd->messageIndex;
+	int serverTime = 0;
+
+	if (auto clientGlobals = CL_GetLocalClientGlobals(localClientNum))
+	{
+		serverTime = clientGlobals->serverTime;
+	}
+
+	MessageLine* activeLine = &msgwnd->lines[(firstLineIndex + msgwnd->activeLineCount) % msgwnd->lineCount];
+	activeLine->messageIndex = messageIndex;
+	activeLine->typingStartTime = 0;
+	activeLine->lastTypingSoundTime = 0;
+	activeLine->flags = flags;
+
+	int nextPrintTime = GetNextValidPrintTimeForLine(localClientNum, msgwnd, flags);
+	activeLine->typingStartTime = nextPrintTime;
+
+	if (nextPrintTime)
+	{
+		msgwnd->messages[activeLine->messageIndex].endTime = nextPrintTime + PrintTimeTotal(msgwnd, activeLine);
+	}
+
+	Con_CopyCurrentConsoleLineText(msgwnd, activeLine);
+
+	if (linefeed)
+	{
+		if (msgwnd->activeLineCount == msgwnd->lineCount)
+		{
+			Con_FreeFirstMessageWindowLine(msgwnd);
+		}
+
+		msgwnd->activeLineCount++;
+		int overflow = msgwnd->activeLineCount + msgwnd->padding - msgwnd->lineCount;
+
+		if (overflow > 0)
+		{
+			unsigned int overflowLineIndex = (msgwnd->firstLineIndex + overflow - 1) % msgwnd->lineCount;
+			MessageLine* overflowLine = &msgwnd->lines[overflowLineIndex];
+			Message* overflowMessage = &msgwnd->messages[overflowLine->messageIndex];
+
+			if (overflowMessage->endTime - msgwnd->fadeOut > serverTime)
+			{
+				overflowMessage->endTime = serverTime + msgwnd->fadeOut;
+			}
+		}
+	}
 }
 
 /*
@@ -636,12 +767,69 @@ Con_UpdateNotifyMessage
 */
 void Con_UpdateNotifyMessage(LocalClientNum_t localClientNum, int channel, int duration, int flags)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int messageDuration = duration;
+	if (Con_IsChannelVisible(CON_DEST_MINICON, channel, flags))
+	{
+		if (duration == 0)
+		{
+			float miniconTime = con_minicontime->current.value * 1000.0f;
+			messageDuration = static_cast<int>(miniconTime + 9.313225746154785e-10);
+		}
+
+		if (messageDuration < 0)
+		{
+			messageDuration = 0;
+		}
+
+		Con_UpdateMessage(localClientNum, (18520 * localClientNum + 19056516), messageDuration);
+	}
+
+	for (print_msg_dest_t dest = CON_DEST_GAME_FIRST; dest <= CON_DEST_GAME4; ++dest)
+	{
+		int destMessageDuration = duration;
+		if (Con_IsChannelVisible(dest, channel, flags))
+		{
+			if (duration == 0)
+			{
+				destMessageDuration = Con_GetDefaultMsgDuration(dest);
+			}
+
+			if (destMessageDuration < 0)
+			{
+				destMessageDuration = 0;
+			}
+
+			MessageWindow* destWindow = Con_GetDestWindow(localClientNum, dest);
+			Con_UpdateMessage(localClientNum, destWindow, destMessageDuration);
+		}
+	}
+
+	if (com_developer->current.integer)
+	{
+		int errorMsgDuration = duration;
+		if (Con_IsChannelVisible(CON_DEST_ERROR, channel, flags))
+		{
+			if (duration == 0)
+			{
+				float errorMessageTime = con_errormessagetime->current.value * 1000.0f;
+				errorMsgDuration = static_cast<int>(errorMessageTime + 9.313225746154785e-10);
+			}
+
+			if (errorMsgDuration < 0)
+			{
+				errorMsgDuration = 0;
+			}
+
+			Con_UpdateMessage(localClientNum, (18520 * localClientNum + 19060792), errorMsgDuration);
+		}
+	}
 }
 
 /*
 ==============
 Con_UpdateNotifyLine
+
+Draws the last few lines of output transparently over the game top
 ==============
 */
 void Con_UpdateNotifyLine(LocalClientNum_t localClientNum, int channel, bool lineFeed, int flags)
@@ -1044,6 +1232,16 @@ char Con_AnySpaceAfterCommand()
 	return 0;
 }
 
+
+/*
+==============================================================================
+
+DRAWING
+
+==============================================================================
+*/
+
+
 /*
 ==============
 ConDrawInput_Text
@@ -1374,6 +1572,10 @@ void Con_DrawInputPrompt(LocalClientNum_t localClientNum)
 {
 	Field_Draw(localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y, 5, 5, 0);
 }
+
+
+//================================================================
+
 
 /*
 ==============
@@ -1995,7 +2197,7 @@ void Con_Close(LocalClientNum_t localClientNum)
 
 		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].miniconWindow);
 		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].errorWindow);
-		keyCatchers &= ~1u;
+		keyCatchers &= ~KEYCATCH_CONSOLE;
 	}
 }
 
@@ -2016,7 +2218,34 @@ CL_PlayTextFXPulseSounds
 */
 void CL_PlayTextFXPulseSounds(LocalClientNum_t localClientNum, int currentTime, int strLength, int fxBirthTime, int fxLetterTime, int fxDecayStartTime, int *soundTimeKeeper)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	int timeSinceBirth = currentTime - fxBirthTime;
+	int soundElapsedTime = *soundTimeKeeper - fxBirthTime;
+	int decayStartTime = fxDecayStartTime;
+
+	if (fxDecayStartTime < fxLetterTime * strLength)
+	{
+		decayStartTime = fxLetterTime * strLength;
+	}
+
+	if (timeSinceBirth >= 0)
+	{
+		if (timeSinceBirth <= decayStartTime)
+		{
+			if (timeSinceBirth < fxLetterTime * strLength)
+			{
+				if (soundElapsedTime < fxLetterTime * (timeSinceBirth / fxLetterTime))
+				{
+					SND_Play("uin_pulse_text_type", 0, 1.0, (((localClientNum & 3) << 17) | 0x80FFF), 0, 0, 0);
+					*soundTimeKeeper = currentTime;
+				}
+			}
+		} 
+		else if (soundElapsedTime < decayStartTime)
+		{
+			SND_Play("uin_pulse_text_delete", 0, 1.0, (((localClientNum & 3) << 17) | 0x80FFF), 0, 0, 0);
+			*soundTimeKeeper = currentTime;
+		}
+	}
 }
 
 /*
@@ -2035,9 +2264,10 @@ void Con_ToggleConsole()
 	}
 
 	g_consoleField.widthInPixels = g_console_field_width;
-	keyCatchers ^= 1u;
+	keyCatchers ^= KEYCATCH_CONSOLE;
 	g_consoleField.charHeight = g_console_char_height;
 	g_consoleField.fixedSize = 1;
+	// close full screen console
 	con.outputVisible = 0;
 }
 
@@ -2214,6 +2444,34 @@ void Con_OneTimeInit()
 													con_gameMsgWindowNSplitscreenScale_Descs[i]);
 	}
 
+	con_errormessagetime = _Dvar_RegisterFloat(
+								"con_errormessagetime",
+								8.0,
+								0.0,
+								3.4028235e38,
+								DVAR_ARCHIVE,
+								"Onscreen time for error messages in seconds");
+	con_minicontime = _Dvar_RegisterFloat(
+						"con_minicontime",
+						4.0,
+						0.0,
+						3.4028235e38,
+						DVAR_ARCHIVE,
+						"Onscreen time for minicon messages in seconds");
+	con_miniconlines = _Dvar_RegisterInt(
+						"con_miniconlines",
+						5,
+						0,
+						100,
+						DVAR_ARCHIVE,
+						"Number of lines in the minicon message window");
+	con_typewriterPrintSpeed = _Dvar_RegisterInt(
+									"con_typewriterPrintSpeed",
+									40,
+									0,
+									0x7FFFFFFF,
+									DVAR_ARCHIVE,
+									"Time (in milliseconds) to print each letter in the line.");
 	con_typewriterColorBase = _Dvar_RegisterVec3(
 								"con_typewriterColorBase",
 								1.0,
@@ -2221,7 +2479,7 @@ void Con_OneTimeInit()
 								1.0,
 								0.0,
 								1.0,
-								0x1000u,
+								DVAR_ARCHIVE,
 								"Base color of typewritten objective text.");
 
 	Con_InitMessageWindow(
@@ -2265,10 +2523,9 @@ void Con_Init()
 	g_consoleField.charHeight = g_console_char_height;
 	g_consoleField.fixedSize = 1;
 
-	for (int i = 0; i < 32; ++i)
+	for (int i = 0; i < COMMAND_HISTORY; ++i)
 	{
 		Field_Clear(&historyEditLines[i]);
-
 		historyEditLines[i].widthInPixels = g_console_field_width;
 		historyEditLines[i].charHeight = g_console_char_height;
 		historyEditLines[i].fixedSize = 1;
@@ -2289,6 +2546,10 @@ void Con_Init()
 /*
 ==============
 CL_ConsolePrint
+
+Handles cursor positioning, line wrapping, etc
+All console printing must go through this in order to be logged to disk
+If no console is visible, the text will in the console window
 ==============
 */
 void CL_ConsolePrint(
@@ -2299,6 +2560,8 @@ void CL_ConsolePrint(
 	int pixelWidth,
 	int flags)
 {
+	// for some demos we don't want to ever show anything on the console
+	// also don't show anything if channel 8 is hidden
 	if (cl_noprint && !cl_noprint->current.enabled && channel != 8)
 	{
 		if (!con.initialized)
@@ -2347,7 +2610,13 @@ void CL_ConsoleFixPosition()
 CL_ReviveMessagePrint
 ==============
 */
-void CL_ReviveMessagePrint(LocalClientNum_t localClientNum, const char *reviveString, Material *iconShader, float iconWidth, float iconHeight, char *horzFlipIcon)
+void CL_ReviveMessagePrint(
+	LocalClientNum_t localClientNum,
+	const char *reviveString,
+	Material *iconShader,
+	float iconWidth,
+	float iconHeight,
+	char *horzFlipIcon)
 {
 	char reviveMsg[1024];
 
@@ -2371,14 +2640,80 @@ void CL_ReviveMessagePrint(LocalClientNum_t localClientNum, const char *reviveSt
 CL_DeathMessagePrint
 ==============
 */
-void CL_DeathMessagePrint(LocalClientNum_t localClientNum, const char *attackerName, char attackerColorIndex, const char *victimName, int victimColorIndex, Material *iconShader, float iconWidth, float iconHeight, unsigned int horzFlipIcon)
+void CL_DeathMessagePrint(
+	LocalClientNum_t localClientNum,
+	const char *attackerName,
+	char attackerColorIndex, 
+	const char *victimName,
+	int victimColorIndex,
+	Material *iconShader,
+	float iconWidth,
+	float iconHeight,
+	unsigned int horzFlipIcon)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (cl_noprint->current.enabled)
+	{
+		return;
+	}
+
+	if (!con.initialized)
+	{
+		Con_OneTimeInit();
+	}
+
+	if (con.lineOffset)
+	{
+		Con_UpdateNotifyLine(0, localClientNum, con.prevChannel, 1);
+
+		con.lineOffset = 0;
+		if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+		{
+			++con.displayLineOffset;
+		}
+	}
+
+	char deathMsg[1024] = {0};
+	unsigned int messagePos = 0;
+
+	ColorIndex(0x37u);
+
+	if (*attackerName)
+	{
+		messagePos = CL_AddMessageChar(deathMsg, messagePos, 0x400u, attackerColorIndex);
+		messagePos = CL_AddMessageString(deathMsg, messagePos, 0x400u, attackerName);
+		deathMsg[messagePos++] = ' ';
+	}
+
+	messagePos = CL_AddMessageIcon(deathMsg, messagePos, 0x400u, iconShader, iconWidth, iconHeight, horzFlipIcon);
+	deathMsg[messagePos++] = ' ';
+
+	messagePos = CL_AddMessageChar(deathMsg, messagePos, 0x400u, victimColorIndex);
+	messagePos = CL_AddMessageString(deathMsg, messagePos, 0x400u, victimName);
+
+	if (!*attackerName)
+	{
+		deathMsg[messagePos++] = ' ';
+		const char *suicideMsg = UI_SafeTranslateString("CGAME_QUAKE_SUICIDE");
+		messagePos = CL_AddMessageString(deathMsg, messagePos, 0x400u, suicideMsg);
+	}
+
+	deathMsg[messagePos++] = '\n';
+	deathMsg[messagePos] = '\0';
+
+	int messageWidth = cl_deathMessageWidth->current.integer;
+	if (!messageWidth)
+	{
+		messageWidth = con.visiblePixelWidth;
+	}
+
+	CL_ConsolePrint(localClientNum, 6, deathMsg, 0, messageWidth, 0);
 }
 
 /*
 ==============
 Con_DrawInput
+
+Draw the editline after a ] prompt
 ==============
 */
 void Con_DrawInput(LocalClientNum_t localClientNum)
@@ -2590,6 +2925,8 @@ char Con_CommitToAutoComplete()
 /*
 ==============
 Con_DrawSolidConsole
+
+Draws the console with the solid background
 ==============
 */
 void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
@@ -2598,6 +2935,7 @@ void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
 
 	if (con.lineOffset)
 	{
+		// draw notify lines
 		Con_UpdateNotifyLine(localClientNum, con.prevChannel, 1, 0);
 
 		con.lineOffset = 0;
@@ -2611,6 +2949,7 @@ void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
 
 	if (Key_IsCatcherActive(localClientNum, 1))
 	{
+		// if true, render console in full screen
 		if (con.outputVisible)
 		{
 			Con_DrawOuputWindow();
@@ -2621,6 +2960,7 @@ void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
 	else
 	{
 		con.outputVisible = 0;
+		// draw the input prompt, user text, and cursor
 		Con_DrawInput(localClientNum);
 	}
 }
@@ -2632,6 +2972,7 @@ Con_DrawConsole
 */
 void Con_DrawConsole(LocalClientNum_t localClientNum)
 {
+	// check for console width changes from a vid mode change
 	Con_CheckResize();
 
 	if (Key_IsCatcherActive(localClientNum, 1))
@@ -2639,4 +2980,6 @@ void Con_DrawConsole(LocalClientNum_t localClientNum)
 		Con_DrawSolidConsole(localClientNum);
 	}
 }
+
+//================================================================
 
