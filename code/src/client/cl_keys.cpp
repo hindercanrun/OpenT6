@@ -293,6 +293,14 @@ int Key_IsDown(LocalClientNum_t localClientNum, int keynum)
 /*
 ==============
 Key_StringToKeynum
+
+Returns a key number to be used to index keys[] by looking at
+the given string.  Single ascii characters return themselves, while
+the K_* names are matched up.
+
+0x11 will be interpreted as raw hex, which will allow new controlers
+
+to be configured even if they don't have defined names.
 ==============
 */
 int Key_StringToKeynum(LocalClientNum_t localClientNum, const char *str)
@@ -315,6 +323,9 @@ BOOL Key_IsValidGamePadChar(const char key)
 /*
 ==============
 Key_KeynumToString
+
+Returns a string (either a single ascii char, a K_* name, or a 0x11 hex string) for the
+given keynum.
 ==============
 */
 const char *Key_KeynumToString(int keynum, int translate)
@@ -576,6 +587,15 @@ const char *Key_GetCmdForBinding(Bind_t binding)
 }
 
 /*
+=============================================================================
+
+EDIT FIELDS
+
+=============================================================================
+*/
+
+
+/*
 ==============
 Field_DrawTextOverride
 ==============
@@ -588,6 +608,9 @@ void Field_DrawTextOverride(LocalClientNum_t localClientNum, const field_t *edit
 /*
 ==============
 Field_Draw
+
+Handles horizontal scrolling and cursor blinking
+x, y, amd width are in pixels
 ==============
 */
 void Field_Draw(LocalClientNum_t localClientNum, field_t *edit, int x, int y, int horzAlign, int vertAlign, bool fullUnSafe)
@@ -616,6 +639,11 @@ void Field_Draw(LocalClientNum_t localClientNum, field_t *edit, int x, int y, in
 /*
 ==============
 Field_KeyDownEvent
+
+Performs the basic line editing functions for the console,
+in-game talk, and menu fields
+
+Key events are used for non-printable characters, others are gotten from char events.
 ==============
 */
 bool Field_KeyDownEvent(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, field_t *edit, int key)
@@ -634,6 +662,14 @@ char Field_CharEvent(LocalClientNum_t localClientNum, const ScreenPlacement *scr
 	UNIMPLEMENTED(__FUNCTION__);
 	return 0;
 }
+
+/*
+=============================================================================
+
+CONSOLE LINE EDITING
+
+==============================================================================
+*/
 
 /*
 ==============
@@ -748,10 +784,11 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 		}
 		else
 		{
-			v5 = key == K_UPARROW || tolower(key) == 112 && isCtrlKeyDown; // 112 is unknown
+			v5 = key == K_UPARROW || tolower(key) == 'p' && isCtrlKeyDown;
 		}
 	}
 
+	// command history (ctrl-p ctrl-n for unix style)
 	if (v5)
 	{
 		if (nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0)
@@ -776,10 +813,10 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 		}
 		else
 		{
-			v4 = key == K_DOWNARROW || tolower(key) == 110 && isCtrlKeyDown; // 110 is unknown
+			v4 = key == K_DOWNARROW || tolower(key) == 'n' && isCtrlKeyDown;
 		}
 
-		if (key == K_DOWNARROW || tolower(key) == 'n' && isCtrlKeyDown)
+		if (v4)
 		{
 			if (!Con_CycleAutoComplete(1) && historyLine != nextHistoryLine)
 			{
@@ -789,6 +826,7 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 		}
 		else
 		{
+			// console scrolling
 			switch (key)
 			{
 			case K_PGUP:
@@ -800,28 +838,30 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 			case K_MWHEELUP:
 				Con_PageUp();
 
-				if (isCtrlKeyDown)
+				if (isCtrlKeyDown) // hold <ctrl> to accelerate scrolling
 				{
-					Con_PageUp(); // is twice needed?
+					Con_PageUp();
 					Con_PageUp();
 				}
 				break;
 			case K_MWHEELDOWN:
 				Con_PageDown();
 
-				if (isCtrlKeyDown)
+				if (isCtrlKeyDown) // hold <ctrl> to accelerate scrolling
 				{
-					Con_PageDown(); // is twice needed?
+					Con_PageDown();
 					Con_PageDown();
 				}
 				break;
 			default:
+				// ctrl-home = top of console
 				if (key == K_HOME && isCtrlKeyDown)
 				{
 					Con_Top();
 					return;
 				}
 
+				// ctrl-end = bottom of console
 				if (key == K_END && isCtrlKeyDown)
 				{
 					Con_Bottom();
@@ -844,6 +884,7 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 					Con_CommitToAutoComplete();
 				}
 
+				// pass to the normal editline routine
 				if (Field_KeyDownEvent(localClientNum, &scrPlaceFull, &g_consoleField, key))
 				{
 					Con_AllowAutoCompleteCycling(1);
@@ -854,15 +895,23 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 	}
 }
 
+//============================================================================
+
+
 /*
 ==============
 Message_Key
+
+In game talk message
 ==============
 */
 void Message_Key(LocalClientNum_t localClientNum, int key)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
+
+//============================================================================
+
 
 /*
 ==============
@@ -920,6 +969,7 @@ void Key_Bind2_f()
 /*
 ==============
 Key_Bindlist_f
+
 ==============
 */
 void Key_Bindlist_f()
@@ -953,6 +1003,8 @@ void CL_InitKeyCommands()
 /*
 ==============
 CL_KeyEvent
+
+Called by the system for both key up and key down events
 ==============
 */
 void CL_KeyEvent(LocalClientNum_t localClientNum, int key, const int down, const unsigned int time)
@@ -976,6 +1028,8 @@ void CL_ConsoleCharEvent(LocalClientNum_t localClientNum, int key)
 /*
 ==============
 CL_CharEvent
+
+Normal keyboard characters, already shifted / capslocked / etc
 ==============
 */
 void CL_CharEvent(LocalClientNum_t localClientNum, int key)
@@ -1084,6 +1138,8 @@ int CL_GetGamePadBinding(LocalClientNum_t localClientNum, const char *command, c
 /*
 ==============
 Key_WriteBindings
+
+Writes lines containing "bind key value"
 ==============
 */
 void Key_WriteBindings(LocalClientNum_t localClientNum, int f)
