@@ -3,11 +3,23 @@
 #include "client_public.h"
 #include <client_mp/client_mp_public.h>
 
+#define COMMAND_HISTORY 32
+
 PlayerKeyState playerKeys[MAX_LOCAL_CLIENTS];
 field_t g_consoleField;
+field_t	historyEditLines[COMMAND_HISTORY];
+
+int	nextHistoryLine; // the last line in the history buffer, not masked
+int	historyLine;	 // the line being displayed from history buffer
 
 bool con_ignoreMatchPrefixOnly;
+int s_matchCount;
+int s_prefixMatchCount;
 char s_shortestMatch[1024];
+int g_console_field_width;
+float g_console_char_height;
+bool s_shouldCompleteCmd = 1;
+
 const char *keynames[256];
 int keyCatchers;
 
@@ -85,6 +97,26 @@ void PrintMatches(const char *s)
 
 /*
 ==============
+Console_IsRconCmd
+==============
+*/
+BOOL Console_IsRconCmd(const char *commandString)
+{
+	return I_strncmp(commandString, "rcon", strlen("rcon")) == 0;
+}
+
+/*
+==============
+Console_IsClientDisconnected
+==============
+*/
+bool Console_IsClientDisconnected()
+{
+	return CL_AllLocalClientsDisconnected();
+}
+
+/*
+==============
 keyConcatArgs
 ==============
 */
@@ -147,7 +179,23 @@ UpdateMatches
 */
 void UpdateMatches(bool searchCmds, int *matchLenAfterCmds, int *matchLenAfterDvars)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	s_matchCount = 0;
+	s_prefixMatchCount = 0;
+	s_shortestMatch[0] = 0;
+
+	if (searchCmds)
+	{
+		Cmd_ForEach(FindMatches);
+		*matchLenAfterCmds = strlen(s_shortestMatch);
+	}
+	else
+	{
+		*matchLenAfterCmds = 0;
+	}
+
+	Dvar_ForEachName(FindMatches);
+
+	*matchLenAfterDvars = strlen(s_shortestMatch);
 }
 
 /*
@@ -479,7 +527,7 @@ Key_AddCatcher
 */
 void Key_AddCatcher(LocalClientNum_t localClientNum, int orMask)
 {
-	if ( localClientNum != INVALID_LOCAL_CLIENT )
+	if (localClientNum != INVALID_LOCAL_CLIENT)
 	{
 		keyCatchers |= orMask;
 	}
@@ -594,7 +642,216 @@ Console_Key
 */
 void Console_Key(LocalClientNum_t localClientNum, int key)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char v5; // not good
+
+	int isShiftKeyDown = playerKeys[localClientNum].keys[K_SHIFT].down;
+	int isCtrlKeyDown = playerKeys[localClientNum].keys[K_CTRL].down;
+	int isAltKeyDown = playerKeys[localClientNum].keys[K_ALT].down;
+
+	// ctrl-L clears screen
+	if (key == 'l' && isCtrlKeyDown)
+	{
+		Cbuf_AddText(localClientNum, "clear\n");
+		return;
+	}
+
+	// enter finishes the line
+	if (key == K_ENTER || key == K_KP_ENTER)
+	{
+		if (Con_CommitToAutoComplete())
+		{
+			return;
+		}
+
+		Com_Printf(CON_CHANNEL_DONT_FILTER, "]%s\n", g_consoleField.buffer);
+
+		// leading slash is an explicit command
+		if (g_consoleField.buffer[0] == '\\' || g_consoleField.buffer[0] == '/')
+		{
+			Cbuf_AddText(localClientNum, &g_consoleField.buffer[1]); // valid command
+		}
+		else
+		{
+			if (!Console_IsClientDisconnected()
+				|| !I_strnicmp(g_consoleField.buffer, "quit", 4)
+				|| !I_strnicmp(g_consoleField.buffer, "kill", 4))
+			{
+				if (!g_consoleField.buffer[0])
+				{
+					return; // empty lines just scroll the console without adding to history
+				}
+
+				// other text will be chat messages if RCon is enabled
+				if (Console_IsRconCmd(g_consoleField.buffer))
+				{
+					Cbuf_AddText(localClientNum, "cmd say ");
+					Cbuf_AddText(localClientNum, g_consoleField.buffer);
+					Cbuf_AddText(localClientNum, "\n");
+				}
+			}
+			Cbuf_AddText(localClientNum, g_consoleField.buffer);
+		}
+		Cbuf_AddText(localClientNum, "\n");
+
+		if (g_consoleField.buffer[0])
+		{
+			// copy line to history buffer
+			qmemcpy(&historyEditLines[nextHistoryLine % COMMAND_HISTORY], &g_consoleField, sizeof(field_t));
+			historyLine = ++nextHistoryLine;
+		}
+
+		Field_Clear(&g_consoleField);
+		g_consoleField.widthInPixels = g_console_field_width;
+		g_consoleField.charHeight = g_console_char_height;
+		g_consoleField.fixedSize = 1;
+
+		if (Console_IsClientDisconnected())
+		{
+			SCR_UpdateScreen(); // force an update, because the command may take some time
+		}
+	}
+	// command completion
+	else if (key == K_TAB)
+	{
+		if (s_shouldCompleteCmd)
+		{
+			CompleteCommand();
+		}
+		else
+		{
+			Con_CycleAutoComplete(2 * (isShiftKeyDown == 0) - 1);
+		}
+
+		s_shouldCompleteCmd = 0;
+	}
+	else
+	{
+		if (key == K_UPARROW && isCtrlKeyDown)
+		{
+			Con_CycleAutoComplete(-1);
+			return;
+		}
+
+		if (key == K_DOWNARROW && isCtrlKeyDown)
+		{
+			Con_CycleAutoComplete(1);
+			return;
+		}
+
+		if (key == K_MWHEELUP && isShiftKeyDown)
+		{
+			v5 = 1;
+		}
+		else if (key == K_KP_UPARROW)
+		{
+			v5 = 1;
+		}
+		else
+		{
+			v5 = key == K_UPARROW || tolower(key) == 112 && isCtrlKeyDown; // 112 is unknown
+		}
+	}
+
+	if (v5)
+	{
+		if (nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0)
+		{
+			--historyLine;
+		}
+
+		memcpy(&g_consoleField, &historyEditLines[historyLine % COMMAND_HISTORY], sizeof(g_consoleField));
+		Field_AdjustScroll(&scrPlaceFull, &g_consoleField);
+		Con_AllowAutoCompleteCycling(0);
+	}
+	else
+	{
+		char v4; // not good x2
+		if (key == K_MWHEELDOWN && isShiftKeyDown)
+		{
+			v4 = 1;
+		}
+		else if (key == K_KP_DOWNARROW)
+		{
+			v4 = 1;
+		}
+		else
+		{
+			v4 = key == K_DOWNARROW || tolower(key) == 110 && isCtrlKeyDown; // 110 is unknown
+		}
+
+		if (key == K_DOWNARROW || tolower(key) == 'n' && isCtrlKeyDown)
+		{
+			if (!Con_CycleAutoComplete(1) && historyLine != nextHistoryLine)
+			{
+				memcpy(&g_consoleField, &historyEditLines[++historyLine % COMMAND_HISTORY], sizeof(g_consoleField));
+				Field_AdjustScroll(&scrPlaceFull, &g_consoleField);
+			}
+		}
+		else
+		{
+			switch (key)
+			{
+			case K_PGUP:
+				Con_PageUp();
+				return;
+			case K_PGDN:
+				Con_PageDown();
+				return;
+			case K_MWHEELUP:
+				Con_PageUp();
+
+				if (isCtrlKeyDown)
+				{
+					Con_PageUp(); // is twice needed?
+					Con_PageUp();
+				}
+				break;
+			case K_MWHEELDOWN:
+				Con_PageDown();
+
+				if (isCtrlKeyDown)
+				{
+					Con_PageDown(); // is twice needed?
+					Con_PageDown();
+				}
+				break;
+			default:
+				if (key == K_HOME && isCtrlKeyDown)
+				{
+					Con_Top();
+					return;
+				}
+
+				if (key == K_END && isCtrlKeyDown)
+				{
+					Con_Bottom();
+					return;
+				}
+
+				if (key == K_DEL || key == K_ESCAPE)
+				{
+					if (Con_CancelAutoComplete())
+					{
+						return;
+					}
+				}
+				else if (key == K_RIGHTARROW
+					|| key == K_KP_RIGHTARROW
+					|| key == K_LEFTARROW
+					|| key == K_KP_LEFTARROW
+					|| key != K_BACKSPACE && !isCtrlKeyDown && !isAltKeyDown && !isShiftKeyDown)
+				{
+					Con_CommitToAutoComplete();
+				}
+
+				if (Field_KeyDownEvent(localClientNum, &scrPlaceFull, &g_consoleField, key))
+				{
+					Con_AllowAutoCompleteCycling(1);
+				}
+				break;
+			}
+		}
+	}
 }
 
 /*
@@ -723,7 +980,51 @@ CL_CharEvent
 */
 void CL_CharEvent(LocalClientNum_t localClientNum, int key)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	PIXBeginNamedEvent(-1, "CL_CharEvent");
+
+	if (DevGui_IsActive())
+	{
+		if (!Sys_IsRenderThread())
+		{
+			return;
+		}
+	}
+
+	if (key == K_GRAVE || key == K_TILDE)
+	{
+		return;
+	}
+
+	int keyCatchers = CL_GetLocalClientUIGlobals(localClientNum)->keyCatchers;
+
+	if ((keyCatchers & 1) != 0)
+	{
+		if (key == K_BS && Con_CancelAutoComplete())
+		{
+			return;
+		}
+
+		CL_ConsoleCharEvent(localClientNum, key);
+		return;
+	}
+
+	if ((keyCatchers & 0x20) != 0)
+	{
+		Field_CharEvent(localClientNum, ScrPlace_GetView(localClientNum), &playerKeys[localClientNum].chatField, key);
+		return;
+	}
+
+	if ((keyCatchers & 8) != 0)
+	{
+		UI_KeyEvent(localClientNum, key | 0x400, 1);
+		return;
+	}
+
+	if (CL_GetLocalClientConnectionState(localClientNum) == CA_DISCONNECTED)
+	{
+		CL_ConsoleCharEvent(localClientNum, key);
+		return;
+	}
 }
 
 /*
