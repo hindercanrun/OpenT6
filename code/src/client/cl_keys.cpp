@@ -984,6 +984,7 @@ CL_InitKeyCommands
 */
 void CL_InitKeyCommands()
 {
+	// register our functions
 	Cmd_AddCommandInternal("bind", Key_Bind_f, &Key_Bind_f_VAR);
 	Cmd_AddCommandInternal("bind2", Key_Bind2_f, &Key_Bind2_f_VAR);
 	Cmd_AddCommandInternal("unbind", Key_Unbind_f, &Key_Unbind_f_VAR);
