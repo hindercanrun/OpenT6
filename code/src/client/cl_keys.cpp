@@ -3,6 +3,12 @@
 #include "client_public.h"
 #include <client_mp/client_mp_public.h>
 
+/*
+
+key up events are sent even if in console mode
+
+*/
+
 #define COMMAND_HISTORY 32
 
 PlayerKeyState playerKeys[MAX_LOCAL_CLIENTS];
@@ -13,15 +19,19 @@ int	nextHistoryLine; // the last line in the history buffer, not masked
 int	historyLine;	 // the line being displayed from history buffer
 
 bool con_ignoreMatchPrefixOnly;
+const char *s_completionString
 int s_matchCount;
 int s_prefixMatchCount;
 char s_shortestMatch[1024];
 int g_console_field_width;
 float g_console_char_height;
 bool s_shouldCompleteCmd = 1;
+bool s_hasExactMatch;
 
 const char *keynames[256];
 int keyCatchers;
+
+const dvar_t *con_matchPrefixOnly;
 
 cmd_function_s Key_Bind_f_VAR;
 cmd_function_s Key_Bind2_f_VAR;
@@ -69,8 +79,15 @@ char Field_Paste(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlac
 }
 
 /*
+===========================================
+command line completion
+===========================================
+*/
+
+/*
 ==============
 FindMatches
+
 ==============
 */
 void FindMatches(const char *s)
@@ -81,11 +98,12 @@ void FindMatches(const char *s)
 /*
 ==============
 PrintMatches
+
 ==============
 */
 void PrintMatches(const char *s)
 {
-	if (con_ignoreMatchPrefixOnly && Dvar_GetBool(con_matchPrefixOnly)
+	if (con_ignoreMatchPrefixOnly && con_matchPrefixOnly->current.enabled
 		|| !I_strnicmp(s, s_shortestMatch, strlen(s_shortestMatch)))
 	{
 		if (I_stristr(s, s_shortestMatch))
@@ -201,11 +219,118 @@ void UpdateMatches(bool searchCmds, int *matchLenAfterCmds, int *matchLenAfterDv
 /*
 ==============
 CompleteCommand
+
+perform Tab expansion
 ==============
 */
-void CompleteCommand(int *a1, LocalClientNum_t localClientNum)
+void CompleteCommand(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	// only look at the first token for completion purposes
+	s_completionString = Con_TokenizeInput();
+	s_matchCount = 0;
+	s_prefixMatchCount = 0;
+	s_shortestMatch[0] = 0;
+
+	if (*s_completionString)
+	{
+		const char* originalCommand = s_completionString;
+		bool isDvarCommand = Cmd_Argc() > 1 && Con_IsDvarCommand(s_completionString);
+
+		if (Cmd_Argc() > 1 && Con_IsDvarCommand(s_completionString))
+		{
+			s_completionString = Cmd_Argv(1);
+		}
+
+		int matchLenAfterCmds = 0;
+		int matchLenAfterDvars = 0;
+
+		if (con_matchPrefixOnly->current.enabled)
+		{
+			con_ignoreMatchPrefixOnly = 1;
+			UpdateMatches(!isDvarCommand, &matchLenAfterCmds, &matchLenAfterDvars);
+
+			if (s_matchCount > con_inputMaxMatchesShown)
+			{
+				con_ignoreMatchPrefixOnly = 0;
+				UpdateMatches(!isDvarCommand, &matchLenAfterCmds, &matchLenAfterDvars);
+
+				if (!s_matchCount)
+				{
+					con_ignoreMatchPrefixOnly = 1;
+					UpdateMatches(!isDvarCommand, &matchLenAfterCmds, &matchLenAfterDvars);
+				}
+			}
+		}
+		else
+		{
+			con_ignoreMatchPrefixOnly = 0;
+			UpdateMatches(!isDvarCommand, &matchLenAfterCmds, &matchLenAfterDvars);
+		}
+
+		if (s_matchCount)
+		{
+			field_t savedField;
+			memcpy(&savedField, &g_consoleField, sizeof(savedField));
+
+			bool useExactMatch = isDvarCommand || s_matchCount == 1 || s_hasExactMatch && Con_AnySpaceAfterCommand();
+
+			if (isDvarCommand)
+			{
+				Com_sprintf(g_consoleField->buffer, 256, "\\%s %s", originalCommand, s_shortestMatch);
+			}
+			else
+			{
+				Com_sprintf(g_consoleField->buffer, 256, "\\%s", s_shortestMatch);
+			}
+
+			g_consoleField.cursor = strlen(g_consoleField.buffer);
+
+			ConcatRemaining(savedField.buffer, s_completionString);
+
+			if (useExactMatch)
+			{
+				if (!isDvarCommand)
+				{
+					if (Cmd_Argc() == 1)
+					{
+						I_strncat(g_consoleField.buffer, 256, " ");
+					}
+					else if (Cmd_Argc() == 2)
+					{
+						if (matchLenAfterCmds == matchLenAfterDvars)
+						{
+							//T6todo CompleteCmdArgument();
+						}
+						else
+						{
+							//T6todo CompleteDvarArgument();
+						}
+					}
+				}
+
+				g_consoleField.cursor = strlen(g_consoleField.buffer);
+			}
+			else if (Con_HasTooManyMatchesToShow())
+			{
+				Com_Printf(CON_CHANNEL_DONT_FILTER, "]%s\n", g_consoleField.buffer);
+
+				// run through again, printing matches
+				Cmd_ForEach(PrintMatches);
+				Dvar_ForEachName(PrintMatches);
+			}
+
+			Cmd_EndTokenizedString();
+			Field_AdjustScroll(localClientNum, &scrPlaceFull, &g_consoleField);
+		}
+		else
+		{
+			Cmd_EndTokenizedString();
+		}
+	}
+	else
+	{
+		Cmd_EndTokenizedString();
+	}
 }
 
 /*
@@ -739,7 +864,7 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 		Field_Clear(&g_consoleField);
 		g_consoleField.widthInPixels = g_console_field_width;
 		g_consoleField.charHeight = g_console_char_height;
-		g_consoleField.fixedSize = 1;
+		g_consoleField.fixedSize = true;
 
 		if (Console_IsClientDisconnected())
 		{
@@ -751,7 +876,7 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 	{
 		if (s_shouldCompleteCmd)
 		{
-			CompleteCommand();
+			CompleteCommand(localClientNum);
 		}
 		else
 		{

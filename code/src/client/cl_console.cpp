@@ -19,7 +19,7 @@ field_t historyEditLines[32];
 clientStatic_t cls;
 ScreenPlacement scrPlaceFull;
 
-int con_inputMaxMatchesShown;
+int con_inputMaxMatchesShown = 24;
 int g_console_field_width = 78;
 float g_console_char_height;
 int keyCatchers;

@@ -247,12 +247,14 @@ void Field_AdjustScroll(LocalClientNum_t localClientNum, const ScreenPlacement *
 char Field_Paste(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, field_t *edit);
 void FindMatches(const char *s);
 void PrintMatches(const char *s);
+BOOL Console_IsRconCmd(const char *commandString);
+bool Console_IsClientDisconnected();
 int keyConcatArgs();
 void ReplaceConsoleInputArgument(int replaceCount, const char *replacement);
 void CompleteCmdArgument();
 void CompleteDvarArgument();
 void UpdateMatches(bool searchCmds, int *matchLenAfterCmds, int *matchLenAfterDvars);
-void CompleteCommand(int *a1, LocalClientNum_t localClientNum);
+void CompleteCommand(LocalClientNum_t localClientNum);
 bool Console_IsScrollUpKey(int key, int isShiftDown, int isCtrlDown);
 bool Console_IsScrollDownKey(int key, int isShiftDown, int isCtrlDown);
 int Key_GetOverstrikeMode(LocalClientNum_t localClientNum);
