@@ -1,55 +1,186 @@
+
+// console.cpp
+
 #include "types.h"
+#include "client.h"
 #include "client_public.h"
 
+const	float	con_outputBarSize = 10.0f;
+const	float	con_inputDvarMatchColor[]			= {1.0, 1.0, 0.8, 1.0};
+const	float	con_inputDvarValueColor[]			= {1.0, 1.0, 1.0, 1.0};
+const	float	con_inputDvarInactiveValueColor[]	= {0.8, 0.8, 0.8, 1.0};
+const	float	con_inputDvarDescriptionColor[]		= {1.0, 1.0, 1.0, 1.0};
+const	float	con_inputCommandMatchColor[]		= {0.8, 0.8, 1.0, 1.0};
+bool			con_ignoreMatchPrefixOnly;
+const	float	con_inputDvarInfoColor[]			= {0.8, 0.8, 1.0, 1.0};
+
+int	con_inputMaxMatchesShown = 24;
+
+int g_console_field_width = 78;
+int g_console_char_height = 16.0;//99% incorrect
+
+
+#define COLNSOLE_COLOR  COLOR_WHITE //COLOR_BLACK
+
+#define	NUM_CON_TIMES 4
+
+#define		CON_TEXTSIZE	32768
+//#define     CON_TEXTSIZE    65536   // (SA) DM want's more console...
+typedef struct {
+	char autoCompleteChoice[64];
+
+	int matchIndex;
+	int matchCount;
+
+	const char *inputText;
+	int inputTextLen;
+
+	bool hasExactMatch;
+
+	bool mayAutoComplete;
+
+	float x;				// X offset in current line for next print
+	float y;				// Y offset in current line for next print
+	float leftX;
+
+	float fontHeight;
+} ConDrawInputGlob_t;
+
+typedef struct{
+	int	messageIndex;
+
+	int textBufPos;
+	int textBufSize;
+
+	int typingStartTime;
+	int lastTypingSoundTime;
+
+	int flags;
+} MessageLine_t;
+
+typedef struct
+{
+	int	startTime;
+	int endTime;
+} Message_t;
+
+typedef struct {
+	MessageLine	*lines;
+	Message		*messages;
+
+	char		*circularTextBuffer;
+
+	int			textBufSize;
+	int			lineCount;		// total lines in console scrollback
+
+	int			padding;
+	int			scrollTime;
+
+	int			fadeIn;
+	int			fadeOut;
+
+	int			textBufPos;
+
+	int			firstLineIndex;
+	int			activeLineCount;
+
+	int			messageIndex;
+} MessageWindow_t;
+
+typedef struct
+{
+	char			gamemsgText[4][2048];
+	MessageWindow	gamemsgWindows[4];
+	MessageLine		gamemsgLines[4][12];
+	Message			gamemsgMessages[4][12];
+
+	char			miniconText[4096];
+	MessageWindow	miniconWindow;
+	MessageLine		miniconLines[100];
+	Message			miniconMessages[100];
+
+	char			errorText[1024];
+	MessageWindow	errorWindow;
+	MessageLine		errorLines[5];
+	Message			errorMessages[5];
+} MessageBuffer_t;
+
+typedef struct {
+	int				initialized;
+
+	MessageWindow	consoleWindow;
+	MessageLine		consoleLines[1024];
+	Message			consoleMessages[1024];
+
+	char			consoleText[CON_TEXTSIZE];
+	char			textTempLine[512];
+
+	unsigned int	lineOffset;
+	int				displayLineOffset;
+
+	int				prevChannel;
+
+	bool			outputVisible;
+
+	int				fontHeight;
+
+	int				visibleLineCount;	// in scanlines
+	int				visiblePixelWidth;
+
+	vec2_t			screenMin;
+	vec2_t			screenMax;
+
+	MessageBuffer	messageBuffer[1];
+
+	vec4_t			color;
+} console_t;
+
+extern	ConDrawInputGlob_t	conDrawInputGlob;
+//extern	MessageLine_t		con;
+//extern	Message_t			con;
+//extern	MessageWindow_t		con;
+//extern	MessageBuffer_t		con;
+extern	console_t			con;
+extern	field_t				g_consoleField; 
+
+const	dvar_t		*con_inputBoxColor;
+const	dvar_t		*con_inputHintBoxColor;
+const	dvar_t		*con_outputBarColor;
+const	dvar_t		*con_outputSliderColor;
+const	dvar_t		*con_outputWindowColor;
+const	dvar_t		*con_errormessagetime;
+const	dvar_t		*con_minicontime;
+const	dvar_t		*con_miniconlines;
+const	dvar_t		*con_typewriterPrintSpeed;
+const	dvar_t		*con_typewriterColorBase;
+const	dvar_t		*con_restricted;
+const	dvar_t		*con_matchPrefixOnly;
+const	dvar_t		*cl_deathMessageWidth;
+
+cmd_function_s	Con_ChatModePublic_f_VAR;
+cmd_function_s	Con_Clear_f_VAR;
+cmd_function_s	Con_Echo_f_VAR;
+
+#define	DEFAULT_CONSOLE_WIDTH	78
+
+vec4_t	con_versionColor			= {1.0, 1.0, 0.0, 1.0};
+vec4_t	colorWhite					= {1.0, 1.0, 1.0, 1.0};
+vec4_t	con_inputDvarMatchColor		= {1.0, 1.0, 0.8, 1.0};
+vec4_t	con_inputCommandMatchColor	= {0.8, 0.8, 1.0, 1.0};
+
+//start todo
 // in order from highest priority to lowest
 // if none of the catchers are active, bound key strings will be executed
-#define KEYCATCH_CONSOLE		0x0001
+#define	KEYCATCH_CONSOLE		0x0001
 #define	KEYCATCH_UI				0x0002
 #define	KEYCATCH_MESSAGE		0x0004
 #define	KEYCATCH_CGAME			0x0008
 
-#define COMMAND_HISTORY 32
+#define	COMMAND_HISTORY 32
 
-#define	NUM_CON_TIMES 4
-
-Console con;
-ConDrawInputGlob conDrawInputGlob;
-field_t g_consoleField;
 field_t historyEditLines[32];
-clientStatic_t cls;
-ScreenPlacement scrPlaceFull;
+//end todo
 
-int con_inputMaxMatchesShown = 24;
-int g_console_field_width = 78;
-float g_console_char_height;
-int keyCatchers;
-int callDepth;
-
-bool con_ignoreMatchPrefixOnly;
-const float con_outputBarSize = 10.0f;
-
-cmd_function_s Con_ChatModePublic_f_VAR;
-cmd_function_s Con_Clear_f_VAR;
-cmd_function_s Con_Echo_f_VAR;
-
-const dvar_t *con_inputBoxColor;
-const dvar_t *con_inputHintBoxColor;
-const dvar_t *con_outputBarColor;
-const dvar_t *con_outputSliderColor;
-const dvar_t *con_outputWindowColor;
-const dvar_t *con_errormessagetime;
-const dvar_t *con_minicontime;
-const dvar_t *con_miniconlines;
-const dvar_t *con_typewriterPrintSpeed;
-const dvar_t *con_typewriterColorBase;
-const dvar_t *con_restricted;
-const dvar_t *con_matchPrefixOnly;
-const dvar_t *cl_deathMessageWidth;
-
-vec4_t con_versionColor = { 1.0, 1.0, 0.0, 1.0 };
-vec4_t colorWhite = { 1.0, 1.0, 1.0, 1.0 };
-vec4_t con_inputDvarMatchColor = { 1.0, 1.0, 0.8, 1.0 };
-vec4_t con_inputCommandMatchColor = { 0.8, 0.8, 1.0, 1.0 };
 
 /*
 ==============
@@ -2123,16 +2254,11 @@ void Con_DrawOuputWindow()
 Con_PageUp
 ==============
 */
-void Con_PageUp()
-{
+void Con_PageUp( void ) {
 	con.displayLineOffset -= 2;
-
-	if (con.displayLineOffset < con.visibleLineCount)
-	{
+	if ( con.displayLineOffset < con.visibleLineCount ) {
 		con.displayLineOffset = con.visibleLineCount;
-
-		if (con.consoleWindow.activeLineCount < con.visibleLineCount)
-		{
+		if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
 			con.displayLineOffset = con.consoleWindow.activeLineCount;
 		}
 	}
@@ -2143,12 +2269,9 @@ void Con_PageUp()
 Con_PageDown
 ==============
 */
-void Con_PageDown()
-{
+void Con_PageDown( void ) {
 	con.displayLineOffset = con.consoleWindow.activeLineCount;
-
-	if (con.displayLineOffset + 2 < con.consoleWindow.activeLineCount)
-	{
+	if ( con.displayLineOffset + 2 < con.consoleWindow.activeLineCount ) {
 		con.displayLineOffset = con.displayLineOffset + 2;
 	}
 }
@@ -2158,12 +2281,9 @@ void Con_PageDown()
 Con_Top
 ==============
 */
-void Con_Top()
-{
+void Con_Top( void ) {
 	con.displayLineOffset = con.visibleLineCount;
-
-	if (con.consoleWindow.activeLineCount < con.visibleLineCount)
-	{
+	if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
 		con.displayLineOffset = con.consoleWindow.activeLineCount;
 	}
 }
@@ -2173,8 +2293,7 @@ void Con_Top()
 Con_Bottom
 ==============
 */
-void Con_Bottom()
-{
+void Con_Bottom( void ) {
 	con.displayLineOffset = con.consoleWindow.activeLineCount;
 }
 

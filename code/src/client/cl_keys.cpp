@@ -1,5 +1,6 @@
 #include "types.h"
 #include "vars.h"
+#include "client.h"
 #include "client_public.h"
 #include <client_mp/client_mp_public.h>
 
@@ -1138,6 +1139,7 @@ void CL_KeyEvent(LocalClientNum_t localClientNum, int key, const int down, const
 	UNIMPLEMENTED(__FUNCTION__);
 }
 
+
 /*
 ==============
 CL_ConsoleCharEvent
@@ -1170,6 +1172,7 @@ void CL_CharEvent(LocalClientNum_t localClientNum, int key)
 		}
 	}
 
+	// the console key should never be used as a char
 	if (key == K_GRAVE || key == K_TILDE)
 	{
 		return;
@@ -1188,6 +1191,7 @@ void CL_CharEvent(LocalClientNum_t localClientNum, int key)
 		return;
 	}
 
+	// distribute the key down event to the apropriate handler
 	if ((keyCatchers & 0x20) != 0)
 	{
 		Field_CharEvent(localClientNum, ScrPlace_GetView(localClientNum), &playerKeys[localClientNum].chatField, key);
