@@ -1974,18 +1974,152 @@ Con_GetMessageAlpha
 */
 double Con_GetMessageAlpha(Message *message, MessageWindow *msgwnd, int serverTime, bool scrollsIntoPlace)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	float alpha = 1.0f;
+
+	if (!message)
+	{
+		return alpha;
+	}
+
+	if (!msgwnd)
+	{
+		return alpha;
+	}
+
+	int fadeOutDuration = msgwnd->fadeOut;
+	int timeUntilEnd = message->endTime - serverTime;
+
+	if (timeUntilEnd < fadeOutDuration)
+	{
+		if (fadeOutDuration <= 0)
+		{
+			return alpha;
+		}
+
+		alpha = static_cast<float>(timeUntilEnd) / fadeOutDuration;
+	}
+
+	// Handle fade-in
+	int fadeInDuration = msgwnd->fadeIn;
+	int scrollDuration = msgwnd->scrollTime;
+	int elapsedTimeSinceStart = serverTime - message->startTime;
+
+	if (scrollsIntoPlace && fadeInDuration < scrollDuration)
+	{
+		if (elapsedTimeSinceStart < scrollDuration)
+		{
+			if (elapsedTimeSinceStart <= scrollDuration - fadeInDuration)
+			{
+				return 0.0;
+			}
+
+			if (fadeInDuration <= 0)
+			{
+				return alpha;
+			}
+
+			float fadeInProgress = static_cast<float>(serverTime + fadeInDuration - message->startTime - scrollDuration);
+			alpha *= fadeInProgress / fadeInDuration;
+		}
+	}
+	else if (fadeInDuration > 0)
+	{
+		if (elapsedTimeSinceStart < fadeInDuration)
+		{
+			float fadeInProgress = static_cast<float>(elapsedTimeSinceStart);
+			alpha *= fadeInProgress / fadeInDuration;
+		}
+	}
+
+	//make sure its not a negative
+	return (alpha < 0.0f) ? 0.0f : alpha;
 }
+
 
 /*
 ==============
 Con_DrawMessageWindowNewToOld
 ==============
 */
-void Con_DrawMessageWindowNewToOld(LocalClientNum_t localClientNum, MessageWindow *msgwnd, int x, int y, int hudCharHeight, int horzAlign, int vertAlign, bool up, Font_s *font, vec4_t *color, int textStyle, float msgwndScale, int textAlignMode)
+void Con_DrawMessageWindowNewToOld(
+	LocalClientNum_t localClientNum,
+	MessageWindow *msgwnd,
+	int x,
+	int y,
+	int hudCharHeight,
+	int horzAlign,
+	int vertAlign,
+	bool scrollUp,
+	Font_s *font,
+	vec4_t *color,
+	int textStyle,
+	float msgwndScale,
+	int textAlignMode)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!msgwnd)
+	{
+		return;
+	}
+
+	int serverTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
+	Con_CullFinishedLines(serverTime, msgwnd);
+
+	//adjust init Y pos if scrolling down
+	if (!scrollUp)
+	{
+		y -= hudCharHeight;
+	}
+
+	// Adjust lines based on scroll-in animation
+	AdjustLinePositions(serverTime, msgwnd, scrollUp, hudCharHeight, y);
+
+	vec4_t finalColor = *color;
+	const ScreenPlacement *scrPlaceView = ScrPlace_GetView(localClientNum);
+
+	int remainingLines = msgwnd->activeLineCount - 1;
+	// Draw lines from new to old
+	while (remainingLines >= 0)
+	{
+		unsigned int lineIndex = (remainingLines + msgwnd->firstLineIndex) % msgwnd->lineCount;
+		if (lineIndex >= msgwnd->lineCount)
+		{
+			return;
+		}
+		MessageLine *line = &msgwnd->lines[lineIndex];
+		if (line->messageIndex >= msgwnd->lineCount)
+		{
+			return;
+		}
+
+		Message *message = &msgwnd->messages[line->messageIndex];
+			
+		// Adjust Y position based on scroll direction
+		y += (scrollUp ? -hudCharHeight : hudCharHeight);
+
+		// Check if message is still active and draw it
+		if (serverTime < message->endTime)
+		{
+			finalColor.v[3] = Con_GetMessageAlpha(message, msgwnd, serverTime, true) * color->v[3];
+
+			Con_DrawMessageLineOnHUD(
+				localClientNum,
+				scrPlaceView,
+				x,
+				y,
+				hudCharHeight,
+				horzAlign,
+				vertAlign,
+				font,
+				msgwnd,
+				lineIndex,
+				&finalColor,
+				textStyle,
+				msgwndScale,
+				textAlignMode);
+		}
+
+		--remainingLines;
+	}
 }
 
 /*
