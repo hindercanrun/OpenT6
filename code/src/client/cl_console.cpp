@@ -25,7 +25,8 @@ int g_console_char_height = 16.0;//99% incorrect
 #define	NUM_CON_TIMES 4
 
 #define		CON_TEXTSIZE	32768
-//#define     CON_TEXTSIZE    65536   // (SA) DM want's more console...
+//#define		CON_TEXTSIZE	65536	// (SA) DM want's more console...
+#define		TEMPLINES		512
 typedef struct {
 	char autoCompleteChoice[64];
 
@@ -82,7 +83,7 @@ typedef struct {
 	int			textBufPos;
 
 	int			firstLineIndex;
-	int			activeLineCount;
+	int			activeLineCount;		// total active line in console scrollback
 
 	int			messageIndex;
 } MessageWindow_t;
@@ -113,7 +114,7 @@ typedef struct {
 	Message			consoleMessages[1024];
 
 	char			consoleText[CON_TEXTSIZE];
-	char			textTempLine[512];
+	char			textTempLine[TEMPLINES];
 
 	unsigned int	lineOffset;
 	int				displayLineOffset;
@@ -161,7 +162,7 @@ cmd_function_s	Con_ChatModePublic_f_VAR;
 cmd_function_s	Con_Clear_f_VAR;
 cmd_function_s	Con_Echo_f_VAR;
 
-#define	DEFAULT_CONSOLE_WIDTH	78
+//#define	DEFAULT_CONSOLE_WIDTH	78
 
 vec4_t	con_versionColor			= {1.0, 1.0, 0.0, 1.0};
 vec4_t	colorWhite					= {1.0, 1.0, 1.0, 1.0};
@@ -1834,9 +1835,80 @@ void TypewriterSounds(LocalClientNum_t localClientNum, const MessageWindow *msgw
 Con_DrawMessageLineOnHUD
 ==============
 */
-void Con_DrawMessageLineOnHUD(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, int x, int y, int charHeight, int horzAlign, int vertAlign, Font_s *font, const MessageWindow *msgwnd, int lineIdx, vec4_t *color, int textStyle, float msgwndScale, int textAlignMode)
+void Con_DrawMessageLineOnHUD(
+    LocalClientNum_t localClientNum,
+    const ScreenPlacement *scrPlace,
+    int x,
+    int y,
+    int charHeight,
+    int horzAlign,
+    int vertAlign,
+    Font_s *font,
+    const MessageWindow *msgwnd,
+    int lineIdx,
+    vec4_t *color,
+    int textStyle,
+    float msgwndScale,
+    int textAlignMode)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	MessageLine *line = &msgwnd->lines[lineIdx];
+	int currentTime = CL_GetLocalClientGlobals(localClientNum)->serverTime;
+
+	if (currentTime < line->typingStartTime)
+	{
+		return;
+	}
+
+	if (line->flags & 1)
+	{
+		font = UI_GetFontHandle(0, 1, 1.0);
+	}
+
+	float xScale = R_NormalizedTextScale(font, (charHeight * 0.020833334) * msgwndScale);
+	float yScale = xScale;
+
+	int textWidth = R_ConsoleTextWidth(
+		msgwnd->circularTextBuffer,
+		msgwnd->textBufSize,
+		line->textBufPos,
+		line->textBufSize,
+		font);
+
+	switch (textAlignMode & 3)
+	{
+	case 1:	// Center alignment
+		x -= (textWidth * xScale) * 0.5;
+		break;
+	case 2: // Right alignment
+		x -= textWidth * xScale;
+		break;
+	default: // Left alignment
+		break;
+	}
+
+	int textHeight = R_TextHeight(font);
+	switch (textAlignMode & 0xC)
+	{
+	case 4: // Bottom alignment
+		y += textHeight * yScale;
+		break;
+	case 8: // Middle alignment
+		y += (textHeight * yScale) * 0.5;
+		break;
+	}
+
+	float xAdj = x;
+	float yAdj = y;
+	ScrPlace_ApplyRect(scrPlace, &xAdj, &yAdj, &xScale, &yScale, horzAlign, vertAlign);
+
+	if (line->flags & 1)
+	{
+		HandleTypewriterEffects(localClientNum, msgwnd, line, font, xAdj, yAdj, xScale, yScale, textStyle);
+	}
+	else
+	{
+		DrawRegularText(msgwnd, line, font, xAdj, yAdj, xScale, yScale, color, textStyle);
+	}
 }
 
 /*
@@ -1846,7 +1918,53 @@ Con_CullFinishedLines
 */
 void Con_CullFinishedLines(int serverTime, MessageWindow *msgwnd)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!msgwnd)
+	{
+		return;
+	}
+
+	if (msgwnd->lineCount <= 0)
+	{
+		return;
+	}
+
+	//remove finished lines
+	while (msgwnd->activeLineCount > 0)
+	{
+		MessageLine *currentLine = &msgwnd->lines[msgwnd->firstLineIndex];
+		if (currentLine->messageIndex >= msgwnd->lineCount)
+		{
+			return;
+		}
+
+		//check if message is active
+		int messageEndTime = msgwnd->messages[currentLine->messageIndex].endTime;
+		if (serverTime < messageEndTime)
+		{
+			break;
+		}
+
+		//expired line so remove it
+		if (msgwnd->activeLineCount <= 0)
+		{
+			return;
+		}
+
+		msgwnd->firstLineIndex = (msgwnd->firstLineIndex + 1) % msgwnd->lineCount;
+		--msgwnd->activeLineCount;
+
+		if (msgwnd == &con.consoleWindow)
+		{
+			if (--con.displayLineOffset < con.visibleLineCount)
+			{
+				con.displayLineOffset = con.visibleLineCount;
+			}
+			if (con.consoleWindow.activeLineCount < con.visibleLineCount)
+			{
+				con.displayLineOffset = con.consoleWindow.activeLineCount;
+			}
+		}
+	}
 }
 
 /*
