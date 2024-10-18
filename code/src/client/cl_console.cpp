@@ -184,36 +184,75 @@ field_t historyEditLines[32];
 
 
 /*
+================
+Con_ToggleConsoleOutput
+================
+*/
+void Con_ToggleConsoleOutput (void) {
+	con.outputVisible = !con.outputVisible;
+}
+
+/*
+================
+Con_ToggleConsole
+================
+*/
+void Con_ToggleConsole (void) {
+	Field_Clear( &g_consoleField );
+	g_consoleField.widthInPixels = g_console_field_width;
+	g_consoleField.charHeight = g_console_char_height;
+	g_consoleField.fixedSize = 1;
+
+	if ( conDrawInputGlob.matchIndex >= 0 && conDrawInputGlob.autoCompleteChoice[0] ) {
+		conDrawInputGlob.matchIndex = -1;
+		conDrawInputGlob.autoCompleteChoice[0] = 0;
+	}
+
+	// close full screen console
+	con.outputVisible = 0;
+	keyCatchers ^= KEYCATCH_CONSOLE;
+}
+
+/*
+================
+Con_Echo_f
+================
+*/
+void Con_Echo_f (void) {
+	Con_ToggleConsole ();
+
+	I_strncpyz ( g_consoleField.buffer, "\\echo ", 256 );
+	g_consoleField.cursor = strlen ( g_consoleField.buffer );
+
+	Field_AdjustScroll( LOCAL_CLIENT_FIRST, &scrPlaceFull, &g_consoleField );
+}
+
+/*
 ==============
 SetupChatField
 ==============
 */
-void SetupChatField(LocalClientNum_t localClientNum, int teamChat, int widthInPixels)
-{
-	int width;
-	int height;
-	float aspect;
+void SetupChatField( LocalClientNum_t localClientNum, int teamChat, int widthInPixels ) {
+	int		width, height;
+	float	aspect;
 
-	CL_GetScreenDimensions(&width, &height, &aspect);
+	CL_GetScreenDimensions( &width, &height, &aspect );
 
 	playerKeys[localClientNum].chat_team = teamChat;
-	PlayerKeyState *chatField = &playerKeys[localClientNum];
+	PlayerKeyState	*chatField = &playerKeys[localClientNum];
 
-	Field_Clear(&chatField->chatField);
+	Field_Clear( &chatField->chatField );
 
 	chatField->chatField.widthInPixels = widthInPixels;
 	chatField->chatField.fixedSize = 0;
 
-	if (height <= 768)
-	{
+	if ( height <= 768 ) {
 		chatField->chatField.charHeight = 16.0f;
-	}
-	else
-	{
+	} else {
 		chatField->chatField.charHeight = 10.f;
 	}
 
-	clientUIActive_t *LocalClientUIGlobals = CL_GetLocalClientUIGlobals(localClientNum);
+	clientUIActive_t	*LocalClientUIGlobals = CL_GetLocalClientUIGlobals ( localClientNum );
 	LocalClientUIGlobals->keyCatchers ^= 0x20u;
 }
 
@@ -222,11 +261,9 @@ void SetupChatField(LocalClientNum_t localClientNum, int teamChat, int widthInPi
 Con_ChatModePublic_f
 ==============
 */
-void Con_ChatModePublic_f()
-{
-	if (Com_SessionMode_IsOnlineGame() || Com_SessionMode_IsMode(SESSIONMODE_SYSTEMLINK))
-	{
-		SetupChatField(0, 0, 588);
+void Con_ChatModePublic_f (void) {
+	if ( Com_SessionMode_IsOnlineGame () || Com_SessionMode_IsMode(SESSIONMODE_SYSTEMLINK) ) {
+		SetupChatField( 0, 0, 588 );
 	}
 }
 
@@ -390,19 +427,31 @@ void Con_ClearMessageWindow(MessageWindow *msgwnd)
 }
 
 /*
-==============
-Con_ClearNotify
-==============
+================
+Con_Clear_f
+================
 */
-void Con_ClearNotify(LocalClientNum_t localClientNum)
-{
-	int *textBufPos = &con.messageBuffer[localClientNum].gamemsgWindows[0].textBufPos;
+void Con_Clear_f (void) {
+	Con_ClearMessageWindow ( &con.consoleWindow );
 
-	const int offset = 13;
+	con.lineOffset = 0;
+	con.displayLineOffset = 0;
+}
 
-	for (int i = 0; i < NUM_CON_TIMES; ++i)
-	{
-		textBufPos[0] = 0; // reset textBufPos
+						
+/*
+================
+Con_ClearNotify
+================
+*/
+void Con_ClearNotify( LocalClientNum_t localClientNum ) {
+	int			i;
+	int			*textBufPos = &con.messageBuffer[localClientNum].gamemsgWindows[0].textBufPos;
+
+	const int	offset = 13;
+	
+	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
+		textBufPos[0] = 0;
 		textBufPos[1] = 0;
 		textBufPos[2] = 0;
 		textBufPos[3] = 0;
@@ -411,14 +460,16 @@ void Con_ClearNotify(LocalClientNum_t localClientNum)
 	}
 }
 
+						
+
 /*
-==============
+================
 Con_CheckResize
 
 If the line width has changed, reformat the buffer.
-==============
+================
 */
-void Con_CheckResize()
+void Con_CheckResize (void)
 {
 	float x = ScrPlace_ApplyX(&scrPlaceFull, 4.0, 1);
 	con.screenMin[0] = floor(x);
@@ -492,19 +543,6 @@ void Con_InitMessageWindow(
 		msgwnd->fadeOut = fadeOut;
 		msgwnd->fadeIn = fadeIn;
 	}
-}
-
-/*
-==============
-Con_Clear_f
-==============
-*/
-void Con_Clear_f()
-{
-	Con_ClearMessageWindow(&con.consoleWindow);
-
-	con.lineOffset = 0;
-	con.displayLineOffset = 0;
 }
 
 /*
@@ -1365,351 +1403,6 @@ char Con_AnySpaceAfterCommand()
 	return 0;
 }
 
-
-/*
-==============================================================================
-
-DRAWING
-
-==============================================================================
-*/
-
-
-/*
-==============
-ConDrawInput_Text
-==============
-*/
-void ConDrawInput_Text(const char *str, const vec4_t *color)
-{
-	R_AddCmdDrawTextInternal(
-		str,
-		0x7FFFFFFF,
-		cls.consoleFont,
-		conDrawInputGlob.x,
-		conDrawInputGlob.fontHeight + conDrawInputGlob.y,
-		1.0,
-		1.0,
-		0.0,
-		color,
-		0);
-}
-
-/*
-==============
-ConDrawInput_TextLimitChars
-==============
-*/
-void ConDrawInput_TextLimitChars(const char *str, int maxChars, const vec4_t *color)
-{
-	R_AddCmdDrawTextInternal(
-		str,
-		maxChars,
-		cls.consoleFont,
-		conDrawInputGlob.x,
-		conDrawInputGlob.fontHeight + conDrawInputGlob.y,
-		1.0,
-		1.0,
-		0.0,
-		color,
-		0);
-}
-
-/*
-==============
-ConDrawInput_TextAndOver
-==============
-*/
-void ConDrawInput_TextAndOver(LocalClientNum_t localClientNum, const char *str, const vec4_t *color)
-{
-	ConDrawInput_Text(str, color);
-
-	conDrawInputGlob.x = R_TextWidth(localClientNum, str, 0, cls.consoleFont) + conDrawInputGlob.x;
-}
-
-/*
-==============
-ConDraw_Box
-==============
-*/
-void ConDraw_Box(float x, float y, float w, float h, const vec4_t *color)
-{
-	vec4_t darkColor;
-
-	darkColor[0] = color[0] * 0.5;
-	darkColor[1] = color[1] * 0.5;
-	darkColor[2] = color[2] * 0.5;
-	darkColor[3] = color[3];
-
-	R_AddCmdDrawStretchPicInternal(x, y, w, h, 0.0, 0.0, 0.0, 0.0, color, cls.whiteMaterial);
-	R_AddCmdDrawStretchPicInternal(x, y, 2.0, h, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
-	R_AddCmdDrawStretchPicInternal((x + w) - 2.0, y, 2.0, h, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
-	R_AddCmdDrawStretchPicInternal(x, y, w, 2.0, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
-	R_AddCmdDrawStretchPicInternal(x, (y + h) - 2.0, w, 2.0, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
-}
-
-/*
-==============
-ConDrawInput_Box
-==============
-*/
-void ConDrawInput_Box(int lines, const vec4_t *color)
-{
-	ConDraw_Box(
-		conDrawInputGlob.x - 6.0,
-		conDrawInputGlob.y - 6.0,
-		(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
-		(lines * conDrawInputGlob.fontHeight) + 12.0,
-		color);
-}
-
-/*
-==============
-Con_GetAutoCompleteColorCodedStringDiscontiguous
-==============
-*/
-int Con_GetAutoCompleteColorCodedStringDiscontiguous(const char *query, const char *matchToText, int matchTextLen, char *colorCoded)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
-Con_GetAutoCompleteColorCodedStringContiguous
-==============
-*/
-int Con_GetAutoCompleteColorCodedStringContiguous(const char *query, const char *matchToText, int matchTextLen, char *colorCoded)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
-Con_IsAutoCompleteMatch
-==============
-*/
-bool Con_IsAutoCompleteMatch(const char *query, const char *matchToText, int matchTextLen)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
-ConDrawInput_IncrMatchCounter
-==============
-*/
-void ConDrawInput_IncrMatchCounter(const char *str)
-{
-	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
-	{
-		if (conDrawInputGlob.matchCount == conDrawInputGlob.matchIndex)
-		{
-			I_strncpyz(conDrawInputGlob.autoCompleteChoice, str, 64);
-		}
-
-		++conDrawInputGlob.matchCount;
-
-		if (!str[conDrawInputGlob.inputTextLen])
-		{
-			conDrawInputGlob.hasExactMatch = 1;
-		}
-	}
-}
-
-/*
-==============
-ConDrawInput_DvarMatch
-==============
-*/
-void ConDrawInput_DvarMatch(const char *str)
-{
-	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
-	{
-		ConDrawInput_TextLimitChars(str, 24, &con_inputDvarMatchColor);
-
-		conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
-		const dvar_t *dvar = Dvar_FindVar(str);
-		const char *VariantString = Dvar_GetVariantString(dvar);
-
-		ConDrawInput_TextLimitChars(VariantString, 40, &con_inputDvarValueColor);
-
-		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
-		conDrawInputGlob.x = conDrawInputGlob.leftX;
-	}
-}
-
-/*
-==============
-CG_SortPlayersAlphabeticallyComparator
-==============
-*/
-int CG_SortPlayersAlphabeticallyComparator(const void *a, const void *b)
-{
-	return I_stricmp(*a, *b);
-}
-
-/*
-==============
-ConDrawInput_TextFieldFirstArgChar
-==============
-*/
-int ConDrawInput_TextFieldFirstArgChar()
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
-ConDrawInput_AutoCompleteArg
-==============
-*/
-void ConDrawInput_AutoCompleteArg(LocalClientNum_t localClientNum, const char **stringList, int stringCount)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-ConDrawInput_GetDvarDescriptionLines
-==============
-*/
-int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
-{
-	int result;
-
-	const char* desc = Dvar_GetDescription(dvar);
-	signed int v2 = strlen(desc);
-	signed int v3 = 0;
-
-	for (result = 1; v3 < v2; ++v3)
-	{
-		if (desc[v3] == 10)
-		{
-			++result;
-		}
-	}
-
-	return result;
-}
-
-/*
-==============
-ConDrawInput_DetailedDvarMatch
-==============
-*/
-void ConDrawInput_DetailedDvarMatch(LocalClientNum_t localClientNum, const char *str)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-ConDrawInput_DetailedCmdMatch
-==============
-*/
-void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *str)
-{
-	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen)
-		&& (!conDrawInputGlob.hasExactMatch || !str[conDrawInputGlob.inputTextLen]))
-	{
-		ConDrawInput_Box(1, &con_inputHintBoxColor->current.value);
-		ConDrawInput_Text(str, &con_inputCommandMatchColor);
-
-		conDrawInputGlob.y = conDrawInputGlob.fontHeight + conDrawInputGlob.y;
-		conDrawInputGlob.x = conDrawInputGlob.leftX;
-
-		if (Cmd_Argc() == 2)
-		{
-			int fileCount;
-			const char **AutoCompleteFileList = Cmd_GetAutoCompleteFileList(str, &fileCount, 12);
-
-			if (fileCount)
-			{
-				ConDrawInput_AutoCompleteArg(localClientNum, AutoCompleteFileList, fileCount);
-				FS_FreeFileList(AutoCompleteFileList, 12);
-			}
-		}
-	}
-}
-
-/*
-==============
-ConDrawInput_CmdMatch
-==============
-*/
-void ConDrawInput_CmdMatch(const char *str)
-{
-	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
-	{
-		ConDrawInput_Text(str, &con_inputCommandMatchColor);
-
-		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
-		conDrawInputGlob.x = conDrawInputGlob.leftX;
-	}
-}
-
-/*
-==============
-Con_DrawAutoCompleteChoice
-==============
-*/
-void Con_DrawAutoCompleteChoice(LocalClientNum_t localClientNum, bool isDvarCommand, const char *originalCommand)
-{
-	char colorCodedLine[256];
-
-	int v5;
-	if (isDvarCommand)
-	{
-		v5 = sprintf(colorCodedLine, "^2%s ", originalCommand);
-	}
-	else
-	{
-		v5 = 0;
-	}
-
-	int cursorPos;
-	if (con_matchPrefixOnly->current.enabled)
-	{
-		cursorPos = Con_GetAutoCompleteColorCodedStringContiguous(
-												conDrawInputGlob.autoCompleteChoice,
-												conDrawInputGlob.inputText,
-												conDrawInputGlob.inputTextLen,
-												&colorCodedLine[v5]);
-	}
-	else
-	{
-		cursorPos = Con_GetAutoCompleteColorCodedStringDiscontiguous(
-												conDrawInputGlob.autoCompleteChoice,
-												conDrawInputGlob.inputText,
-												conDrawInputGlob.inputTextLen,
-												&colorCodedLine[v5]);
-	}
-
-	int x = conDrawInputGlob.x;
-	int y = conDrawInputGlob.y;
-	int drawLen = SEH_PrintStrlen(colorCodedLine);
-
-	Field_DrawTextOverride(localClientNum, &g_consoleField, x, y, 5, 5, colorCodedLine, drawLen, cursorPos);
-}
-
-/*
-==============
-Con_DrawInputPrompt
-==============
-*/
-void Con_DrawInputPrompt(LocalClientNum_t localClientNum)
-{
-	Field_Draw(localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y, 5, 5, 0);
-}
-
-
-//================================================================
-
-
 /*
 ==============
 Con_HasTooManyMatchesToShow
@@ -2353,16 +2046,6 @@ bool Con_IsGameMessageWindowActive(LocalClientNum_t localClientNum, int windowIn
 
 /*
 ==============
-Con_ToggleConsoleOutput
-==============
-*/
-void Con_ToggleConsoleOutput()
-{
-	con.outputVisible = !con.outputVisible;
-}
-
-/*
-==============
 Con_DrawOutputVersion
 ==============
 */
@@ -2503,82 +2186,6 @@ void Con_DrawOuputWindow()
 
 /*
 ==============
-Con_PageUp
-==============
-*/
-void Con_PageUp( void ) {
-	con.displayLineOffset -= 2;
-	if ( con.displayLineOffset < con.visibleLineCount ) {
-		con.displayLineOffset = con.visibleLineCount;
-		if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
-			con.displayLineOffset = con.consoleWindow.activeLineCount;
-		}
-	}
-}
-
-/*
-==============
-Con_PageDown
-==============
-*/
-void Con_PageDown( void ) {
-	con.displayLineOffset = con.consoleWindow.activeLineCount;
-	if ( con.displayLineOffset + 2 < con.consoleWindow.activeLineCount ) {
-		con.displayLineOffset = con.displayLineOffset + 2;
-	}
-}
-
-/*
-==============
-Con_Top
-==============
-*/
-void Con_Top( void ) {
-	con.displayLineOffset = con.visibleLineCount;
-	if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
-		con.displayLineOffset = con.consoleWindow.activeLineCount;
-	}
-}
-
-/*
-==============
-Con_Bottom
-==============
-*/
-void Con_Bottom( void ) {
-	con.displayLineOffset = con.consoleWindow.activeLineCount;
-}
-
-/*
-==============
-Con_Close
-==============
-*/
-void Con_Close(LocalClientNum_t localClientNum)
-{
-	if ((clientUIActives[localClientNum].flags & 2) != 0)
-	{
-		Field_Clear(&g_consoleField);
-
-		if (conDrawInputGlob.matchIndex >= 0)
-		{
-			if (conDrawInputGlob.autoCompleteChoice[0])
-			{
-				conDrawInputGlob.matchIndex = -1;
-				conDrawInputGlob.autoCompleteChoice[0] = 0;
-			}
-		}
-
-		Con_ClearNotify(localClientNum);
-
-		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].miniconWindow);
-		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].errorWindow);
-		keyCatchers &= ~KEYCATCH_CONSOLE;
-	}
-}
-
-/*
-==============
 Con_IsActive
 ==============
 */
@@ -2622,43 +2229,6 @@ void CL_PlayTextFXPulseSounds(LocalClientNum_t localClientNum, int currentTime, 
 			*soundTimeKeeper = currentTime;
 		}
 	}
-}
-
-/*
-==============
-Con_ToggleConsole
-==============
-*/
-void Con_ToggleConsole()
-{
-	Field_Clear(&g_consoleField);
-
-	if (conDrawInputGlob.matchIndex >= 0 && conDrawInputGlob.autoCompleteChoice[0])
-	{
-		conDrawInputGlob.matchIndex = -1;
-		conDrawInputGlob.autoCompleteChoice[0] = 0;
-	}
-
-	g_consoleField.widthInPixels = g_console_field_width;
-	keyCatchers ^= KEYCATCH_CONSOLE;
-	g_consoleField.charHeight = g_console_char_height;
-	g_consoleField.fixedSize = 1;
-	// close full screen console
-	con.outputVisible = 0;
-}
-
-/*
-==============
-Con_Echo_f
-==============
-*/
-void Con_Echo_f()
-{
-	Con_ToggleConsole();
-
-	I_strncpyz(g_consoleField.buffer, "\\echo ", 256);
-	g_consoleField.cursor = strlen(g_consoleField.buffer);
-	Field_AdjustScroll(LOCAL_CLIENT_FIRST, &scrPlaceFull, &g_consoleField);
 }
 
 /*
@@ -2878,20 +2448,22 @@ void Con_OneTimeInit()
 	con.initialized = 1;
 }
 
+
 /*
 ==============
 Con_Init
 ==============
 */
-void Con_Init()
-{
-	con_restricted = _Dvar_RegisterBool("monkeytoy", 0, DVAR_ARCHIVE, "Restrict console access");
-	con_matchPrefixOnly = _Dvar_RegisterBool(
+void Con_Init (void) {
+	int		i;
+
+	con_restricted = _Dvar_RegisterBool ("monkeytoy", 0, DVAR_ARCHIVE, "Restrict console access");
+	con_matchPrefixOnly = _Dvar_RegisterBool (
 							"con_matchPrefixOnly",
 							1,
 							DVAR_ARCHIVE,
 							"Only match the prefix when listing matching Dvars");
-	cl_deathMessageWidth = _Dvar_RegisterInt("cl_deathMessageWidth", 320, 1, 640, DVAR_NOFLAG, "Pixel width of the obituary area");
+	cl_deathMessageWidth = _Dvar_RegisterInt ("cl_deathMessageWidth", 320, 1, 640, DVAR_NOFLAG, "Pixel width of the obituary area");
 
 	Field_Clear(&g_consoleField);
 
@@ -2899,9 +2471,8 @@ void Con_Init()
 	g_consoleField.charHeight = g_console_char_height;
 	g_consoleField.fixedSize = 1;
 
-	for (int i = 0; i < COMMAND_HISTORY; ++i)
-	{
-		Field_Clear(&historyEditLines[i]);
+	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
+		Field_Clear( &historyEditLines[i] );
 		historyEditLines[i].widthInPixels = g_console_field_width;
 		historyEditLines[i].charHeight = g_console_char_height;
 		historyEditLines[i].fixedSize = 1;
@@ -2909,13 +2480,31 @@ void Con_Init()
 
 	conDrawInputGlob.matchIndex = -1;
 
-	Cmd_AddCommandInternal("chatmodepublic", Con_ChatModePublic_f, &Con_ChatModePublic_f_VAR);
-	Cmd_AddCommandInternal("clear", Con_Clear_f, &Con_Clear_f_VAR);
-	Cmd_AddCommandInternal("con_echo", Con_Echo_f, &Con_Echo_f_VAR);
+	Cmd_AddCommandInternal ("chatmodepublic", Con_ChatModePublic_f, &Con_ChatModePublic_f_VAR);
+	Cmd_AddCommandInternal ("clear", Con_Clear_f, &Con_Clear_f_VAR);
+	Cmd_AddCommandInternal ("con_echo", Con_Echo_f, &Con_Echo_f_VAR);
 
 	if (!con.initialized)
 	{
 		Con_OneTimeInit();
+	}
+}
+
+
+/*
+==============
+Con_Linefeed
+==============
+*/
+void Con_Linefeed (int localClientNum, int channel, int flags)
+{
+	Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
+
+	con.lineOffset = 0;
+
+	if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
+	{
+		++con.displayLineOffset;
 	}
 }
 
@@ -2938,10 +2527,8 @@ void CL_ConsolePrint(
 {
 	// for some demos we don't want to ever show anything on the console
 	// also don't show anything if channel 8 is hidden
-	if (cl_noprint && !cl_noprint->current.enabled && channel != 8)
-	{
-		if (!con.initialized)
-		{
+	if (cl_noprint && !cl_noprint->current.enabled && channel != 8) {
+		if (!con.initialized) {
 			Con_OneTimeInit();
 		}
 
@@ -2949,23 +2536,6 @@ void CL_ConsolePrint(
 		Sys_EnterCriticalSection(CRITSECT_CONSOLE);
 		CL_ConsolePrint_AddLine(localClientNum, channel, txt, duration, pixelWidth, 55, flags);
 		Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
-	}
-}
-
-/*
-==============
-Con_Linefeed
-==============
-*/
-void Con_Linefeed(int localClientNum, int channel, int flags)
-{
-	Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
-
-	con.lineOffset = 0;
-
-	if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
-	{
-		++con.displayLineOffset;
 	}
 }
 
@@ -3085,19 +2655,361 @@ void CL_DeathMessagePrint(
 	CL_ConsolePrint(localClientNum, 6, deathMsg, 0, messageWidth, 0);
 }
 
+
+/*
+==============================================================================
+
+DRAWING
+
+==============================================================================
+*/
+
+
 /*
 ==============
+ConDrawInput_Text
+==============
+*/
+void ConDrawInput_Text(const char *str, const vec4_t *color)
+{
+	R_AddCmdDrawTextInternal(
+		str,
+		0x7FFFFFFF,
+		cls.consoleFont,
+		conDrawInputGlob.x,
+		conDrawInputGlob.fontHeight + conDrawInputGlob.y,
+		1.0,
+		1.0,
+		0.0,
+		color,
+		0);
+}
+
+/*
+==============
+ConDrawInput_TextLimitChars
+==============
+*/
+void ConDrawInput_TextLimitChars(const char *str, int maxChars, const vec4_t *color)
+{
+	R_AddCmdDrawTextInternal(
+		str,
+		maxChars,
+		cls.consoleFont,
+		conDrawInputGlob.x,
+		conDrawInputGlob.fontHeight + conDrawInputGlob.y,
+		1.0,
+		1.0,
+		0.0,
+		color,
+		0);
+}
+
+/*
+==============
+ConDrawInput_TextAndOver
+==============
+*/
+void ConDrawInput_TextAndOver(LocalClientNum_t localClientNum, const char *str, const vec4_t *color)
+{
+	ConDrawInput_Text(str, color);
+
+	conDrawInputGlob.x = R_TextWidth(localClientNum, str, 0, cls.consoleFont) + conDrawInputGlob.x;
+}
+
+/*
+==============
+ConDraw_Box
+==============
+*/
+void ConDraw_Box(float x, float y, float w, float h, const vec4_t *color)
+{
+	vec4_t darkColor;
+
+	darkColor[0] = color[0] * 0.5;
+	darkColor[1] = color[1] * 0.5;
+	darkColor[2] = color[2] * 0.5;
+	darkColor[3] = color[3];
+
+	R_AddCmdDrawStretchPicInternal(x, y, w, h, 0.0, 0.0, 0.0, 0.0, color, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal(x, y, 2.0, h, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal((x + w) - 2.0, y, 2.0, h, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal(x, y, w, 2.0, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+	R_AddCmdDrawStretchPicInternal(x, (y + h) - 2.0, w, 2.0, 0.0, 0.0, 0.0, 0.0, &darkColor, cls.whiteMaterial);
+}
+
+/*
+==============
+ConDrawInput_Box
+==============
+*/
+void ConDrawInput_Box(int lines, const vec4_t *color)
+{
+	ConDraw_Box(
+		conDrawInputGlob.x - 6.0,
+		conDrawInputGlob.y - 6.0,
+		(con.screenMax[0] - con.screenMin[0]) - ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
+		(lines * conDrawInputGlob.fontHeight) + 12.0,
+		color);
+}
+
+/*
+==============
+Con_GetAutoCompleteColorCodedStringDiscontiguous
+==============
+*/
+int Con_GetAutoCompleteColorCodedStringDiscontiguous(const char *query, const char *matchToText, int matchTextLen, char *colorCoded)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+	return 0;
+}
+
+/*
+==============
+Con_GetAutoCompleteColorCodedStringContiguous
+==============
+*/
+int Con_GetAutoCompleteColorCodedStringContiguous(const char *query, const char *matchToText, int matchTextLen, char *colorCoded)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+	return 0;
+}
+
+/*
+==============
+Con_IsAutoCompleteMatch
+==============
+*/
+bool Con_IsAutoCompleteMatch(const char *query, const char *matchToText, int matchTextLen)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+	return 0;
+}
+
+/*
+==============
+ConDrawInput_IncrMatchCounter
+==============
+*/
+void ConDrawInput_IncrMatchCounter(const char *str)
+{
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
+	{
+		if (conDrawInputGlob.matchCount == conDrawInputGlob.matchIndex)
+		{
+			I_strncpyz(conDrawInputGlob.autoCompleteChoice, str, 64);
+		}
+
+		++conDrawInputGlob.matchCount;
+
+		if (!str[conDrawInputGlob.inputTextLen])
+		{
+			conDrawInputGlob.hasExactMatch = 1;
+		}
+	}
+}
+
+/*
+==============
+ConDrawInput_DvarMatch
+==============
+*/
+void ConDrawInput_DvarMatch(const char *str)
+{
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
+	{
+		ConDrawInput_TextLimitChars(str, 24, &con_inputDvarMatchColor);
+
+		conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
+		const dvar_t *dvar = Dvar_FindVar(str);
+		const char *VariantString = Dvar_GetVariantString(dvar);
+
+		ConDrawInput_TextLimitChars(VariantString, 40, &con_inputDvarValueColor);
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+	}
+}
+
+/*
+==============
+CG_SortPlayersAlphabeticallyComparator
+==============
+*/
+int CG_SortPlayersAlphabeticallyComparator(const void *a, const void *b)
+{
+	return I_stricmp(*a, *b);
+}
+
+/*
+==============
+ConDrawInput_TextFieldFirstArgChar
+==============
+*/
+int ConDrawInput_TextFieldFirstArgChar()
+{
+	UNIMPLEMENTED(__FUNCTION__);
+	return 0;
+}
+
+/*
+==============
+ConDrawInput_AutoCompleteArg
+==============
+*/
+void ConDrawInput_AutoCompleteArg(LocalClientNum_t localClientNum, const char **stringList, int stringCount)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+}
+
+/*
+==============
+ConDrawInput_GetDvarDescriptionLines
+==============
+*/
+int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
+{
+	int result;
+
+	const char* desc = Dvar_GetDescription(dvar);
+	signed int v2 = strlen(desc);
+	signed int v3 = 0;
+
+	for (result = 1; v3 < v2; ++v3)
+	{
+		if (desc[v3] == 10)
+		{
+			++result;
+		}
+	}
+
+	return result;
+}
+
+/*
+==============
+ConDrawInput_DetailedDvarMatch
+==============
+*/
+void ConDrawInput_DetailedDvarMatch(LocalClientNum_t localClientNum, const char *str)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+}
+
+/*
+==============
+ConDrawInput_DetailedCmdMatch
+==============
+*/
+void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *str)
+{
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen)
+		&& (!conDrawInputGlob.hasExactMatch || !str[conDrawInputGlob.inputTextLen]))
+	{
+		ConDrawInput_Box(1, &con_inputHintBoxColor->current.value);
+		ConDrawInput_Text(str, &con_inputCommandMatchColor);
+
+		conDrawInputGlob.y = conDrawInputGlob.fontHeight + conDrawInputGlob.y;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+
+		if (Cmd_Argc() == 2)
+		{
+			int fileCount;
+			const char **AutoCompleteFileList = Cmd_GetAutoCompleteFileList(str, &fileCount, 12);
+
+			if (fileCount)
+			{
+				ConDrawInput_AutoCompleteArg(localClientNum, AutoCompleteFileList, fileCount);
+				FS_FreeFileList(AutoCompleteFileList, 12);
+			}
+		}
+	}
+}
+
+/*
+==============
+ConDrawInput_CmdMatch
+==============
+*/
+void ConDrawInput_CmdMatch(const char *str)
+{
+	if (Con_IsAutoCompleteMatch(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen))
+	{
+		ConDrawInput_Text(str, &con_inputCommandMatchColor);
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+	}
+}
+
+/*
+==============
+Con_DrawAutoCompleteChoice
+==============
+*/
+void Con_DrawAutoCompleteChoice(LocalClientNum_t localClientNum, bool isDvarCommand, const char *originalCommand)
+{
+	char colorCodedLine[256];
+
+	int v5;
+	if (isDvarCommand)
+	{
+		v5 = sprintf(colorCodedLine, "^2%s ", originalCommand);
+	}
+	else
+	{
+		v5 = 0;
+	}
+
+	int cursorPos;
+	if (con_matchPrefixOnly->current.enabled)
+	{
+		cursorPos = Con_GetAutoCompleteColorCodedStringContiguous(
+												conDrawInputGlob.autoCompleteChoice,
+												conDrawInputGlob.inputText,
+												conDrawInputGlob.inputTextLen,
+												&colorCodedLine[v5]);
+	}
+	else
+	{
+		cursorPos = Con_GetAutoCompleteColorCodedStringDiscontiguous(
+												conDrawInputGlob.autoCompleteChoice,
+												conDrawInputGlob.inputText,
+												conDrawInputGlob.inputTextLen,
+												&colorCodedLine[v5]);
+	}
+
+	int x = conDrawInputGlob.x;
+	int y = conDrawInputGlob.y;
+	int drawLen = SEH_PrintStrlen(colorCodedLine);
+
+	Field_DrawTextOverride(localClientNum, &g_consoleField, x, y, 5, 5, colorCodedLine, drawLen, cursorPos);
+}
+
+/*
+==============
+Con_DrawInputPrompt
+==============
+*/
+void Con_DrawInputPrompt(LocalClientNum_t localClientNum)
+{
+	Field_Draw( localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y,
+		5, 5, false );
+}
+
+
+/*
+================
 Con_DrawInput
 
 Draw the editline after a ] prompt
-==============
+================
 */
 void Con_DrawInput(LocalClientNum_t localClientNum)
 {
 	bool isDvarCommand;
 
-	if (!Key_IsCatcherActive(localClientNum, 1))
-	{
+	if ( !Key_IsCatcherActive( localClientNum, 1 ) ) {
 		return;
 	}
 
@@ -3299,63 +3211,116 @@ char Con_CommitToAutoComplete()
 }
 
 /*
-==============
+================
 Con_DrawSolidConsole
 
 Draws the console with the solid background
-==============
+================
 */
-void Con_DrawSolidConsole(LocalClientNum_t localClientNum)
-{
-	Sys_EnterCriticalSection(CRITSECT_CONSOLE);
+void Con_DrawSolidConsole( LocalClientNum_t localClientNum ) {
+	Sys_EnterCriticalSection ( CRITSECT_CONSOLE );
 
-	if (con.lineOffset)
-	{
+	if ( con.lineOffset ) {
 		// draw notify lines
-		Con_UpdateNotifyLine(localClientNum, con.prevChannel, 1, 0);
+		Con_UpdateNotifyLine ( localClientNum, con.prevChannel, 1, 0 );
 
 		con.lineOffset = 0;
-		if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
-		{
+		if ( con.displayLineOffset == con.consoleWindow.activeLineCount - 1 ) {
 			++con.displayLineOffset;
 		}
 	}
 
-	Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
+	Sys_LeaveCriticalSection ( CRITSECT_CONSOLE );
 
-	if (Key_IsCatcherActive(localClientNum, 1))
-	{
-		// if true, render console in full screen
-		if (con.outputVisible)
-		{
+	if ( Key_IsCatcherActive(localClientNum, 1) ) {
+		// if output is visible, render console full screen
+		if ( con.outputVisible ) {
 			Con_DrawOuputWindow();
+			return;
 		}
 
-		Con_DrawInput(localClientNum);
-	}
-	else
-	{
-		con.outputVisible = 0;
 		// draw the input prompt, user text, and cursor
-		Con_DrawInput(localClientNum);
+		Con_DrawInput (localClientNum);
+	} else {
+		con.outputVisible = 0;
+		//above
+		Con_DrawInput (localClientNum);
 	}
 }
 
-/*
-==============
-Con_DrawConsole
-==============
-*/
-void Con_DrawConsole(LocalClientNum_t localClientNum)
-{
-	// check for console width changes from a vid mode change
-	Con_CheckResize();
 
-	if (Key_IsCatcherActive(localClientNum, 1))
-	{
-		Con_DrawSolidConsole(localClientNum);
+
+/*
+==================
+Con_DrawConsole
+==================
+*/
+void Con_DrawConsole( LocalClientNum_t localClientNum ) {
+	// check for console width changes from a vid mode change
+	Con_CheckResize ();
+
+	if ( Key_IsCatcherActive( localClientNum, 1 ) ) {
+		Con_DrawSolidConsole( localClientNum );
 	}
 }
 
 //================================================================
 
+/*
+==================
+
+Scroll it up or down
+==================
+*/
+
+
+void Con_PageUp( void ) {
+	con.displayLineOffset -= 2;
+	if ( con.displayLineOffset < con.visibleLineCount ) {
+		con.displayLineOffset = con.visibleLineCount;
+		if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
+			con.displayLineOffset = con.consoleWindow.activeLineCount;
+		}
+	}
+}
+
+void Con_PageDown( void ) {
+	con.displayLineOffset = con.consoleWindow.activeLineCount;
+	if ( con.displayLineOffset + 2 < con.consoleWindow.activeLineCount ) {
+		con.displayLineOffset = con.displayLineOffset + 2;
+	}
+}
+
+void Con_Top( void ) {
+	con.displayLineOffset = con.visibleLineCount;
+	if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
+		con.displayLineOffset = con.consoleWindow.activeLineCount;
+	}
+}
+
+void Con_Bottom( void ) {
+	con.displayLineOffset = con.consoleWindow.activeLineCount;
+}
+
+
+void Con_Close( LocalClientNum_t localClientNum ) {
+	if ((clientUIActives[localClientNum].flags & 2) != 0)
+	{
+		Field_Clear( &g_consoleField );
+
+		if (conDrawInputGlob.matchIndex >= 0)
+		{
+			if (conDrawInputGlob.autoCompleteChoice[0])
+			{
+				conDrawInputGlob.matchIndex = -1;
+				conDrawInputGlob.autoCompleteChoice[0] = 0;
+			}
+		}
+
+		Con_ClearNotify (localClientNum);
+
+		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].miniconWindow);
+		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].errorWindow);
+		keyCatchers &= ~KEYCATCH_CONSOLE;
+	}
+}
