@@ -2338,16 +2338,21 @@ const char *CL_TextLineWrapPosition(
 CL_ConsolePrint_AddLine
 ==============
 */
-char CL_ConsolePrint_AddLine(
-	LocalClientNum_t localClientNum,
-	int channel,
-	const char *txt,
-	int duration,
-	int pixelWidth,
-	char color,
-	int flags)
-{
-#ifdef 0
+char CL_ConsolePrint_AddLine( LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, int color, int flags ) {
+/*new code*/ #ifdef 0
+	Font_s	*font;
+	float	xScale;
+
+	if ( channel == 2 || channel == 3 || channel == 4 || channel == 5 ) {
+		font = UI_GetFontHandle(&scrPlaceView[localClientNum], channel != 3 ? 0 : 4, 12.0 / 48.0);
+		xScale = R_NormalizedTextScale(font, 12.0 / 48.0);
+	} else {
+		font = cls.consoleFont;
+		xScale = 1.0f;
+	}
+#endif
+
+/*old code*/ #ifdef 0
 	Font_s *font;
 	float xScale;
 
@@ -2506,6 +2511,7 @@ LABEL_80:
 #endif
 
 	UNIMPLEMENTED(__FUNCTION__);
+	return NULL;
 }
 
 /*
@@ -2517,35 +2523,26 @@ All console printing must go through this in order to be logged to disk
 If no console is visible, the text will appear at the top of the game window
 ================
 */
-void CL_ConsolePrint(
-	LocalClientNum_t localClientNum,
-	int channel,
-	const char *txt,
-	int duration,
-	int pixelWidth,
-	int flags)
-{
-	bool skipnotify = false;		// NERVE - SMF
-
-	// TTimo - prefix for text that shows up in console but not in notify
-	// backported from RTCW
-	//if ( !I_strncmp( txt, "[skipnotify]", 12 ) ) {
-	//	skipnotify = true;
-	//	txt += 12;
-	//}
-	
+void CL_ConsolePrint( LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, int flags ) {
 	// for some demos we don't want to ever show anything on the console
-	// also don't show anything if channel 8 is hidden
-	if (cl_noprint && !cl_noprint->current.enabled && channel != 8) {
-		if (!con.initialized) {
-			Con_OneTimeInit();
-		}
-
-		Con_IsChannelVisible(CON_DEST_CONSOLE, channel, flags);
-		Sys_EnterCriticalSection(CRITSECT_CONSOLE);
-		CL_ConsolePrint_AddLine(localClientNum, channel, txt, duration, pixelWidth, 55, flags);
-		Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
+	if ( cl_noprint && cl_noprint->current.enabled ) {
+		return;
 	}
+
+	// don't show anything if channel 8 is hidden
+	if ( channel != 8 ) {
+		return;
+	}
+
+	if (!con.initialized) {
+		Con_OneTimeInit();
+	}
+
+	Con_IsChannelVisible( CON_DEST_CONSOLE, channel, flags );
+
+	Sys_EnterCriticalSection (CRITSECT_CONSOLE);
+	CL_ConsolePrint_AddLine( localClientNum, channel, txt, duration, pixelWidth, 55, flags );
+	Sys_LeaveCriticalSection (CRITSECT_CONSOLE);
 }
 
 /*

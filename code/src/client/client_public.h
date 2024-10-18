@@ -41,7 +41,7 @@ MessageWindow *Con_GetDestWindow(LocalClientNum_t localClientNum, print_msg_dest
 void Con_UpdateNotifyMessage(LocalClientNum_t localClientNum, int channel, int duration, int flags);
 void Con_UpdateNotifyLine(LocalClientNum_t localClientNum, int channel, bool lineFeed, int flags);
 void Con_InitMessageBuffer();
-char CL_ConsolePrint_AddLine(LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, char color, int flags);
+char CL_ConsolePrint_AddLine(LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, int color, int flags);
 int CL_AddMessageChar(char *msg, unsigned int msgLen, unsigned int msgMaxLen, char c);
 int CL_AddMessageString(char *msg, unsigned int msgLen, unsigned int msgMaxLen, const char *string);
 int CL_AddMessageIcon(char *msg, unsigned int msgLen, unsigned int msgMaxLen, Material *iconShader, float iconWidth, float iconHeight, bool horzFlipIcon);
