@@ -1085,200 +1085,6 @@ void Con_InitMessageBuffer()
 
 /*
 ==============
-CL_TextLineWrapPosition
-==============
-*/
-const char *CL_TextLineWrapPosition(
-	const char *txt,
-	int bufferSize,
-	int pixelsAvailable,
-	Font_s *font,
-	float scale,
-	int lineBroken)
-{
-	if (lineBroken)
-	{
-		while (*txt == 32)
-		++txt;
-	}
-
-	const char *lineWrapPos = R_TextLineWrapPosition(txt, bufferSize, pixelsAvailable, font, scale);
-
-	return *lineWrapPos != 0 ? lineWrapPos : 0;
-}
-
-/*
-==============
-CL_ConsolePrint_AddLine
-==============
-*/
-char CL_ConsolePrint_AddLine(
-	LocalClientNum_t localClientNum,
-	int channel,
-	const char *txt,
-	int duration,
-	int pixelWidth,
-	char color,
-	int flags)
-{
-	Font_s *font;
-	float xScale;
-
-	if (callDepth)
-	{
-		return color;
-	}
-
-	++callDepth;
-
-	Con_UpdateNotifyMessage(localClientNum, channel, duration, flags);
-
-	if (channel != con.prevChannel && con.lineOffset)
-	{
-		Con_Linefeed(localClientNum, con.prevChannel, flags);
-	}
-
-	if (channel == 2 || channel == 3 || channel == 4 || channel == 5)
-	{
-		font = UI_GetFontHandle(&scrPlaceView[localClientNum], channel != 3 ? 0 : 4, 12.0 / 48.0);
-		xScale = R_NormalizedTextScale(font, 12.0 / 48.0);
-	}
-	else
-	{
-		font = cls.consoleFont;
-		xScale = 1.0f;
-	}
-
-	if (!pixelWidth)
-	{
-		pixelWidth = con.visiblePixelWidth;
-	}
-
-	const char *wrapPosition = CL_TextLineWrapPosition(txt, 512 - con.lineOffset, pixelWidth, font, xScale, 0);
-
-	if (txt == wrapPosition && con.lineOffset)
-	{
-		Con_Linefeed(localClientNum, channel, flags);
-		wrapPosition = CL_TextLineWrapPosition(txt, 512 - con.lineOffset, pixelWidth, font, xScale, 0);
-	}
-
-	const char *text = txt;
-	int atStartOfBrokenLine = 0;
-
-	while (*text)
-	{
-		int c = SEH_ReadCharFromString(&text, 0);
-		if (c == 10)
-		{
-			if (wrapPosition)
-			{
-				if (font)
-				{
-					if (wrapPosition != text)
-					{
-						if (*text)
-						{
-							// nothing
-							// there would be an assert but don't really want/need those
-						}
-					}
-				}
-			}
-			else
-			{
-				wrapPosition = text;
-			}
-		}
-		else
-		{
-			if (c != 94)
-			{
-				goto LABEL_64;
-			}
-
-			if (text && *text != 94 && *text >= 48 && *text <= 64 || text && *text == 70)
-			{
-				color = *text;
-				con.textTempLine[con.lineOffset++] = 94;
-				con.textTempLine[con.lineOffset++] = color;
-				++text;
-				atStartOfBrokenLine = 0;
-			}
-			else
-			{
-				if (*text != 1 && *text != 2)
-				{
-		LABEL_64:
-					if (c != 32 || !atStartOfBrokenLine)
-					{
-						if (c > 255)
-						{
-							con.textTempLine[con.lineOffset++] = BYTE1(c);
-							c = (unsigned __int8)c;
-						}
-
-						con.textTempLine[con.lineOffset++] = c;
-						atStartOfBrokenLine = 0;
-					}
-
-					goto LABEL_80;
-				}
-
-				con.textTempLine[con.lineOffset++] = 94;
-				char *v9 = &con.textTempLine[con.lineOffset];
-				const char *v10 = text;
-
-				*(DWORD *)v9 = *(DWORD *)text;
-				*((WORD *)v9 + 2) = *((WORD *)v10 + 2);
-				v9[6] = v10[6];
-
-				con.lineOffset += 7;
-				text += 7;
-				atStartOfBrokenLine = 0;
-			}
-		}
-
-LABEL_80:
-		if (text == wrapPosition)
-		{
-			Con_Linefeed(localClientNum, channel, flags);
-
-			if (c != 10)
-			{
-				atStartOfBrokenLine = 1;
-
-				if (color != 55)
-				{
-					con.textTempLine[con.lineOffset] = 94;
-					*(BYTE *)(con.lineOffset + 16400401) = color;
-					con.lineOffset += 2;
-				}
-			}
-
-			wrapPosition = CL_TextLineWrapPosition(text, 512 - con.lineOffset, pixelWidth, font, xScale, atStartOfBrokenLine);
-		}
-	}
-
-	if (con.lineOffset)
-	{
-		if (channel == 2 || channel == 3 || channel == 4 || channel == 5)
-		{
-			Con_Linefeed(localClientNum, channel, flags);
-		}
-		else
-		{
-			Con_UpdateNotifyLine(localClientNum, channel, 0, flags);
-		}
-	}
-
-	--callDepth;
-	con.prevChannel = channel;
-
-	return color;
-}
-
-/*
-==============
 CL_AddMessageChar
 ==============
 */
@@ -2442,10 +2248,8 @@ void Con_OneTimeInit()
 	Con_InitMessageBuffer();
 
 	con.color = colorWhite;
-
-	Con_CheckResize();
-
-	con.initialized = 1;
+	Con_CheckResize ();
+	con.initialized = true;
 }
 
 
@@ -2492,30 +2296,226 @@ void Con_Init (void) {
 
 
 /*
-==============
+===============
 Con_Linefeed
-==============
+===============
 */
 void Con_Linefeed (int localClientNum, int channel, int flags)
 {
-	Con_UpdateNotifyLine(localClientNum, channel, 1, flags);
+	Con_UpdateNotifyLine (localClientNum, channel, 1, flags);
 
 	con.lineOffset = 0;
-
 	if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
-	{
 		++con.displayLineOffset;
-	}
 }
 
 /*
 ==============
+CL_TextLineWrapPosition
+==============
+*/
+const char *CL_TextLineWrapPosition(
+	const char *txt,
+	int bufferSize,
+	int pixelsAvailable,
+	Font_s *font,
+	float scale,
+	int lineBroken)
+{
+	if (lineBroken)
+	{
+		while (*txt == 32)
+		++txt;
+	}
+
+	const char *lineWrapPos = R_TextLineWrapPosition(txt, bufferSize, pixelsAvailable, font, scale);
+
+	return *lineWrapPos != 0 ? lineWrapPos : 0;
+}
+
+/*
+==============
+CL_ConsolePrint_AddLine
+==============
+*/
+char CL_ConsolePrint_AddLine(
+	LocalClientNum_t localClientNum,
+	int channel,
+	const char *txt,
+	int duration,
+	int pixelWidth,
+	char color,
+	int flags)
+{
+#ifdef 0
+	Font_s *font;
+	float xScale;
+
+	if (callDepth)
+	{
+		return color;
+	}
+
+	++callDepth;
+
+	Con_UpdateNotifyMessage(localClientNum, channel, duration, flags);
+
+	// word wrap
+	if (channel != con.prevChannel && con.lineOffset)
+	{
+		Con_Linefeed(localClientNum, con.prevChannel, flags);
+	}
+
+	if (channel == 2 || channel == 3 || channel == 4 || channel == 5)
+	{
+		font = UI_GetFontHandle(&scrPlaceView[localClientNum], channel != 3 ? 0 : 4, 12.0 / 48.0);
+		xScale = R_NormalizedTextScale(font, 12.0 / 48.0);
+	}
+	else
+	{
+		font = cls.consoleFont;
+		xScale = 1.0f;
+	}
+
+	if (!pixelWidth)
+	{
+		pixelWidth = con.visiblePixelWidth;
+	}
+
+	const char *wrapPosition = CL_TextLineWrapPosition(txt, 512 - con.lineOffset, pixelWidth, font, xScale, 0);
+
+	if (txt == wrapPosition && con.lineOffset)
+	{
+		Con_Linefeed(localClientNum, channel, flags);
+		wrapPosition = CL_TextLineWrapPosition(txt, 512 - con.lineOffset, pixelWidth, font, xScale, 0);
+	}
+
+	const char *text = txt;
+	int atStartOfBrokenLine = 0;
+
+	while (*text)
+	{
+		int c = SEH_ReadCharFromString(&text, 0);
+		if (c == 10)
+		{
+			if (wrapPosition)
+			{
+				if (font)
+				{
+					if (wrapPosition != text)
+					{
+						if (*text)
+						{
+							// nothing
+							// there would be an assert but don't really want/need those
+						}
+					}
+				}
+			}
+			else
+			{
+				wrapPosition = text;
+			}
+		}
+		else
+		{
+			if (c != 94)
+			{
+				goto LABEL_64;
+			}
+
+			if (text && *text != 94 && *text >= 48 && *text <= 64 || text && *text == 70)
+			{
+				color = *text;
+				con.textTempLine[con.lineOffset++] = 94;
+				con.textTempLine[con.lineOffset++] = color;
+				++text;
+				atStartOfBrokenLine = 0;
+			}
+			else
+			{
+				if (*text != 1 && *text != 2)
+				{
+		LABEL_64:
+					if (c != 32 || !atStartOfBrokenLine)
+					{
+						if (c > 255)
+						{
+							con.textTempLine[con.lineOffset++] = BYTE1(c);
+							c = (unsigned __int8)c;
+						}
+
+						con.textTempLine[con.lineOffset++] = c;
+						atStartOfBrokenLine = 0;
+					}
+
+					goto LABEL_80;
+				}
+
+				con.textTempLine[con.lineOffset++] = 94;
+				char *v9 = &con.textTempLine[con.lineOffset];
+				const char *v10 = text;
+
+				*(DWORD *)v9 = *(DWORD *)text;
+				*((WORD *)v9 + 2) = *((WORD *)v10 + 2);
+				v9[6] = v10[6];
+
+				con.lineOffset += 7;
+				text += 7;
+				atStartOfBrokenLine = 0;
+			}
+		}
+
+LABEL_80:
+		if (text == wrapPosition)
+		{
+			Con_Linefeed(localClientNum, channel, flags);
+
+			if (c != 10)
+			{
+				atStartOfBrokenLine = 1;
+
+				if (color != 55)
+				{
+					con.textTempLine[con.lineOffset] = 94;
+					*(BYTE *)(con.lineOffset + 16400401) = color;
+					con.lineOffset += 2;
+				}
+			}
+
+			wrapPosition = CL_TextLineWrapPosition(text, 512 - con.lineOffset, pixelWidth, font, xScale, atStartOfBrokenLine);
+		}
+	}
+
+	if (con.lineOffset)
+	{
+		if (channel == 2 || channel == 3 || channel == 4 || channel == 5)
+		{
+			Con_Linefeed(localClientNum, channel, flags);
+		}
+		else
+		{
+			Con_UpdateNotifyLine(localClientNum, channel, 0, flags);
+		}
+	}
+
+	--callDepth;
+	con.prevChannel = channel;
+
+	return color;
+#endif
+
+	UNIMPLEMENTED(__FUNCTION__);
+}
+
+/*
+================
 CL_ConsolePrint
 
 Handles cursor positioning, line wrapping, etc
 All console printing must go through this in order to be logged to disk
-If no console is visible, the text will in the console window
-==============
+If no console is visible, the text will appear at the top of the game window
+================
 */
 void CL_ConsolePrint(
 	LocalClientNum_t localClientNum,
@@ -2525,6 +2525,15 @@ void CL_ConsolePrint(
 	int pixelWidth,
 	int flags)
 {
+	bool skipnotify = false;		// NERVE - SMF
+
+	// TTimo - prefix for text that shows up in console but not in notify
+	// backported from RTCW
+	//if ( !I_strncmp( txt, "[skipnotify]", 12 ) ) {
+	//	skipnotify = true;
+	//	txt += 12;
+	//}
+	
 	// for some demos we don't want to ever show anything on the console
 	// also don't show anything if channel 8 is hidden
 	if (cl_noprint && !cl_noprint->current.enabled && channel != 8) {
@@ -2540,13 +2549,12 @@ void CL_ConsolePrint(
 }
 
 /*
-==============
+================
 CL_ConsoleFixPosition
-==============
+================
 */
-void CL_ConsoleFixPosition()
-{
-	CL_ConsolePrint(0, 0, "\n", 0, 0, 0);
+void CL_ConsoleFixPosition (void) {
+	CL_ConsolePrint( 0, 0, "\n", 0, 0, 0 );
 
 	con.displayLineOffset = con.consoleWindow.activeLineCount - 1;
 }
