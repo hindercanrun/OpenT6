@@ -354,7 +354,17 @@ void Com_UnloadFrontEnd();
 void Com_ResetFrametime();
 void Com_CheckSyncFrame();
 BOOL Com_LogFileOpen();
-void Field_Clear(field_t *edit);
+
+#define	MAX_EDIT_LINE	256
+typedef struct {
+	int		cursor;
+	int		scroll;
+	int		widthInChars;
+	char	buffer[MAX_EDIT_LINE];
+} field_t;
+
+void Field_Clear( field_t *edit );
+
 void Com_Restart();
 void *CG_AllocAnimTree(int size);
 XAnimTree_s *Com_XAnimCreateSmallTree(XAnim_s *anims);
@@ -417,7 +427,7 @@ void Com_LoadPrimaryLights(char *a1, LumpType a2);
 void Com_LoadWorld_LoadObj(const char *name);
 void Com_LoadWorld();
 
-//t6/code/src_noserver/qcommon/com_buildinfo.cpp
+//t6/code/src/qcommon/com_buildinfo.cpp
 char *Com_GetBuildVersion();
 int Com_GetBuildNumber();
 const char *Com_GetBuildMachine();

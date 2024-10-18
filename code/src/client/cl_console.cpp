@@ -2666,9 +2666,9 @@ DRAWING
 
 
 /*
-==============
+================
 ConDrawInput_Text
-==============
+================
 */
 void ConDrawInput_Text(const char *str, const vec4_t *color)
 {
@@ -2685,10 +2685,11 @@ void ConDrawInput_Text(const char *str, const vec4_t *color)
 		0);
 }
 
+
 /*
-==============
+================
 ConDrawInput_TextLimitChars
-==============
+================
 */
 void ConDrawInput_TextLimitChars(const char *str, int maxChars, const vec4_t *color)
 {
@@ -2706,9 +2707,9 @@ void ConDrawInput_TextLimitChars(const char *str, int maxChars, const vec4_t *co
 }
 
 /*
-==============
+================
 ConDrawInput_TextAndOver
-==============
+================
 */
 void ConDrawInput_TextAndOver(LocalClientNum_t localClientNum, const char *str, const vec4_t *color)
 {
@@ -2718,9 +2719,9 @@ void ConDrawInput_TextAndOver(LocalClientNum_t localClientNum, const char *str, 
 }
 
 /*
-==============
+================
 ConDraw_Box
-==============
+================
 */
 void ConDraw_Box(float x, float y, float w, float h, const vec4_t *color)
 {
@@ -2739,9 +2740,9 @@ void ConDraw_Box(float x, float y, float w, float h, const vec4_t *color)
 }
 
 /*
-==============
+================
 ConDrawInput_Box
-==============
+================
 */
 void ConDrawInput_Box(int lines, const vec4_t *color)
 {
@@ -2754,9 +2755,9 @@ void ConDrawInput_Box(int lines, const vec4_t *color)
 }
 
 /*
-==============
+================
 Con_GetAutoCompleteColorCodedStringDiscontiguous
-==============
+================
 */
 int Con_GetAutoCompleteColorCodedStringDiscontiguous(const char *query, const char *matchToText, int matchTextLen, char *colorCoded)
 {
@@ -2765,9 +2766,9 @@ int Con_GetAutoCompleteColorCodedStringDiscontiguous(const char *query, const ch
 }
 
 /*
-==============
+================
 Con_GetAutoCompleteColorCodedStringContiguous
-==============
+================
 */
 int Con_GetAutoCompleteColorCodedStringContiguous(const char *query, const char *matchToText, int matchTextLen, char *colorCoded)
 {
@@ -2776,9 +2777,9 @@ int Con_GetAutoCompleteColorCodedStringContiguous(const char *query, const char 
 }
 
 /*
-==============
+================
 Con_IsAutoCompleteMatch
-==============
+================
 */
 bool Con_IsAutoCompleteMatch(const char *query, const char *matchToText, int matchTextLen)
 {
@@ -2787,9 +2788,9 @@ bool Con_IsAutoCompleteMatch(const char *query, const char *matchToText, int mat
 }
 
 /*
-==============
+================
 ConDrawInput_IncrMatchCounter
-==============
+================
 */
 void ConDrawInput_IncrMatchCounter(const char *str)
 {
@@ -2810,9 +2811,9 @@ void ConDrawInput_IncrMatchCounter(const char *str)
 }
 
 /*
-==============
+================
 ConDrawInput_DvarMatch
-==============
+================
 */
 void ConDrawInput_DvarMatch(const char *str)
 {
@@ -2832,9 +2833,9 @@ void ConDrawInput_DvarMatch(const char *str)
 }
 
 /*
-==============
+================
 CG_SortPlayersAlphabeticallyComparator
-==============
+================
 */
 int CG_SortPlayersAlphabeticallyComparator(const void *a, const void *b)
 {
@@ -2842,9 +2843,9 @@ int CG_SortPlayersAlphabeticallyComparator(const void *a, const void *b)
 }
 
 /*
-==============
+================
 ConDrawInput_TextFieldFirstArgChar
-==============
+================
 */
 int ConDrawInput_TextFieldFirstArgChar()
 {
@@ -2853,9 +2854,9 @@ int ConDrawInput_TextFieldFirstArgChar()
 }
 
 /*
-==============
+================
 ConDrawInput_AutoCompleteArg
-==============
+================
 */
 void ConDrawInput_AutoCompleteArg(LocalClientNum_t localClientNum, const char **stringList, int stringCount)
 {
@@ -2863,9 +2864,9 @@ void ConDrawInput_AutoCompleteArg(LocalClientNum_t localClientNum, const char **
 }
 
 /*
-==============
+================
 ConDrawInput_GetDvarDescriptionLines
-==============
+================
 */
 int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
 {
@@ -2887,9 +2888,9 @@ int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
 }
 
 /*
-==============
+================
 ConDrawInput_DetailedDvarMatch
-==============
+================
 */
 void ConDrawInput_DetailedDvarMatch(LocalClientNum_t localClientNum, const char *str)
 {
@@ -2897,9 +2898,9 @@ void ConDrawInput_DetailedDvarMatch(LocalClientNum_t localClientNum, const char 
 }
 
 /*
-==============
+================
 ConDrawInput_DetailedCmdMatch
-==============
+================
 */
 void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *str)
 {
@@ -2927,9 +2928,9 @@ void ConDrawInput_DetailedCmdMatch(LocalClientNum_t localClientNum, const char *
 }
 
 /*
-==============
+================
 ConDrawInput_CmdMatch
-==============
+================
 */
 void ConDrawInput_CmdMatch(const char *str)
 {
@@ -2943,55 +2944,51 @@ void ConDrawInput_CmdMatch(const char *str)
 }
 
 /*
-==============
+================
 Con_DrawAutoCompleteChoice
-==============
+================
 */
-void Con_DrawAutoCompleteChoice(LocalClientNum_t localClientNum, bool isDvarCommand, const char *originalCommand)
-{
-	char colorCodedLine[256];
+void Con_DrawAutoCompleteChoice( LocalClientNum_t localClientNum, bool isDvarCommand, const char *originalCommand ) {
+	char	colorCodedLine[256];
+	int		v5;
+	int		cursorPos;
+	int		x;
+	int		y;
+	int		drawLen;
 
-	int v5;
-	if (isDvarCommand)
-	{
-		v5 = sprintf(colorCodedLine, "^2%s ", originalCommand);
-	}
-	else
-	{
+	if ( isDvarCommand ) {
+		v5 = sprintf (colorCodedLine, "^2%s ", originalCommand);
+	} else {
 		v5 = 0;
 	}
 
-	int cursorPos;
-	if (con_matchPrefixOnly->current.enabled)
-	{
-		cursorPos = Con_GetAutoCompleteColorCodedStringContiguous(
+	if ( con_matchPrefixOnly->current.enabled ) {
+		cursorPos = Con_GetAutoCompleteColorCodedStringContiguous ( 
 												conDrawInputGlob.autoCompleteChoice,
 												conDrawInputGlob.inputText,
 												conDrawInputGlob.inputTextLen,
-												&colorCodedLine[v5]);
-	}
-	else
-	{
-		cursorPos = Con_GetAutoCompleteColorCodedStringDiscontiguous(
+												&colorCodedLine[v5] );
+	} else {
+		cursorPos = Con_GetAutoCompleteColorCodedStringDiscontiguous ( 
 												conDrawInputGlob.autoCompleteChoice,
 												conDrawInputGlob.inputText,
 												conDrawInputGlob.inputTextLen,
-												&colorCodedLine[v5]);
+												&colorCodedLine[v5] );
 	}
 
-	int x = conDrawInputGlob.x;
-	int y = conDrawInputGlob.y;
-	int drawLen = SEH_PrintStrlen(colorCodedLine);
+	x = conDrawInputGlob.x;
+	y = conDrawInputGlob.y;
+	drawLen = SEH_PrintStrlen (colorCodedLine);
 
-	Field_DrawTextOverride(localClientNum, &g_consoleField, x, y, 5, 5, colorCodedLine, drawLen, cursorPos);
+	Field_DrawTextOverride( localClientNum, &g_consoleField, x, y, 5, 5, colorCodedLine, drawLen, cursorPos );
 }
 
 /*
-==============
+================
 Con_DrawInputPrompt
-==============
+================
 */
-void Con_DrawInputPrompt(LocalClientNum_t localClientNum)
+void Con_DrawInputPrompt( LocalClientNum_t localClientNum )
 {
 	Field_Draw( localClientNum, &g_consoleField, conDrawInputGlob.x, conDrawInputGlob.y,
 		5, 5, false );
@@ -3005,8 +3002,7 @@ Con_DrawInput
 Draw the editline after a ] prompt
 ================
 */
-void Con_DrawInput(LocalClientNum_t localClientNum)
-{
+void Con_DrawInput (LocalClientNum_t localClientNum) {
 	bool isDvarCommand;
 
 	if ( !Key_IsCatcherActive( localClientNum, 1 ) ) {

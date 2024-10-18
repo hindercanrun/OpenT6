@@ -1608,16 +1608,21 @@ BOOL Com_LogFileOpen()
 }
 
 /*
-==============
-Field_Clear
-==============
+===========================================
+command line completion
+===========================================
 */
-void Field_Clear(field_t *edit)
-{
+
+/*
+==================
+Field_Clear
+==================
+*/
+void Field_Clear( field_t *edit ) {
 #if XENON
-	XMemSet(edit->buffer, 0, sizeof(edit->buffer));
+  XMemSet(edit->buffer, 0, MAX_EDIT_LINE);
 #else
-	memset(edit->buffer, 0, sizeof(edit->buffer));
+  memset(edit->buffer, 0, MAX_EDIT_LINE);
 	edit->cursor = 0;
 	edit->scroll = 0;
 	edit->drawWidth = 256;
