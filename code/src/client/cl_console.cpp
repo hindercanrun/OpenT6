@@ -1987,10 +1987,14 @@ void Con_DrawOuputWindow()
 	float widtha = width - (6.0 * 2.0);
 	float heighta = height - (6.0 * 2.0);
 
+
 	// draw the version number
-	Con_DrawOutputVersion(xa, ya, widtha, heighta);
-	Con_DrawOutputScrollBar(xa, ya, widtha, heighta);
-	Con_DrawOutputText(xa, ya, widtha, heighta - ((6.0 * 2.0) + 16.0));
+
+	Con_DrawOutputVersion( xa, ya, widtha, heighta );
+	Con_DrawOutputScrollBar( xa, ya, widtha, heighta );
+
+	// draw the text
+	Con_DrawOutputText( xa, ya, widtha, heighta - (( 6.0 * 2.0 ) + 16.0) );
 }
 
 /*
