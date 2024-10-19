@@ -418,8 +418,7 @@ void Con_TimeNudged(LocalClientNum_t localClientNum, int serverTimeNudge)
 Con_ClearMessageWindow
 ==============
 */
-void Con_ClearMessageWindow(MessageWindow *msgwnd)
-{
+void Con_ClearMessageWindow (MessageWindow *msgwnd) {
 	msgwnd->textBufPos = 0;
 	msgwnd->messageIndex = 0;
 	msgwnd->firstLineIndex = 0;
@@ -471,16 +470,16 @@ If the line width has changed, reformat the buffer.
 */
 void Con_CheckResize (void)
 {
-	float x = ScrPlace_ApplyX(&scrPlaceFull, 4.0, 1);
+	float x = ScrPlace_ApplyX (&scrPlaceFull, 4.0, 1);
 	con.screenMin[0] = floor(x);
 
-	float y = ScrPlace_ApplyY(&scrPlaceFull, 4.0, 1);
+	float y = ScrPlace_ApplyY (&scrPlaceFull, 4.0, 1);
 	con.screenMin[1] = floor(y);
 
-	float width = ScrPlace_ApplyX(&scrPlaceFull, -4.0, 3);
+	float width = ScrPlace_ApplyX (&scrPlaceFull, -4.0, 3);
 	con.screenMax[0] = floor(width);
 
-	float height = ScrPlace_ApplyY(&scrPlaceFull, -4.0, 3);
+	float height = ScrPlace_ApplyY (&scrPlaceFull, -4.0, 3);
 	con.screenMax[1] = floor(height);
 
 	if (cls.consoleFont)
@@ -2252,7 +2251,7 @@ void Con_OneTimeInit()
 		0,
 		1,
 		1);
-	Con_InitMessageBuffer();
+	Con_InitMessageBuffer ();
 
 	con.color = colorWhite;
 	Con_CheckResize ();
@@ -3229,7 +3228,7 @@ void Con_DrawSolidConsole( LocalClientNum_t localClientNum ) {
 	Sys_EnterCriticalSection ( CRITSECT_CONSOLE );
 
 	if ( con.lineOffset ) {
-		// draw notify lines
+		// update notify lines
 		Con_UpdateNotifyLine ( localClientNum, con.prevChannel, 1, 0 );
 
 		con.lineOffset = 0;
@@ -3274,12 +3273,6 @@ void Con_DrawConsole( LocalClientNum_t localClientNum ) {
 
 //================================================================
 
-/*
-==================
-
-Scroll it up or down
-==================
-*/
 
 
 void Con_PageUp( void ) {
