@@ -198,6 +198,9 @@ Con_ToggleConsole
 ================
 */
 void Con_ToggleConsole (void) {
+	// close full screen console
+	con.outputVisible = 0;
+
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInPixels = g_console_field_width;
 	g_consoleField.charHeight = g_console_char_height;
@@ -208,8 +211,6 @@ void Con_ToggleConsole (void) {
 		conDrawInputGlob.autoCompleteChoice[0] = 0;
 	}
 
-	// close full screen console
-	con.outputVisible = 0;
 	keyCatchers ^= KEYCATCH_CONSOLE;
 }
 
@@ -503,6 +504,18 @@ void Con_CheckResize (void)
 	}
 }
 
+
+/*
+================
+Con_InitClientAssets
+================
+*/
+void Con_InitClientAssets (void)
+{
+	// check for console width changes from a vid mode change
+	Con_CheckResize (); 
+}
+
 /*
 ==============
 Con_InitMessageWindow
@@ -542,16 +555,6 @@ void Con_InitMessageWindow(
 		msgwnd->fadeOut = fadeOut;
 		msgwnd->fadeIn = fadeIn;
 	}
-}
-
-/*
-==============
-Con_InitClientAssets
-==============
-*/
-void Con_InitClientAssets()
-{
-	Con_CheckResize();
 }
 
 /*
