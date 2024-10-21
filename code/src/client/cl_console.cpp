@@ -2319,9 +2319,9 @@ void Con_Linefeed (int localClientNum, int channel, int flags)
 }
 
 /*
-==============
+================
 CL_TextLineWrapPosition
-==============
+================
 */
 const char *CL_TextLineWrapPosition(
 	const char *txt,
@@ -2343,9 +2343,13 @@ const char *CL_TextLineWrapPosition(
 }
 
 /*
-==============
+================
 CL_ConsolePrint_AddLine
-==============
+
+Handles cursor positioning, line wrapping, etc
+All console printing must go through this in order to be logged to disk
+If no console is visible, the text will appear at the top of the game window
+================
 */
 char CL_ConsolePrint_AddLine( LocalClientNum_t localClientNum, int channel, const char *txt, int duration, int pixelWidth, int color, int flags ) {
 /*new code*/ #ifdef 0
