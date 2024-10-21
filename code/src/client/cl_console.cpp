@@ -1,9 +1,6 @@
-
 // console.cpp
 
-#include "types.h"
 #include "client.h"
-#include "client_public.h"
 
 const	float	con_outputBarSize = 10.0f;
 const	float	con_inputDvarMatchColor[]			= {1.0, 1.0, 0.8, 1.0};

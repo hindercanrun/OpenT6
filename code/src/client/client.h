@@ -1,3 +1,7 @@
+// client.h -- primary header for client
+
+//#include "../game/q_shared.h"
+
 #pragma once
 
 //#include <win32/win32_public.h>
@@ -136,4 +140,10 @@ inline unsigned int CL_LocalClient_IsDisplayingKeyCatcherHud(LocalClientNum_t lo
 	UNIMPLEMENTED(__FUNCTION__);
 	return 0;
 }
+
+//=================================================
+
+//
+// cl_main
+//
 
