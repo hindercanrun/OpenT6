@@ -1025,14 +1025,13 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 
 
 /*
-==============
+================
 Message_Key
 
 In game talk message
-==============
+================
 */
-void Message_Key(LocalClientNum_t localClientNum, int key)
-{
+void Message_Key( LocalClientNum_t localClientNum, int key ) {
 	UNIMPLEMENTED(__FUNCTION__);
 }
 
@@ -1073,34 +1072,35 @@ BOOL Key_IsCommandBound(LocalClientNum_t localClientNum, const char *command, Bi
 }
 
 /*
-==============
+============
 Key_Bind_f
-==============
+
+============
 */
-void Key_Bind_f()
-{
+void Key_Bind_f( void ) {
 	UNIMPLEMENTED(__FUNCTION__);
 }
 
+
 /*
-==============
+============
 Key_Bind2_f
-==============
+
+============
 */
-void Key_Bind2_f()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void Key_Bind2_f( void ) {
+	UNIMPLEMENTED (__FUNCTION__);
 }
 
+
 /*
-==============
+============
 Key_Bindlist_f
 
-==============
+============
 */
-void Key_Bindlist_f()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void Key_Bindlist_f( void ) {
+	UNIMPLEMENTED (__FUNCTION__);
 }
 
 /*
