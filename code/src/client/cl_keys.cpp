@@ -1127,9 +1127,8 @@ CL_KeyEvent
 Called by the system for both key up and key down events
 ===================
 */
-void CL_KeyEvent(LocalClientNum_t localClientNum, int key, const int down, const unsigned int time)
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void CL_KeyEvent (LocalClientNum_t localClientNum, int key, const int down, const unsigned int time) {
+	UNIMPLEMENTED (__FUNCTION__);
 }
 
 
@@ -1138,13 +1137,12 @@ void CL_KeyEvent(LocalClientNum_t localClientNum, int key, const int down, const
 CL_ConsoleCharEvent
 ==============
 */
-void CL_ConsoleCharEvent(LocalClientNum_t localClientNum, int key)
-{
-	if (Field_CharEvent(localClientNum, &scrPlaceFull, &g_consoleField, key))
-	{
+void CL_ConsoleCharEvent( LocalClientNum_t localClientNum, int key ) {
+	if ( Field_CharEvent( localClientNum, &scrPlaceFull, &g_consoleField, key ) ) {
 		Con_AllowAutoCompleteCycling(1);
 	}
 }
+
 
 /*
 ==============
@@ -1153,53 +1151,51 @@ CL_CharEvent
 Normal keyboard characters, already shifted / capslocked / etc
 ==============
 */
-void CL_CharEvent(LocalClientNum_t localClientNum, int key)
-{
-	PIXBeginNamedEvent(-1, "CL_CharEvent");
+void CL_CharEvent( LocalClientNum_t localClientNum, int key ) {
+	int	keyCatchers;
 
-	if (DevGui_IsActive())
+	PIXBeginNamedEvent( -1, "CL_CharEvent" );
+
+	if ( DevGui_IsActive() )
 	{
-		if (!Sys_IsRenderThread())
+		if ( !Sys_IsRenderThread() )
 		{
 			return;
 		}
 	}
 
 	// the console key should never be used as a char
-	if (key == K_GRAVE || key == K_TILDE)
-	{
+	if ( key == K_GRAVE || key == K_TILDE ) {
 		return;
 	}
 
-	int keyCatchers = CL_GetLocalClientUIGlobals(localClientNum)->keyCatchers;
+	keyCatchers = CL_GetLocalClientUIGlobals( localClientNum )->keyCatchers;
 
-	if ((keyCatchers & 1) != 0)
-	{
-		if (key == K_BS && Con_CancelAutoComplete())
-		{
+	if ( ( keyCatchers & 1 ) != 0 ) {
+		if ( key == K_BS && Con_CancelAutoComplete() ) {
 			return;
 		}
 
-		CL_ConsoleCharEvent(localClientNum, key);
+		CL_ConsoleCharEvent( localClientNum, key );
 		return;
 	}
 
 	// distribute the key down event to the apropriate handler
-	if ((keyCatchers & 0x20) != 0)
+	if ( ( keyCatchers & 0x20 ) != 0)
 	{
-		Field_CharEvent(localClientNum, ScrPlace_GetView(localClientNum), &playerKeys[localClientNum].chatField, key);
+		Field_CharEvent( localClientNum, ScrPlace_GetView( localClientNum ), &playerKeys[localClientNum].chatField, key );
 		return;
 	}
 
-	if ((keyCatchers & 8) != 0)
+	if ( ( keyCatchers & 8 ) != 0 )
 	{
-		UI_KeyEvent(localClientNum, key | 0x400, 1);
+		UI_KeyEvent( localClientNum, key | 0x400, 1 );
 		return;
 	}
 
-	if (CL_GetLocalClientConnectionState(localClientNum) == CA_DISCONNECTED)
+	if ( CL_GetLocalClientConnectionState( localClientNum ) == CA_DISCONNECTED )
 	{
-		CL_ConsoleCharEvent(localClientNum, key);
+		CL_ConsoleCharEvent( localClientNum, key );
 		return;
 	}
 }
