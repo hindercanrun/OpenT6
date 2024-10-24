@@ -1077,8 +1077,47 @@ Key_Bind_f
 
 ============
 */
-void Key_Bind_f( void ) {
-	UNIMPLEMENTED(__FUNCTION__);
+void Key_Bind_f (void)
+{
+	UNIMPLEMENTED (__FUNCTION__);
+#ifdef 0
+	int			i, c, b;
+	char		cmd[1024];
+	
+	c = Cmd_Argc();
+
+	if (c < 2)
+	{
+		Com_Printf (0, "bind <key> [command] : attach a command to a key\n");
+		return;
+	}
+	b = Key_StringToKeynum (Cmd_Argv(1));
+	if (b==-1)
+	{
+		Com_Printf ("\"%s\" isn't a valid key\n", Cmd_Argv(1));
+		return;
+	}
+
+	if (c == 2)
+	{
+		if (keys[b].binding)
+			Com_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv(1), keys[b].binding );
+		else
+			Com_Printf ("\"%s\" is not bound\n", Cmd_Argv(1) );
+		return;
+	}
+	
+// copy the rest of the command line
+	cmd[0] = 0;		// start out with a null string
+	for (i=2 ; i< c ; i++)
+	{
+		I_strncat (cmd, Cmd_Argv(i));
+		if (i != (c-1))
+			I_strncat (cmd, " ");
+	}
+
+	Key_SetBinding (0, b, cmd, 0);
+#endif
 }
 
 
@@ -1088,7 +1127,8 @@ Key_Bind2_f
 
 ============
 */
-void Key_Bind2_f( void ) {
+void Key_Bind2_f (void)
+{
 	UNIMPLEMENTED (__FUNCTION__);
 }
 
@@ -1100,7 +1140,13 @@ Key_Bindlist_f
 ============
 */
 void Key_Bindlist_f( void ) {
-	UNIMPLEMENTED (__FUNCTION__);
+	int		i;
+
+	for ( i = 0 ; i < 256 ; i++ ) {
+		if ( keys[i].binding && keys[i].binding[0] ) {
+			Com_Printf( 0, "%s \"%s\"\n", Key_KeynumToString(i), keys[i].binding );
+		}
+	}
 }
 
 /*
