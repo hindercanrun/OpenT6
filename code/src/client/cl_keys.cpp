@@ -1104,35 +1104,28 @@ void Key_Bindlist_f()
 }
 
 /*
-==============
+===================
 CL_InitKeyCommands
-==============
+===================
 */
-void CL_InitKeyCommands()
-{
+void CL_InitKeyCommands( void ) {
 	// register our functions
-	Cmd_AddCommandInternal("bind", Key_Bind_f, &Key_Bind_f_VAR);
-	Cmd_AddCommandInternal("bind2", Key_Bind2_f, &Key_Bind2_f_VAR);
-	Cmd_AddCommandInternal("unbind", Key_Unbind_f, &Key_Unbind_f_VAR);
-	Cmd_AddCommandInternal("unbind2", Key_Unbind2_f, &Key_Unbind2_f_VAR);
-	Cmd_AddCommandInternal("unbindall", Key_Unbindall_f, &Key_Unbindall_f_VAR);
-	Cmd_AddCommandInternal("unbindall2", Key_Unbindall2_f, &Key_Unbindall2_f_VAR);
-	Cmd_AddCommandInternal("bindlist", Key_Bindlist_f, &Key_Bindlist_f_VAR);
-	Cmd_AddCommandInternal("updateMustHaveBindings", Key_UpdateMustHaveBindings_f, &Key_UpdateMustHaveBindings_f_VAR);
-
-	memset(keynames, 0, sizeof(keynames));
-
-	// todo
-	
-	UNIMPLEMENTED(__FUNCTION__);
+	Cmd_AddCommandInternal ("bind",Key_Bind_f,&Key_Bind_f_VAR);
+	Cmd_AddCommandInternal ("bind2",Key_Bind2_f,&Key_Bind2_f_VAR);
+	Cmd_AddCommandInternal ("unbind",Key_Unbind_f,&Key_Unbind_f_VAR);
+	Cmd_AddCommandInternal ("unbind2",Key_Unbind2_f,&Key_Unbind2_f_VAR);
+	Cmd_AddCommandInternal ("unbindall",Key_Unbindall_f,&Key_Unbindall_f_VAR);
+	Cmd_AddCommandInternal ("unbindall2",Key_Unbindall2_f,&Key_Unbindall2_f_VAR);
+	Cmd_AddCommandInternal ("bindlist",Key_Bindlist_f,&Key_Bindlist_f_VAR);
+	Cmd_AddCommandInternal ("updateMustHaveBindings",Key_UpdateMustHaveBindings_f,&Key_UpdateMustHaveBindings_f_VAR);
 }
 
 /*
-==============
+===================
 CL_KeyEvent
 
 Called by the system for both key up and key down events
-==============
+===================
 */
 void CL_KeyEvent(LocalClientNum_t localClientNum, int key, const int down, const unsigned int time)
 {
