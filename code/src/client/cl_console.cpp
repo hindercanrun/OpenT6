@@ -1776,150 +1776,6 @@ bool Con_IsGameMessageWindowActive(LocalClientNum_t localClientNum, int windowIn
 
 /*
 ==============
-Con_DrawOutputVersion
-==============
-*/
-void Con_DrawOutputVersion(float x, float y, float width, float height)
-{
-	const char *versionString = va("Build %d %s", Com_GetBuildNumber(), "win-x86");
-	SCR_DrawSmallStringExt(x, ((height - 16.0) + y), versionString, &con_versionColor);
-}
-
-/*
-==============
-Con_DrawOutputScrollBar
-==============
-*/
-void Con_DrawOutputScrollBar(float x, float y, float width, float height)
-{
-	float xa = (x + width) - 10.0;
-	ConDraw_Box(xa, y, 10.0, height, &con_outputBarColor->current.value);
-
-	if (con.consoleWindow.activeLineCount > con.visibleLineCount)
-	{
-		float scale = 1.0 / (con.consoleWindow.activeLineCount - con.visibleLineCount);
-		float v7 = (con.displayLineOffset - con.visibleLineCount) * scale;
-
-		float v8;
-		if ((v7 - 1.0) < 0.0)
-		{
-			v8 = (con.displayLineOffset - con.visibleLineCount) * scale;
-		}
-		else
-		{
-			v8 = 1.0f;
-		}
-
-		float v6;
-		if ((0.0 - v7) < 0.0)
-		{
-			v6 = v8;
-		}
-		else
-		{
-			v6 = 0.0f;
-		}
-
-		float v5 = ceil(((con.visibleLineCount * scale) * height));
-
-		float h;
-		if ( (10.0 - v5) < 0.0 )
-		{
-			h = v5;
-		}
-		else
-		{
-			h = con_outputBarSize;
-		}
-
-		ConDraw_Box(xa, ((((y + height) - h) - y) * v6) + y, 10.0, h, &con_outputSliderColor->current.value);
-	}
-	else
-	{
-		ConDraw_Box(xa, y, 10.0, height, &con_outputSliderColor->current.value);
-	}
-}
-
-/*
-==============
-Con_DrawOutputText
-==============
-*/
-void Con_DrawOutputText(float x, float y)
-{
-	float color[4];
-
-	CL_LookupColor(0x37u, color);
-
-	int rowCount = con.visibleLineCount;
-	int firstRow = con.displayLineOffset - con.visibleLineCount;
-
-	if (con.displayLineOffset - con.visibleLineCount < 0)
-	{
-		y = y - (con.fontHeight * firstRow);
-		rowCount = con.displayLineOffset;
-		firstRow = 0;
-	}
-
-	for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex)
-	{
-		int lineIndex = (rowIndex + firstRow + con.consoleWindow.firstLineIndex) % con.consoleWindow.lineCount;
-		y = con.fontHeight + y;
-
-		R_AddCmdDrawConsoleTextInternal(
-			con.consoleWindow.circularTextBuffer,
-			con.consoleWindow.textBufSize,
-			con.consoleWindow.lines[lineIndex].textBufPos,
-			con.consoleWindow.lines[lineIndex].textBufSize,
-			cls.consoleFont,
-			x,
-			y,
-			1.0,
-			1.0,
-			color,
-			0);
-	}
-}
-
-/*
-==============
-Con_DrawOuputWindow
-
-Draws the fullscreen console
-==============
-*/
-void Con_DrawOuputWindow()
-{
-	float x = con.screenMin[0];
-	float width = con.screenMax[0] - con.screenMin[0];
-	float y = con.screenMin[1] + 32.0;
-	float height = (con.screenMax[1] - con.screenMin[1]) - 32.0;
-
-	// draw the background
-	ConDraw_Box(
-		con.screenMin[0],
-		con.screenMin[1] + 32.0,
-		con.screenMax[0] - con.screenMin[0],
-		height,
-		&con_outputWindowColor->current.value);
-
-	float xa = x + 6.0;
-	float ya = y + 6.0;
-	float widtha = width - (6.0 * 2.0);
-	float heighta = height - (6.0 * 2.0);
-
-
-	// draw the version number
-
-	Con_DrawOutputVersion( xa, ya, widtha, heighta );
-	Con_DrawOutputScrollBar( xa, ya, widtha, heighta );
-
-	// draw the text
-	Con_DrawOutputText( xa, ya, widtha, heighta - (( 6.0 * 2.0 ) + 16.0) );
-}
-
-/*
-==============
 CL_PlayTextFXPulseSounds
 ==============
 */
@@ -2250,6 +2106,13 @@ void Con_Init (void) {
 	if (!con.initialized)
 	{
 		Con_OneTimeInit();
+
+#ifdef INCLUDE_ASSERTS
+		// if con STILL isn't inited...
+		if ( !con.initialized ) {
+			Assert_MyHandler( "C:\\t6\\code\\src\\client\\cl_console.cpp", 721, 0, "%s", "con.initialized" );
+		}
+#endif
 	}
 }
 
@@ -3212,6 +3075,182 @@ char Con_CommitToAutoComplete()
 	return 1;
 }
 
+
+/*
+==============
+Con_GetVersionString
+
+Grabs the version string for the console
+==============
+*/
+char	*Con_GetVersionString()
+{
+	int BuildNumber;
+
+	BuildNumber = Com_GetBuildNumber();
+	return va("Build %d %s", BuildNumber, "win-x86");
+}
+
+/*
+==============
+Con_DrawOutputVersion
+
+Draws the console version string in the output window
+==============
+*/
+void Con_DrawOutputVersion( float x, float y, float width, float height ) {
+	const char	*versionString;
+
+	versionString = Con_GetVersionString();
+	SCR_DrawSmallStringExt( x, ((height - 16.0) + y), versionString, con_versionColor );
+}
+
+/*
+==============
+Con_DrawOutputScrollBar
+
+Draws the client console output window's scroll bar
+==============
+*/
+void Con_DrawOutputScrollBar( float x, float y, float width, float height ) {
+	// bad. clean up later
+	float xa = (x + width) - 10.0;
+	ConDraw_Box(xa, y, 10.0, height, &con_outputBarColor->current.value);
+
+	if (con.consoleWindow.activeLineCount > con.visibleLineCount)
+	{
+		float scale = 1.0 / (con.consoleWindow.activeLineCount - con.visibleLineCount);
+		float v7 = (con.displayLineOffset - con.visibleLineCount) * scale;
+
+		float v8;
+		if ((v7 - 1.0) < 0.0)
+		{
+			v8 = (con.displayLineOffset - con.visibleLineCount) * scale;
+		}
+		else
+		{
+			v8 = 1.0f;
+		}
+
+		float v6;
+		if ((0.0 - v7) < 0.0)
+		{
+			v6 = v8;
+		}
+		else
+		{
+			v6 = 0.0f;
+		}
+
+		float v5 = ceil(((con.visibleLineCount * scale) * height));
+
+		float h;
+		if ( (10.0 - v5) < 0.0 )
+		{
+			h = v5;
+		}
+		else
+		{
+			h = con_outputBarSize;
+		}
+
+		ConDraw_Box(xa, ((((y + height) - h) - y) * v6) + y, 10.0, h, &con_outputSliderColor->current.value);
+	}
+	else
+	{
+		ConDraw_Box(xa, y, 10.0, height, &con_outputSliderColor->current.value);
+	}
+}
+
+/*
+==============
+Con_DrawOutputText
+
+Draws the text shown in the client console output window
+==============
+*/
+void Con_DrawOutputText( float x, float y ) {
+	int rowCount;
+	int firstRow;
+	float color[4];
+	int lineIndex;
+	int rowIndex;
+
+	CL_LookupColor( 0x37u, color );
+
+#ifdef INCLUDE_ASSERTS
+	if ( !con.fontHeight ) {
+		Assert_MyHandler( "C:\\t6\\code\\src\\client\\cl_console.cpp", 3211, 0, "%s", "con.fontHeight" );
+	}
+#endif
+
+	rowCount = con.visibleLineCount;
+	firstRow = con.displayLineOffset - con.visibleLineCount;
+
+	if ( con.displayLineOffset - con.visibleLineCount < 0 ) {
+		y			= y - (con.fontHeight * firstRow);
+		rowCount	= con.displayLineOffset;
+		firstRow	= 0;
+	}
+
+	for ( rowIndex = 0; rowIndex < rowCount; ++rowIndex ) {
+		lineIndex	= (rowIndex + firstRow + con.consoleWindow.firstLineIndex) % con.consoleWindow.lineCount;
+		y			= con.fontHeight + y;
+
+		R_AddCmdDrawConsoleText( con.consoleWindow.circularTextBuffer, con.consoleWindow.textBufSize,
+			con.consoleWindow.lines[lineIndex].textBufPos,
+			con.consoleWindow.lines[lineIndex].textBufSize,
+			cls.consoleFont, x,
+			y,
+			1.0,
+			1.0,
+			color,
+			0 );
+	}
+}
+
+/*
+==============
+Con_DrawOuputWindow
+
+Draws the fullscreen console
+==============
+*/
+void Con_DrawOuputWindow() {
+	float width;
+	float widtha;
+	float height;
+	float heighta;
+	float x;
+	float xa;
+	float y;
+	float ya;
+
+	x		= con.screenMin[0];
+	width	= con.screenMax[0] - con.screenMin[0];
+	y		= con.screenMin[1] + 32.0;
+	height	= (con.screenMax[1] - con.screenMin[1]) - 32.0;
+
+	ConDraw_Box( con.screenMin[0], con.screenMin[1] + 32.0, con.screenMax[0] - con.screenMin[0],
+	
+		height, &con_outputWindowColor->current.value );
+
+	xa = x + 6.0;
+	ya = y + 6.0;
+	widtha = width - (6.0 * 2.0);
+	heighta = height - (6.0 * 2.0);
+
+	// draw the version number
+	Con_DrawOutputVersion( xa, ya, widtha, heighta );
+
+	// draw the scroll bar
+	Con_DrawOutputScrollBar( xa, ya, widtha, heighta );
+
+	// draw the text
+	Con_DrawOutputText( xa, ya, widtha, heighta - ((6.0 * 2.0) + 16.0) );
+}
+
+
 /*
 ================
 Con_DrawSay
@@ -3318,27 +3357,43 @@ void Con_DrawConsole( LocalClientNum_t localClientNum ) {
 
 
 void Con_PageUp( void ) {
+	int		activeLineCount;
+
 	con.displayLineOffset -= 2;
+
 	if ( con.displayLineOffset < con.visibleLineCount ) {
-		con.displayLineOffset = con.visibleLineCount;
 		if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
-			con.displayLineOffset = con.consoleWindow.activeLineCount;
+			activeLineCount = con.consoleWindow.activeLineCount;
+		} else {
+			activeLineCount = con.visibleLineCount;
 		}
+
+		con.displayLineOffset = activeLineCount;
 	}
 }
 
 void Con_PageDown( void ) {
-	con.displayLineOffset = con.consoleWindow.activeLineCount;
+	int		activeLineCount;
+
 	if ( con.displayLineOffset + 2 < con.consoleWindow.activeLineCount ) {
-		con.displayLineOffset = con.displayLineOffset + 2;
+		activeLineCount = con.displayLineOffset + 2;
+	} else {
+		activeLineCount = con.consoleWindow.activeLineCount;
 	}
+
+	con.displayLineOffset = activeLineCount;
 }
 
 void Con_Top( void ) {
-	con.displayLineOffset = con.visibleLineCount;
+	int		activeLineCount;
+
 	if ( con.consoleWindow.activeLineCount < con.visibleLineCount ) {
-		con.displayLineOffset = con.consoleWindow.activeLineCount;
+		activeLineCount = con.consoleWindow.activeLineCount;
+	} else {
+		activeLineCount = con.visibleLineCount;
 	}
+
+	con.displayLineOffset = activeLineCount;
 }
 
 void Con_Bottom( void ) {
