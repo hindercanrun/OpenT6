@@ -225,90 +225,46 @@ void Con_Echo_f (void) {
 	Field_AdjustScroll( LOCAL_CLIENT_FIRST, &scrPlaceFull, &g_consoleField );
 }
 
-/*
-==============
-SetupChatField
-==============
-*/
-void SetupChatField( LocalClientNum_t localClientNum, int teamChat, int widthInPixels ) {
-	int		width, height;
-	float	aspect;
-
-	CL_GetScreenDimensions( &width, &height, &aspect );
-
-	playerKeys[localClientNum].chat_team = teamChat;
-	PlayerKeyState	*chatField = &playerKeys[localClientNum];
-
-	Field_Clear( &chatField->chatField );
-
-	chatField->chatField.widthInPixels = widthInPixels;
-	chatField->chatField.fixedSize = 0;
-
-	if ( height <= 768 ) {
-		chatField->chatField.charHeight = 16.0f;
-	} else {
-		chatField->chatField.charHeight = 10.f;
-	}
-
-	clientUIActive_t	*LocalClientUIGlobals = CL_GetLocalClientUIGlobals ( localClientNum );
-	LocalClientUIGlobals->keyCatchers ^= 0x20u;
-}
-
-/*
-==============
-Con_ChatModePublic_f
-==============
-*/
-void Con_ChatModePublic_f (void) {
-	if ( Com_SessionMode_IsOnlineGame () || Com_SessionMode_IsMode(SESSIONMODE_SYSTEMLINK) ) {
-		SetupChatField( 0, 0, 588 );
-	}
-}
 
 /*
 ==============
 Con_GetTextCopy
 ==============
 */
-void Con_GetTextCopy(char *text, int maxSize)
-{
-	if (con.consoleWindow.activeLineCount)
-	{
-		int begin = con.consoleWindow.lines[con.consoleWindow.firstLineIndex].textBufPos;
-		unsigned int end = con.consoleWindow.textBufPos;
-		int totalSize = con.consoleWindow.textBufPos - begin;
+void Con_GetTextCopy( char *text, int maxSize ) {
+	int				begin;
+	unsigned int	end;
+	int				totalSize;
 
-		if (con.consoleWindow.textBufPos - begin < 0)
-		{
+	if ( con.consoleWindow.activeLineCount ) {
+		begin = con.consoleWindow.lines[con.consoleWindow.firstLineIndex].textBufPos;
+		end = con.consoleWindow.textBufPos;
+		totalSize = con.consoleWindow.textBufPos - begin;
+
+		if ( con.consoleWindow.textBufPos - begin < 0 ) {
 			totalSize += con.consoleWindow.textBufSize;
 		}
 
-		if (totalSize > maxSize - 1)
-		{
-			begin += totalSize - (maxSize - 1);
+		if ( totalSize > maxSize - 1 ) {
+			begin += totalSize - ( maxSize - 1 );
 
-			if (begin > con.consoleWindow.textBufSize)
-			{
+			if ( begin > con.consoleWindow.textBufSize ) {
 				begin -= con.consoleWindow.textBufSize;
 			}
 
 			totalSize = maxSize - 1;
 		}
 
-		if (begin >= con.consoleWindow.textBufPos)
-		{
-			memcpy(text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufSize - begin);
-			memcpy(&text[con.consoleWindow.textBufSize - begin], con.consoleWindow.circularTextBuffer, end);
+		if ( begin >= con.consoleWindow.textBufPos ) {
+			memcpy( text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufSize - begin );
+			memcpy( &text[con.consoleWindow.textBufSize - begin], con.consoleWindow.circularTextBuffer, end );
 		}
-		else
-		{
-			memcpy(text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufPos - begin);
+		else {
+			memcpy( text, &con.consoleWindow.circularTextBuffer[begin], con.consoleWindow.textBufPos - begin );
 		}
-
 		text[totalSize] = 0;
 	}
-	else
-	{
+	else {
 		*text = 0;
 	}
 }
@@ -1083,40 +1039,6 @@ void Con_InitMessageBuffer()
 			1,
 			1);
 	}
-}
-
-/*
-==============
-CL_AddMessageChar
-==============
-*/
-int CL_AddMessageChar(char *msg, unsigned int msgLen, unsigned int msgMaxLen, char c)
-{
-	msg[msgLen] = c;
-
-	return msgLen + 1;
-}
-
-/*
-==============
-CL_AddMessageString
-==============
-*/
-int CL_AddMessageString(char *msg, unsigned int msgLen, unsigned int msgMaxLen, const char *string)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
-CL_AddMessageIcon
-==============
-*/
-int CL_AddMessageIcon(char *msg, unsigned int msgLen, unsigned int msgMaxLen, Material *iconShader, float iconWidth, float iconHeight, bool horzFlipIcon)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
 }
 
 /*
@@ -1998,16 +1920,6 @@ void Con_DrawOuputWindow()
 
 /*
 ==============
-Con_IsActive
-==============
-*/
-bool Con_IsActive(LocalClientNum_t localClientNum)
-{
-	return Key_IsCatcherActive(localClientNum, 1);
-}
-
-/*
-==============
 CL_PlayTextFXPulseSounds
 ==============
 */
@@ -2042,6 +1954,47 @@ void CL_PlayTextFXPulseSounds(LocalClientNum_t localClientNum, int currentTime, 
 		}
 	}
 }
+
+/*
+==============
+SetupChatField
+==============
+*/
+void SetupChatField( LocalClientNum_t localClientNum, int teamChat, int widthInPixels ) {
+	int		width, height;
+	float	aspect;
+
+	CL_GetScreenDimensions( &width, &height, &aspect );
+
+	playerKeys[localClientNum].chat_team = teamChat;
+	PlayerKeyState	*chatField = &playerKeys[localClientNum];
+
+	Field_Clear( &chatField->chatField );
+
+	chatField->chatField.widthInPixels = widthInPixels;
+	chatField->chatField.fixedSize = 0;
+
+	if ( height <= 768 ) {
+		chatField->chatField.charHeight = 16.0f;
+	} else {
+		chatField->chatField.charHeight = 10.f;
+	}
+
+	clientUIActive_t	*LocalClientUIGlobals = CL_GetLocalClientUIGlobals ( localClientNum );
+	LocalClientUIGlobals->keyCatchers ^= 0x20u;
+}
+
+/*
+==============
+Con_ChatModePublic_f
+==============
+*/
+void Con_ChatModePublic_f (void) {
+	if ( Com_SessionMode_IsOnlineGame () || Com_SessionMode_IsMode(SESSIONMODE_SYSTEMLINK) ) {
+		SetupChatField( 0, 0, 588 );
+	}
+}
+
 
 /*
 ==============
@@ -2598,10 +2551,48 @@ void CL_ReviveMessagePrint(
 
 /*
 ==============
+CL_AddMessageChar
+==============
+*/
+int CL_AddMessageChar (char *msg, unsigned int msgLen, unsigned int msgMaxLen, char c) {
+	msg[msgLen] = c;
+	return msgLen + 1;
+}
+
+/*
+==============
+CL_AddMessageString
+==============
+*/
+int CL_AddMessageString (char *msg, unsigned int msgLen, unsigned int msgMaxLen, const char *string) {
+	UNIMPLEMENTED (__FUNCTION__);
+	return 0;
+}
+
+/*
+==============
+CL_AddMessageIcon
+==============
+*/
+unsigned int CL_AddMessageIcon (
+	char *msg,
+	unsigned int msgLen,
+	unsigned int msgMaxLen,
+	Material *iconShader,
+	float iconWidth,
+	float iconHeight,
+	bool horzFlipIcon)
+{
+	UNIMPLEMENTED(__FUNCTION__);
+	return 0;
+}
+
+/*
+==============
 CL_DeathMessagePrint
 ==============
 */
-void CL_DeathMessagePrint(
+void CL_DeathMessagePrint (
 	LocalClientNum_t localClientNum,
 	const char *attackerName,
 	char attackerColorIndex, 
@@ -2612,19 +2603,19 @@ void CL_DeathMessagePrint(
 	float iconHeight,
 	unsigned int horzFlipIcon)
 {
-	if (cl_noprint->current.enabled)
+	if ( cl_noprint->current.enabled )
 	{
 		return;
 	}
 
-	if (!con.initialized)
+	if ( !con.initialized )
 	{
 		Con_OneTimeInit();
 	}
 
-	if (con.lineOffset)
+	if ( con.lineOffset )
 	{
-		Con_UpdateNotifyLine(0, localClientNum, con.prevChannel, 1);
+		Con_UpdateNotifyLine (0, localClientNum, con.prevChannel, 1);
 
 		con.lineOffset = 0;
 		if (con.displayLineOffset == con.consoleWindow.activeLineCount - 1)
@@ -2636,7 +2627,7 @@ void CL_DeathMessagePrint(
 	char deathMsg[1024] = {0};
 	unsigned int messagePos = 0;
 
-	ColorIndex(0x37u);
+	ColorIndex (0x37u);
 
 	if (*attackerName)
 	{
@@ -2667,7 +2658,7 @@ void CL_DeathMessagePrint(
 		messageWidth = con.visiblePixelWidth;
 	}
 
-	CL_ConsolePrint(localClientNum, 6, deathMsg, 0, messageWidth, 0);
+	CL_ConsolePrint (localClientNum, 6, deathMsg, 0, messageWidth, 0);
 }
 
 
@@ -3223,6 +3214,53 @@ char Con_CommitToAutoComplete()
 
 /*
 ================
+Con_DrawSay
+
+================
+*/
+void Con_DrawSay( int localClientNum, int x, int y ) {
+	const char *v3;
+	int v4;
+	int v5;
+	Font_s *font;
+	char *string;
+	float normalizedScale;
+	float normalizedScalea;
+
+	if ( Key_IsCatcherActive( localClientNum, 32 ) ) {
+		if ( playerKeys[localClientNum].chat_team ) {
+			v3 = SEH_SafeTranslateString("EXE_SAYTEAM");
+		}
+		else
+		{
+			v3 = SEH_SafeTranslateString("EXE_SAY");
+		}
+
+		string = va("%s: ", v3);
+		normalizedScale = playerKeys[localClientNum].chatField.charHeight / 48.0;
+		font = UI_GetFontHandle(&scrPlaceView[localClientNum], 0, normalizedScale);
+		normalizedScalea = R_NormalizedTextScale(font, normalizedScale);
+		v4 = R_TextHeight(font);
+		CL_DrawText(
+			&scrPlaceView[localClientNum],
+			string,
+			0x7FFFFFFF,
+			font,
+			x,
+			(y + (v4 * normalizedScalea)),
+			1,
+			1,
+			normalizedScalea,
+			normalizedScalea,
+			colorWhite,
+			3);
+		v5 = R_TextWidth(string, 0, font);
+		Field_Draw(localClientNum, &playerKeys[localClientNum].chatField, x + (v5 * normalizedScalea), y, 1, 1);
+	}
+}
+
+/*
+================
 Con_DrawSolidConsole
 
 Draws the console with the solid background
@@ -3328,4 +3366,13 @@ void Con_Close( LocalClientNum_t localClientNum ) {
 		Con_ClearMessageWindow(&con.messageBuffer[localClientNum].errorWindow);
 		keyCatchers &= ~KEYCATCH_CONSOLE;
 	}
+}
+
+/*
+==============
+Con_IsActive
+==============
+*/
+BOOL Con_IsActive( LocalClientNum_t localClientNum ) {
+	return	Key_IsCatcherActive( localClientNum, 1 );
 }
