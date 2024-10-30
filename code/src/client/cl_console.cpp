@@ -2756,14 +2756,108 @@ int ConDrawInput_GetDvarDescriptionLines(const dvar_t *dvar)
 	return result;
 }
 
+
 /*
 ================
 ConDrawInput_DetailedDvarMatch
 ================
 */
-void ConDrawInput_DetailedDvarMatch(LocalClientNum_t localClientNum, const char *str)
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void ConDrawInput_DetailedDvarMatch( LocalClientNum_t localClientNum, const char *str ) {
+	bool			hasLatchedValue;
+	int				infoLineCount;
+	char			dvarInfo[1024];
+	int				descriptionLineCount;
+	int				lineIndex;
+
+	const dvar_t	*dvar;
+
+#ifdef INCLUDE_ASSERTS
+	// this is very bad!
+	if ( !str ) {
+		Assert_MyHandler( "C:\\t6\\code\\src\\client\\cl_console.cpp", 2253, 0, "%s", "str" )
+	}
+#endif // INCLUDE_ASSERTS
+
+	if ( Con_IsAutoCompleteMatch( str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen )
+		&& ( !conDrawInputGlob.hasExactMatch || !str[conDrawInputGlob.inputTextLen] ) )
+	{
+		dvar = Dvar_FindVar (str);
+
+#ifdef INCLUDE_ASSERTS
+		// :(
+		if ( !dvar ) {
+			Assert_MyHandler( "C:\\t6\\code\\src\\client\\cl_console.cpp", 2261, 0, "%s", "dvar" );
+		}
+#endif // INCLUDE_ASSERTS
+
+		hasLatchedValue = Dvar_HasLatchedValue (dvar);
+		if ( hasLatchedValue ) {
+			ConDrawInput_Box( 3, &con_inputHintBoxColor->current.value );
+		} else {
+			ConDrawInput_Box( 2, &con_inputHintBoxColor->current.value );
+		}
+
+		ConDrawInput_TextLimitChars( str, 24, con_inputDvarMatchColor );
+
+		conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
+
+		ConDrawInput_TextLimitChars(
+			Dvar_DisplayableValue (dvar), 40, con_inputDvarValueColor );
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+
+		if ( hasLatchedValue ) {
+			ConDrawInput_Text( "  latched value", con_inputDvarInactiveValueColor );
+
+			conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
+
+			ConDrawInput_TextLimitChars(
+				Dvar_DisplayableLatchedValue (dvar), 40, con_inputDvarInactiveValueColor );
+
+			conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+			conDrawInputGlob.x = conDrawInputGlob.leftX;
+		}
+
+		ConDrawInput_Text( "  default", con_inputDvarInactiveValueColor );
+
+		conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
+
+		ConDrawInput_TextLimitChars(
+			Dvar_DisplayableResetValue (dvar), 40, con_inputDvarInactiveValueColor );
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+
+		Dvar_DomainToString_GetLines( dvar->type, dvar->domain, dvarInfo, 1024, &infoLineCount );
+
+		if ( dvar->description ) {
+			descriptionLineCount = ConDrawInput_GetDvarDescriptionLines (dvar);
+		} else {
+			descriptionLineCount = 0;
+		}
+
+		ConDrawInput_Box( descriptionLineCount + infoLineCount + 1, &con_inputHintBoxColor->current.value );
+
+		if ( dvar->description ) {
+			ConDrawInput_Text( dvar->description, con_inputDvarDescriptionColor );
+
+			for ( lineIndex = 0; lineIndex < descriptionLineCount; ++lineIndex ) {
+				conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+				conDrawInputGlob.x = conDrawInputGlob.leftX;
+			}
+		}
+
+		ConDrawInput_Text( dvarInfo, con_inputDvarInfoColor );
+
+		conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
+		conDrawInputGlob.x = conDrawInputGlob.leftX;
+
+		if ( dvar->type == DVAR_TYPE_ENUM && Cmd_Argc() == 2 ) {
+			ConDrawInput_AutoCompleteArg( dvar->domain.enumeration.strings, dvar->domain.enumeration.stringCount );
+		}
+	}
 }
 
 /*
