@@ -1,13 +1,14 @@
 #include "types.h"
 
+cmd_function_s DevGui_Toggle_VAR;
+
 /*
 ==============
 DevGui_InputInit
 ==============
 */
-void DevGui_InputInit()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void DevGui_InputInit (void) {
+	Cmd_AddCommandInternal ("devgui",DevGui_Toggle,&DevGui_Toggle_VAR);
 }
 
 /*
@@ -15,19 +16,18 @@ void DevGui_InputInit()
 DevGui_InputShutdown
 ==============
 */
-void DevGui_InputShutdown()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void DevGui_InputShutdown (void) {
+	Cmd_RemoveCommand ("devgui");
 }
+
 
 /*
 ==============
 DevGui_SelectGamepad
 ==============
 */
-void DevGui_SelectGamepad(ControllerIndex_t gamePadIndex)
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void DevGui_SelectGamepad( ControllerIndex_t gamePadIndex ) {
+	s_input.selectedGamePadIndex = gamePadIndex;
 }
 
 /*
@@ -35,9 +35,9 @@ void DevGui_SelectGamepad(ControllerIndex_t gamePadIndex)
 DevGui_MouseEvent
 ==============
 */
-void DevGui_MouseEvent(int dx, int dy)
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void DevGui_MouseEvent( int dx, int dy ) {
+	s_input.mousePos[0] = (float)dx;
+	s_input.mousePos[1] = (float)dy;
 }
 
 /*

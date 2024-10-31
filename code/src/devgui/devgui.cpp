@@ -1,13 +1,38 @@
 #include "types.h"
 
+typedef struct {
+	DevMenuItem menus[2048];
+	DevMenuItem *nextFreeMenu;
+	DevMenuItem topmostMenu;
+
+	bool bindNextKey;
+
+	bool isActive;
+	bool isInitialized;
+
+	bool editingMenuItem;
+	unsigned __int16 selectedMenu;
+	int selRow;
+	bool editingKnot;
+
+	int top;
+	int bottom;
+	int left;
+	int right;
+	int sliderWidth;
+	int textLabelWidth;
+} devguiGlob_t;
+
+extern	devguiGlob_t	devguiGlob;
+
+
 /*
 ==============
 TRACK_devgui
 ==============
 */
-void TRACK_devgui()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void TRACK_devgui(void) {
+	track_static_alloc_internal( &devguiGlob, 82000, "devguiGlob", 0 );
 }
 
 /*
@@ -388,10 +413,17 @@ void DevGui_Toggle()
 DevGui_IsActive
 ==============
 */
-bool DevGui_IsActive()
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+bool DevGui_IsActive(void) {
+	return devguiGlob.isActive;
+}
+
+/*
+==============
+DevGui_IsInitialized
+==============
+*/
+bool DevGui_IsInitialized(void) {
+	return devguiGlob.isInitialized;
 }
 
 /*
