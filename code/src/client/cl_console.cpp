@@ -2966,26 +2966,63 @@ Draw the editline after a ] prompt
 ================
 */
 void Con_DrawInput (LocalClientNum_t localClientNum) {
+	int BuildNumber;
+	const char *BuildName;
+	bool v3;
+	int matchCount;
+	char *tooManyMatchesStr;
+	int inputTextLenPrev;
+	char *promptString;
+	const char *originalCommand;
+
 	bool isDvarCommand;
+
+#ifdef INCLUDE_ASSERTS
+	if ( !Sys_IsMainThread() && !Sys_IsRenderThread() )
+	{
+		Assert_MyHandler( __FILE__, __LINE__, 0, "Sys_IsMainThread() || Sys_IsRenderThread()" )
+	}
+#endif
 
 	if ( !Key_IsCatcherActive( localClientNum, 1 ) ) {
 		return;
 	}
 
-	conDrawInputGlob.fontHeight = R_TextHeight(cls.consoleFont);
+	BuildName 		= Com_GetBuildName   ();
+	BuildNumber 	= Com_GetBuildNumber ();
+	promptString 	= va( "%s.%s.%d: %s> ", "1", "0", BuildNumber, BuildName );
+
+	conDrawInputGlob.fontHeight = R_TextHeight (cls.consoleFont);
 	conDrawInputGlob.x = con.screenMin[0] + 6.0;
 	conDrawInputGlob.y = con.screenMin[1] + 6.0;
 	conDrawInputGlob.leftX = con.screenMin[0] + 6.0;
 
-	ConDrawInput_Box(1, &con_inputBoxColor->current.value);
-	const char *console_title = va("%s.%s.%d: %s> ", "1", "0", Com_GetBuildNumber(), Com_GetBuildName());
-	ConDrawInput_TextAndOver(localClientNum, console_title, &con_versionColor);
+	ConDrawInput_Box( 1, &con_inputBoxColor->current.value );
+	ConDrawInput_TextAndOver( promptString, con_versionColor );
 
 	conDrawInputGlob.leftX = conDrawInputGlob.x;
-	g_consoleField.widthInPixels = ((con.screenMax[0] - 6.0) - conDrawInputGlob.x);
+
+	g_consoleField.widthInPixels = (( con.screenMax[0] - 6.0 ) - conDrawInputGlob.x );
+
+	inputTextLenPrev = conDrawInputGlob.inputTextLen;
 	conDrawInputGlob.inputText = Con_TokenizeInput();
 	conDrawInputGlob.inputTextLen = strlen(conDrawInputGlob.inputText);
 	conDrawInputGlob.autoCompleteChoice[0] = 0;
+
+	if ( inputTextLenPrev != conDrawInputGlob.inputTextLen ) {
+		Con_CancelAutoComplete();
+	}
+
+	if ( conDrawInputGlob.inputTextLen
+		&& ((originalCommand = conDrawInputGlob.inputText, Cmd_Argc() <= 1)
+		|| !Con_IsDvarCommand(conDrawInputGlob.inputText)
+			? (v3 = 0)
+			: (v3 = 1),
+			!v3
+		|| (conDrawInputGlob.inputText = Cmd_Argv(1),
+			(conDrawInputGlob.inputTextLen = strlen(conDrawInputGlob.inputText)) != 0)) )
+	{
+	}
 
 	if (!conDrawInputGlob.inputTextLen)
 	{
