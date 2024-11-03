@@ -2966,6 +2966,7 @@ Draw the editline after a ] prompt
 ================
 */
 void Con_DrawInput (LocalClientNum_t localClientNum) {
+#if 0
 	int BuildNumber;
 	const char *BuildName;
 	bool v3;
@@ -3155,6 +3156,9 @@ LABEL_28:
 	}
 
 	goto LABEL_22;
+#endif
+
+	UNIMPLEMENTED (__FUNCTION__ );
 }
 
 /*

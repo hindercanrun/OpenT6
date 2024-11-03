@@ -9,6 +9,10 @@
 #define M_PI        3.14159265358979323846f
 #endif
 
+//only temp (for assertive.cpp)
+#define PLATFORM_PC
+
+
 #define MAX_LOCAL_CLIENTS 4
 
 #define BIT_INDEX_32(bits)	((bits) >> 5)
