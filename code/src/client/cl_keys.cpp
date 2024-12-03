@@ -798,57 +798,55 @@ CONSOLE LINE EDITING
 */
 
 /*
-==============
+====================
 Console_Key
-==============
+
+Handles history and console scrollback
+====================
 */
-void Console_Key(LocalClientNum_t localClientNum, int key)
-{
+void Console_Key (LocalClientNum_t localClientNum, int key) {
 	char v5; // not good
 
-	int isShiftKeyDown = playerKeys[localClientNum].keys[K_SHIFT].down;
-	int isCtrlKeyDown = playerKeys[localClientNum].keys[K_CTRL].down;
-	int isAltKeyDown = playerKeys[localClientNum].keys[K_ALT].down;
+	int		isShiftKeyDown
+	int		isCtrlKeyDown;
+	int		isAltKeyDown;
+
+	isShiftKeyDown	= playerKeys[localClientNum].keys[K_SHIFT].down;
+	isCtrlKeyDown	= playerKeys[localClientNum].keys[K_CTRL].down;
+	isAltKeyDown	= playerKeys[localClientNum].keys[K_ALT].down;
 
 	// ctrl-L clears screen
-	if (key == 'l' && isCtrlKeyDown)
-	{
-		Cbuf_AddText(localClientNum, "clear\n");
+	if ( key == 'l' && isCtrlKeyDown ) {
+		Cbuf_AddText (localClientNum, "clear\n");
 		return;
 	}
 
 	// enter finishes the line
-	if (key == K_ENTER || key == K_KP_ENTER)
-	{
-		if (Con_CommitToAutoComplete())
-		{
+	if ( key == K_ENTER || key == K_KP_ENTER ) {
+		if ( Con_CommitToAutoComplete () ) {
 			return;
 		}
 
-		Com_Printf(CON_CHANNEL_DONT_FILTER, "]%s\n", g_consoleField.buffer);
+		Com_Printf ( CON_CHANNEL_DONT_FILTER, "]%s\n", g_consoleField.buffer );
 
 		// leading slash is an explicit command
-		if (g_consoleField.buffer[0] == '\\' || g_consoleField.buffer[0] == '/')
-		{
-			Cbuf_AddText(localClientNum, &g_consoleField.buffer[1]); // valid command
-		}
-		else
-		{
-			if (!Console_IsClientDisconnected()
-				|| !I_strnicmp(g_consoleField.buffer, "quit", 4)
-				|| !I_strnicmp(g_consoleField.buffer, "kill", 4))
+		if ( g_consoleField.buffer[0] == '\\' || g_consoleField.buffer[0] == '/' ) {
+			Cbuf_AddText( localClientNum, g_consoleField.buffer+1 );	// valid command
+		} else {
+			if ( !Console_IsClientDisconnected ()
+				|| !I_strnicmp( g_consoleField.buffer, "quit", 4 )
+				|| !I_strnicmp( g_consoleField.buffer, "kill", 4 ) )
 			{
-				if (!g_consoleField.buffer[0])
-				{
+				if ( !g_consoleField.buffer[0] ) {
 					return; // empty lines just scroll the console without adding to history
 				}
 
 				// other text will be chat messages if RCon is enabled
-				if (Console_IsRconCmd(g_consoleField.buffer))
+				if ( Console_IsRconCmd( g_consoleField.buffer ) )
 				{
-					Cbuf_AddText(localClientNum, "cmd say ");
-					Cbuf_AddText(localClientNum, g_consoleField.buffer);
-					Cbuf_AddText(localClientNum, "\n");
+					Cbuf_AddText (localClientNum, "cmd say ");
+					Cbuf_AddText( localClientNum, g_consoleField.buffer );
+					Cbuf_AddText (localClientNum, "\n");
 				}
 			}
 			Cbuf_AddText(localClientNum, g_consoleField.buffer);
@@ -862,17 +860,18 @@ void Console_Key(LocalClientNum_t localClientNum, int key)
 			historyLine = ++nextHistoryLine;
 		}
 
-		Field_Clear(&g_consoleField);
+		Field_Clear( &g_consoleField );
 		g_consoleField.widthInPixels = g_console_field_width;
 		g_consoleField.charHeight = g_console_char_height;
 		g_consoleField.fixedSize = true;
 
-		if (Console_IsClientDisconnected())
-		{
-			SCR_UpdateScreen(); // force an update, because the command may take some time
-		}
+		if ( Console_IsClientDisconnected () ) {
+			SCR_UpdateScreen ();	// force an update, because the command
+		}							// may take some time
 	}
+
 	// command completion
+
 	else if (key == K_TAB)
 	{
 		if (s_shouldCompleteCmd)
@@ -1080,7 +1079,7 @@ Key_Bind_f
 void Key_Bind_f (void)
 {
 	UNIMPLEMENTED (__FUNCTION__);
-#ifdef 0
+#if 0
 	int			i, c, b;
 	char		cmd[1024];
 	

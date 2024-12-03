@@ -1,5 +1,13 @@
 #include "types.h"
 
+#if defined(GAME_SINGLEPLAYER)
+GameWorldSp *gameWorldCurrent;
+#else
+GameWorldMp *gameWorldCurrent
+#endif
+pathlocal_t g_path;
+path_t *debugPath;
+
 /*
 ==============
 Path_GetPillarStandOverOffset
@@ -684,9 +692,22 @@ void Path_DisconnectPath(pathnode_t *node, pathlink_s *link)
 Path_ConnectPath
 ==============
 */
-void Path_ConnectPath(pathnode_t *node, pathlink_s *link)
+void Path_ConnectPath(pathnode_t *node, pathlink_s *toNodeNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if ((node->constant.spawnflags & 0x4000) == 0)
+	{
+		for (int j = node->dynamic.wLinkCount; j < node->constant.totalLinkCount; ++j)
+		{
+			static pathlink_s *link = &node->constant.Links[j];
+			if (link->nodeNum == toNodeNum)
+			{
+				Path_ConnectPath_0(node, link);
+				return;
+			}
+		}
+
+		assertMsg("Path_ConnectPath: should be unreachable");
+	}
 }
 
 /*
@@ -1054,7 +1075,36 @@ Path_Shutdown
 */
 void Path_Shutdown()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	static pathnode_t* node;
+	static pathnode_t* nodea;
+
+	Path_ShutdownBadPlaces();
+	if (useFastFile->current.enabled)
+	{
+		for (node = gameWorldCurrent->path.nodes; node != &gameWorldCurrent->path.nodes[g_path.actualNodeCount]; ++node)
+		{
+			PathNode_ClearStringField(&node->constant.target);
+			PathNode_ClearStringField(&node->constant.targetname);
+			PathNode_ClearStringField(&node->constant.script_linkName);
+			PathNode_ClearStringField(&node->constant.script_noteworthy);
+		}
+
+		g_path.extraNodes = 0;
+		g_path.originErrors = 0;
+	}
+
+	for (nodea = gameWorldCurrent->path.nodes; nodea != &gameWorldCurrent->path.nodes[g_path.actualNodeCount]; ++nodea)
+	{
+		Scr_FreePathnode(nodea);
+	}
+
+	g_path.actualNodeCount = 0;
+	debugPath = 0;
+
+	if (!useFastFile->current.enabled)
+	{
+		Path_ShutdownStatic();
+	}
 }
 
 /*
@@ -1104,9 +1154,42 @@ int Path_NodesInRadius(const vec3_t *origin, float maxDist, pathsort_t *nodes, i
 Path_InitPaths
 ==============
 */
-void Path_InitPaths()
-{
-	UNIMPLEMENTED(__FUNCTION__);
+void Path_InitPaths( void ) {
+	_iobuf	*var1;
+
+	if ( !useFastFile->current.enabled ) {
+		Path_BuildChains();
+
+		if ( g_connectpaths->current.integer ) {
+			Path_ConnectPaths();
+		} else {
+			Path_LoadPaths();
+		}
+
+		Path_InitLinkCounts();
+	}
+
+	Path_InitLinkInfoArray();
+
+	if ( !useFastFile->current.enabled && Path_FindOverlappingNodes() && g_connectpaths->current.integer >= 2 ) {
+		printf("FATAL ERROR: Overlapping path nodes. Check console log.\n");
+		Com_Error(ERR_FATAL, "FATAL ERROR: Overlapping path nodes. Check console log.\n");
+	}
+
+	Path_ValidateAllNodes();
+	if ( g_connectpaths->current.integer ) {
+		Path_CheckSpawnExitNodesConnectivity();
+		Path_SavePaths();
+
+		if ( g_connectpaths->current.integer >= 2 ) {
+			Sys_NormalExit();
+			var1 = __iob_func();
+			fflush(v0 + 1);
+			ExitProcess(0);
+		}
+
+		Dvar_SetInt(g_connectpaths, 0);
+	}
 }
 
 /*
