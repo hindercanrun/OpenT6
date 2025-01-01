@@ -31,8 +31,9 @@ extern	devguiGlob_t	devguiGlob;
 TRACK_devgui
 ==============
 */
-void TRACK_devgui(void) {
-	track_static_alloc_internal( &devguiGlob, 82000, "devguiGlob", 0 );
+void TRACK_devgui()
+{
+	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
@@ -413,7 +414,8 @@ void DevGui_Toggle()
 DevGui_IsActive
 ==============
 */
-bool DevGui_IsActive(void) {
+bool DevGui_IsActive()
+{
 	return devguiGlob.isActive;
 }
 
@@ -422,17 +424,7 @@ bool DevGui_IsActive(void) {
 DevGui_IsInitialized
 ==============
 */
-bool DevGui_IsInitialized(void) {
+bool DevGui_IsInitialized()
+{
 	return devguiGlob.isInitialized;
 }
-
-/*
-==============
-DevGui_AddGraph
-==============
-*/
-void DevGui_AddGraph(const char *path, DevGraph *graph)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
