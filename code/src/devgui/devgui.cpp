@@ -33,18 +33,49 @@ TRACK_devgui
 */
 void TRACK_devgui()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(&devguiGlob, 82000, "devguiGlob", 0);
 }
 
 /*
 ==============
-DevGui_RegisterDvars
+DevGui_AddDvar
 ==============
 */
-const dvar_t *DevGui_RegisterDvars()
+void DevGui_AddDvar(const char *path, const dvar_s *dvar)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (!path)
+	{
+		assert("path")
+	}
+	if (!dvar)
+	{
+		assert("dvar")
+	}
+
+	if (DevGui_IsValidPath(path))
+	{
+		unsigned __int16 handle = DevGui_ConstructPath_r(0, path);
+		DevMenuItem *menu = DevGui_GetMenu(handle);
+
+		if (!menu)
+		{
+			assert("menu")
+		}
+
+		if (!menu->childType && !menu->child.menu || menu->childType == 1 && menu->child.dvar == dvar)
+		{
+			menu->childType = 1;
+			menu->child.command = (const char *)dvar;
+		}
+		else
+		{
+			Com_Printf(
+				CON_CHANNEL_DEVGUI,
+				"Path '%s' can't be used for dvar '%s' because it is already used for something else.\n",
+				path,
+				dvar->name);
+		}
+	}
 }
 
 /*
@@ -52,10 +83,51 @@ const dvar_t *DevGui_RegisterDvars()
 DevGui_GetMenu
 ==============
 */
-DevMenuItem *DevGui_GetMenu(unsigned __int16 handle)
+devguiGlob_t *DevGui_GetMenu(unsigned __int16 handle)
+{
+	if (!handle || handle > 0x800u)
+	{
+		assert("handle not in [1, ARRAY_COUNT( devguiGlob.menus )]\n\t%i not in [%i, %i]", handle, 1, 2048);
+	}
+
+	return (devguiGlob_t *)((char *)&devguiGlob + 40 * handle - 40);
+}
+
+/*
+==============
+DevGui_ConstructPath_r
+==============
+*/
+unsigned __int16 DevGui_ConstructPath_r(unsigned __int16 parent, const char *path)
 {
 	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return 0;
+}
+
+/*
+==============
+DevGui_RegisterMenu
+==============
+*/
+unsigned __int16 DevGui_RegisterMenu(unsigned __int16 parentHandle, const char *label, __int16 sortKey)
+{
+	unsigned __int16 childHandle = DevGui_FindMenu(parentHandle, label);
+	if (!childHandle)
+	{
+		return DevGui_CreateMenu(parentHandle, label, sortKey);
+	}
+
+	return childHandle;
+}
+
+/*
+==============
+DevGui_CreateMenu
+==============
+*/
+int DevGui_CreateMenu()
+{
+	return FALSE;
 }
 
 /*
