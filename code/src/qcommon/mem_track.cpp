@@ -916,8 +916,8 @@ void track_init()
 		TRACK_memtrack();
 		g_mem_track_filename = "cl_main";
 		TRACK_cl_main();
-		g_mem_track_filename = "cl_console";
-		TRACK_cl_console();
+		//g_mem_track_filename = "cl_console";
+		//TRACK_cl_console();
 		g_mem_track_filename = "cl_input";
 		TRACK_cl_input();
 		g_mem_track_filename = "cl_keys";
