@@ -654,7 +654,31 @@ CG_CompareClientFieldHashToGameState
 */
 void CG_CompareClientFieldHashToGameState(unsigned int hash)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Demo_IsPlaying())
+	{
+		return;
+	}
+
+	LocalClientNum_t primary = Com_LocalClients_GetPrimary();
+	if (CL_LocalClient_IsActive(primary))
+	{
+		if (cls.gameState.clientfield_hash == hash)
+		{
+			BG_ReportClientFieldAllocation();
+		}
+		else
+		{
+			Com_Printf(CON_CHANNEL_NONE, "ERROR: Client and server client field registrations don't match.\n");
+			BG_ReportClientFields("Client");
+
+			if (com_sv_running->current.enabled)
+			{
+				BG_ReportClientFields("Server");
+			}
+
+			CL_DisconnectError("EXE_CLIENT_FIELD_MISMATCH");
+		}
+	}
 }
 
 /*
