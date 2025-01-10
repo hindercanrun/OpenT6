@@ -458,7 +458,28 @@ DevGui_Shutdown
 */
 void DevGui_Shutdown()
 {
+	DevGui_InputShutdown();
+	DevGui_MenuShutdown();
+}
+
+/*
+==============
+DevGui_RegisterDvars
+==============
+*/
+void DevGui_RegisterDvars(int key)
+{
 	UNIMPLEMENTED(__FUNCTION__);
+}
+
+/*
+==============
+DevGui_MenuShutdown
+==============
+*/
+void DevGui_MenuShutdown()
+{
+	DevGui_FreeMenu_r(devguiGlob.topmostMenu.child.menu);
 }
 
 /*
@@ -468,7 +489,47 @@ DevGui_KeyPressed
 */
 void DevGui_KeyPressed(int key)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char path[128];
+
+	if (devguiGlob.bindNextKey)
+	{
+		devguiGlob.bindNextKey = 0;
+
+		if (key == K_ESCAPE)
+		{
+			return;
+		}
+
+		if (key == K_TAB || key == K_F1)
+		{
+			Com_Printf(CON_CHANNEL_DEVGUI, "Can't rebind 'tab' or 'F1'\n");
+		}
+		// maybe else if just in case?
+		else
+		{
+			unsigned __int16 handle = devguiGlob.selectedMenu;
+			if (!devguiGlob.selectedMenu)
+			{
+				assert("handle");
+			}
+
+			DevMenuItem* menu = (DevMenuItem*)DevGui_GetMenu(handle);
+			if (!menu)
+			{
+				assert("menu");
+			}
+
+			if (menu->parent && (!menu->childType || menu->childType == 1 && !devguiGlob.editingMenuItem))
+			{
+				handle = menu->parent;
+			}
+
+			DevGui_GetSliderPath(handle, path, 0);
+
+			// bind
+			Key_SetBinding(LOCAL_CLIENT_0, key, va("devgui_open \"%s\"", path), 0);
+		}
+	}
 }
 
 /*
@@ -478,7 +539,31 @@ DevGui_Toggle
 */
 void DevGui_Toggle()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (devguiGlob.isActive)
+	{
+		assert("!devguiGlob.isActive");
+	}
+
+	if (devguiGlob.topmostMenu.child.menu)
+	{
+		// is this even needed?
+#if 0
+		if (devguiGlob.selectedMenu)
+		{
+			devguiGlob.isActive = !devguiGlob.isActive;
+			if (devguiGlob.isActive)
+			{
+				DevGui_SelectGamepad(0);
+			}
+		}
+#endif
+
+		devguiGlob.selectedMenu = devguiGlob.topmostMenu.child.menu;
+		if (devguiGlob.topmostMenu.child.menu)
+		{
+			DevGui_SelectTopLevelChild();
+		}
+	}
 }
 
 /*
