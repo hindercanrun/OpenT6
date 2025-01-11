@@ -553,7 +553,7 @@ void DevGui_Toggle()
 			devguiGlob.isActive = !devguiGlob.isActive;
 			if (devguiGlob.isActive)
 			{
-				DevGui_SelectGamepad(0);
+				DevGui_SelectGamepad(CONTROLLER_INDEX_FIRST);
 			}
 		}
 #endif
