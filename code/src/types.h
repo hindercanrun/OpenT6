@@ -3,7 +3,12 @@
 #define NEW "\n"
 #define UNIMPLEMENTED(x) { static bool inited = false; if (!inited) { OutputDebugStringA("----- "); OutputDebugStringA(x); OutputDebugStringA(" not implemented.\n"); inited = true; }}
 
+// Zombies and Multiplayer are the same
+#if MULTIPLAYER
 #define DEFAULT_CFG "default_mp.cfg"
+#else
+#define DEFAULT_CFG "default.cfg"
+#endif
 
 #ifndef M_PI
 #define M_PI        3.14159265358979323846f

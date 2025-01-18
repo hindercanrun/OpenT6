@@ -1,30 +1,6 @@
 #include "types.h"
 
-typedef struct {
-	DevMenuItem menus[2048];
-	DevMenuItem *nextFreeMenu;
-	DevMenuItem topmostMenu;
-
-	bool bindNextKey;
-
-	bool isActive;
-	bool isInitialized;
-
-	bool editingMenuItem;
-	unsigned __int16 selectedMenu;
-	int selRow;
-	bool editingKnot;
-
-	int top;
-	int bottom;
-	int left;
-	int right;
-	int sliderWidth;
-	int textLabelWidth;
-} devguiGlob_t;
-
-extern	devguiGlob_t	devguiGlob;
-
+#define MAX_DEVGUI_SIZE	82000
 
 /*
 ==============
@@ -33,7 +9,7 @@ TRACK_devgui
 */
 void TRACK_devgui()
 {
-	track_static_alloc_internal(&devguiGlob, 82000, "devguiGlob", 0);
+	track_static_alloc_internal(&devguiGlob, MAX_DEVGUI_SIZE, "devguiGlob", 0);
 }
 
 /*
@@ -87,7 +63,7 @@ devguiGlob_t *DevGui_GetMenu(unsigned __int16 handle)
 {
 	if (!handle || handle > 0x800u)
 	{
-		assert("handle not in [1, ARRAY_COUNT( devguiGlob.menus )]\n\t%i not in [%i, %i]", handle, 1, 2048);
+		assertMsg("handle not in [1, ARRAY_COUNT( devguiGlob.menus )]\n\t%i not in [%i, %i]", handle, 1, 2048);
 	}
 
 	return (devguiGlob_t *)((char *)&devguiGlob + 40 * handle - 40);
@@ -539,31 +515,12 @@ DevGui_Toggle
 */
 void DevGui_Toggle()
 {
-	if (devguiGlob.isActive)
-	{
-		assert("!devguiGlob.isActive");
-	}
+	assert(devguiGlob.isActive);
 
-	if (devguiGlob.topmostMenu.child.menu)
-	{
-		// is this even needed?
-#if 0
-		if (devguiGlob.selectedMenu)
-		{
-			devguiGlob.isActive = !devguiGlob.isActive;
-			if (devguiGlob.isActive)
-			{
-				DevGui_SelectGamepad(CONTROLLER_INDEX_FIRST);
-			}
-		}
-#endif
+	if (!devguiGlob.topmostMenu.child.menu)
+		return; // probably bad
 
-		devguiGlob.selectedMenu = devguiGlob.topmostMenu.child.menu;
-		if (devguiGlob.topmostMenu.child.menu)
-		{
-			DevGui_SelectTopLevelChild();
-		}
-	}
+	DevGui_SelectTopLevelChild();
 }
 
 /*
