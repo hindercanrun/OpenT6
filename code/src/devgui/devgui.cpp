@@ -1,6 +1,23 @@
 #include "types.h"
 
-#define MAX_DEVGUI_SIZE	82000
+#define MAX_DEVGUI_SIZE	82004
+
+const dvar_t *devgui_colorBgnd;
+const dvar_t *devgui_colorText;
+const dvar_t *devgui_colorBgndSel;
+const dvar_t *devgui_colorTextSel;
+const dvar_t *devgui_colorBgndGray;
+const dvar_t *devgui_colorTextGray;
+const dvar_t *devgui_colorBgndGraySel;
+const dvar_t *devgui_colorTextGraySel;
+const dvar_t *devgui_colorSliderBgnd;
+const dvar_t *devgui_colorSliderKnob;
+const dvar_t *devgui_colorSliderKnobSel;
+const dvar_t *devgui_bevelShade;
+const dvar_t *devgui_colorGraphKnotNormal;
+const dvar_t *devgui_colorGraphKnotSelected;
+const dvar_t *devgui_colorGraphKnotEditing;
+const dvar_t *devgui_zoomEnabled;
 
 /*
 ==============
@@ -443,9 +460,132 @@ void DevGui_Shutdown()
 DevGui_RegisterDvars
 ==============
 */
-void DevGui_RegisterDvars(int key)
+void DevGui_RegisterDvars()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	devgui_colorBgnd = _Dvar_RegisterColor(
+							"devgui_colorBgnd",
+							0.0,
+							0.419608,
+							0.0,
+							0.74902,
+							DVAR_NOFLAG,
+							"Color background for the devgui");
+	devgui_colorText = _Dvar_RegisterColor(
+							"devgui_colorText",
+							1.0,
+							1.0,
+							1.0,
+							1.0,
+							DVAR_NOFLAG,
+							"Text color for the devgui");
+	devgui_colorBgndSel = _Dvar_RegisterColor(
+								"devgui_colorBgndSel",
+								0.0,
+								0.69999999,
+								0.0,
+								0.75,
+								DVAR_NOFLAG,
+								"Selection background color for the devgui");
+	devgui_colorTextSel = _Dvar_RegisterColor(
+								"devgui_colorTextSel",
+								0.0,
+								0.701961,
+								0.0,
+								0.74902,
+								DVAR_NOFLAG,
+								"Selection text color for the devgui");
+	devgui_colorBgndGray = _Dvar_RegisterColor(
+								"devgui_colorBgndGray",
+								0.2,
+								0.2,
+								0.2,
+								0.901961,
+								DVAR_NOFLAG,
+								"Grayed out background color for the devgui");
+	devgui_colorTextGray = _Dvar_RegisterColor(
+								"devgui_colorTextGray",
+								0.901961,
+								0.901961,
+								0.901961,
+								1.0,
+								DVAR_NOFLAG,
+								"Greyed out text color for the devgui");
+	devgui_colorBgndGraySel = _Dvar_RegisterColor(
+								"devgui_colorBgndGraySel",
+								0.4,
+								0.4,
+								0.4,
+								0.901961,
+								DVAR_NOFLAG,
+								"Greyed out, selected background color for the devgui");
+	devgui_colorTextGraySel = _Dvar_RegisterColor(
+								"devgui_colorTextGraySel",
+								1.0,
+								1.0,
+								0.0,
+								1.0,
+								DVAR_NOFLAG,
+								"Greyed out, selected text color for the devgui");
+	devgui_colorSliderBgnd = _Dvar_RegisterColor(
+								"devgui_colorSliderBgnd",
+								1.0,
+								1.0,
+								1.0,
+								0.74902,
+								DVAR_NOFLAG,
+								"Color slider background for the devgui");
+	devgui_colorSliderKnob = _Dvar_RegisterColor(
+								"devgui_colorSliderKnob",
+								1.0,
+								1.0,
+								1.0,
+								1.0,
+								DVAR_NOFLAG,
+								"Knob color for the devgui");
+	devgui_colorSliderKnobSel = _Dvar_RegisterColor(
+									"devgui_colorSliderKnobSel",
+									1.0,
+									0.74902,
+									0.0,
+									1.0,
+									DVAR_NOFLAG,
+									"Selected knob color for the devgui");
+	devgui_bevelShade = _Dvar_RegisterFloat(
+							"devgui_bevelShade",
+							0.7,
+							0.0,
+							1.0,
+							DVAR_NOFLAG,
+							"Bevel shade for the devgui");
+	devgui_colorGraphKnotNormal = _Dvar_RegisterColor(
+										"devgui_colorGraphKnotNormal",
+										0.0,
+										1.0,
+										1.0,
+										0.701961,
+										DVAR_NOFLAG,
+										"Devgiu Color graph knot normal color");
+	devgui_colorGraphKnotSelected = _Dvar_RegisterColor(
+										"devgui_colorGraphKnotSelected",
+										1.0,
+										0.0,
+										0.0,
+										0.701961,
+										DVAR_NOFLAG,
+										"Devgui color graph knot selected color");
+	devgui_colorGraphKnotEditing = _Dvar_RegisterColor(
+										"devgui_colorGraphKnotEditing",
+										1.0,
+										0.0,
+										1.0,
+										1.0,
+										DVAR_NOFLAG,
+										"Devgui color graph knot editing color");
+	devgui_zoomEnabled = _Dvar_RegisterBool(
+							"devgui_zoomEnabled",
+							false,
+							DVAR_NOFLAG,
+							"Enlarges the currently selected Devgui cell.");
 }
 
 /*
@@ -467,14 +607,13 @@ void DevGui_KeyPressed(int key)
 {
 	char path[128];
 
+	//todo: maybe make this just a return if false
 	if (devguiGlob.bindNextKey)
 	{
 		devguiGlob.bindNextKey = 0;
 
 		if (key == K_ESCAPE)
-		{
 			return;
-		}
 
 		if (key == K_TAB || key == K_F1)
 		{
@@ -484,16 +623,10 @@ void DevGui_KeyPressed(int key)
 		else
 		{
 			unsigned __int16 handle = devguiGlob.selectedMenu;
-			if (!devguiGlob.selectedMenu)
-			{
-				assert("handle");
-			}
+			assert(!handle);
 
 			DevMenuItem* menu = (DevMenuItem*)DevGui_GetMenu(handle);
-			if (!menu)
-			{
-				assert("menu");
-			}
+			assert(!menu);
 
 			if (menu->parent && (!menu->childType || menu->childType == 1 && !devguiGlob.editingMenuItem))
 			{
