@@ -203,17 +203,43 @@ ValidateFileHeader
 */
 char *ValidateFileHeader(bool *fileIsSecure, int *fileVersion)
 {
-#if 0
-	char magic[8];
+	const ZoneHeader& header
 
-	*magic = *g_load.stream.next_in;
-	*&magic[4] = *(g_load.stream.next_in + 1);
-	g_load.stream.next_in += 8;
-	g_load.stream.avail_in -= 8;
-
-	if (memcmp(magic, "TAff0100", 8u) && memcmp(magic, "TAffu100", 8u) && memcmp(magic, "TAffsvu100", 8u) && memcmp(magic, "TAffx100", 8u))
+	if (header.m_version != ZONE_VERSION)
 	{
-		Com_Error(ERR_DROP, "Fastfile for zone '%s' is corrupt or unreadable.", g_load.filename);
+		return false;
+	}
+
+	if (!memcmp(header.m_magic, MAGIC_SIGNED, 8))
+	{
+		*isSecure = true;
+		*isOfficial = true;
+		*isEncrypted = true;
+		return true;
+	}
+
+	if (!memcmp(header.m_magic, MAGIC_UNSIGNED, 8))
+	{
+		*isSecure = false;
+		*isOfficial = true;
+		*isEncrypted = true;
+		return true;
+	}
+
+	if (!memcmp(header.m_magic, MAGIC_UNSIGNED_SERVER, 8))
+	{
+		*isSecure = false;
+		*isOfficial = true;
+		*isEncrypted = false;
+		return true;
+	}
+
+#if XENON
+	if (!memcmp(header.m_magic, MAGIC_SIGNED_XBOX, 8))
+	{
+		*isSecure = true;
+		*isEncrypted = true;
+		return true;
 	}
 #endif
 

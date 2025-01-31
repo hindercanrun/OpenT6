@@ -59,7 +59,27 @@ IPak_WaitReadIndexData
 */
 void IPak_WaitReadIndexData(IPakWorkData *work, int buffer)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (buffer >= 2)
+	{
+		assertMsg("(unsigned)(buffer) < (unsigned)(2)", "buffer doesn't index IPAK_INDEX_BUFFER_COUNT\n\t%i not in [0, %i)", buffer, 2);
+	}
+
+	if (!*&work[1].imageParts[2 * buffer + 260])
+	{
+		assert("(work->indexBufferState[ buffer ] != 0)");
+	}
+
+	while (*&work[1].imageParts[2 * buffer + 260] == 1)
+	{
+		Sys_CheckQuitRequest();
+		NET_Sleep(1u);
+	}
+
+	if (*&work[1].imageParts[2 * buffer + 260] == 3)
+	{
+		Com_PrintError(41, "Error while reading ipak %s index data, offset %d\n", work->pak->name, *&work[1].imageParts[2 * buffer + 256]);
+		memset(&work->indexBuffer[buffer][34], 255, 0x10000);
+	}
 }
 
 /*
@@ -101,7 +121,46 @@ IPak_EndIndexRead
 */
 void IPak_EndIndexRead(IPakWorkData *work)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(!work->pak);
+
+	int v1 = 0;
+	unsigned __int8 *v2 = &work->indexBuffer[0][34];
+	unsigned __int16 *v3 = &work[1].imageParts[260];
+
+	do
+	{
+		if (*v3 == 1)
+		{
+			if (v1 >= 2)
+			{
+				assertMsg("(unsigned)(buffer) < (unsigned)(2)", "buffer doesn't index IPAK_INDEX_BUFFER_COUNT\n\t%i not in [0, %i)", v1, 2);
+			}
+
+			if (!*v3)
+			{
+				assert("(work->indexBufferState[ buffer ] != 0)");
+			}
+
+			while (*v3 == 1)
+			{
+				Sys_CheckQuitRequest();
+				NET_Sleep(1u);
+			}
+
+			if (*v3 == 3)
+			{
+				Com_PrintError(41, "Error while reading ipak %s index data, offset %d\n", work->pak->name, *(v3 - 2));
+				memset(v2, 255, 0x10000);
+			}
+		}
+
+		++v1;
+		v3 += 2;
+		v2 += 0x10000;
+	}
+	while (v1 < 2);
+
+	work->pak = 0;
 }
 
 /*
