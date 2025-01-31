@@ -380,8 +380,39 @@ SND_StartHeaderRead
 */
 char SND_StartHeaderRead(bool streamed, SndRuntimeAssetBank *assetBank, SndBank *bank)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (assetBank->zone || assetBank->language)
+	{
+		SND_GetRuntimeAssetBankFileName(streamed, assetBank->zone, assetBank->language, 256, assetBank->filename);
+
+		int file = Stream_OpenFile(assetBank->filename, 0);
+		assetBank->fileHandle = file;
+		*bank->pendingIo = 1;
+
+		Stream_AddRequest(
+			file,
+			0,
+			0x800u,
+			&g_sb.bankHeader,
+			1000,
+			STREAM_PRIO_NORMAL,
+			SND_BankReadCallback,
+			bank,
+			&bank->streamRequestId);
+
+		return TRUE;
+	}
+	else
+	{
+		assetBank->filename[0] = 0;
+		assetBank->fileHandle = -1;
+
+		const char* extension = "sabs";
+		if (!streamed)
+			extension = "sabl";
+
+		Com_Printf(CON_CHANNEL_SOUND, "SOUND not loading %s.%s as the linker doesn't want us to\n", bank->name, extension);
+		return FALSE;
+	}
 }
 
 /*
