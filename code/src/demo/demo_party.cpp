@@ -1,5 +1,10 @@
 #include "types.h"
 
+cmd_function_s Demo_PartyUpdateDemo_f_VAR;
+cmd_function_s Demo_PartyPlayDemo_f_VAR;
+cmd_function_s Demo_PartyStopDemo_f_VAR;
+cmd_function_s Demo_FreeDemoMemory_f_VAR;
+
 /*
 ==============
 Demo_PartyPlayDemo_f
@@ -7,7 +12,12 @@ Demo_PartyPlayDemo_f
 */
 void Demo_PartyPlayDemo_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Com_GameMode_IsMode(GAMEMODE_THEATER) || !PartyClient_CountMembers(&g_lobbyData) == 1)
+	{
+		Com_PrintError(10, "Error, you're trying to use xpartyplayclient when you shouldn't.  This is only for theater lobby.\n");
+	}
+
+	PartyHost_StartDemo(&g_lobbyData, CONTROLLER_INDEX_FIRST);
 }
 
 /*
@@ -17,7 +27,12 @@ Demo_PartyStopDemo_f
 */
 void Demo_PartyStopDemo_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Com_GameMode_IsMode(GAMEMODE_THEATER) || !PartyClient_CountMembers(&g_lobbyData) == 1)
+	{
+		Com_PrintError(10, "Error, you're trying to use xpartyplayclient when you shouldn't.  This is only for theater lobby.\n");
+	}
+
+	PartyHost_StopDemo(&g_lobbyData, CONTROLLER_INDEX_FIRST);
 }
 
 /*
@@ -27,7 +42,7 @@ Demo_SetDemoLoadedTime
 */
 void Demo_SetDemoLoadedTime()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	demo.header.version = Sys_Milliseconds();
 }
 
 /*
@@ -37,8 +52,7 @@ Demo_WasDemoJustLoaded
 */
 bool Demo_WasDemoJustLoaded()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return (Sys_Milliseconds() - demo.header.version) <= 5000;
 }
 
 /*
@@ -48,7 +62,7 @@ Demo_PartyFinishedLoadingDemo
 */
 void Demo_PartyFinishedLoadingDemo()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	arty_SendFinishedLoadingDemoMsg(&g_lobbyData);
 }
 
 /*
@@ -58,7 +72,8 @@ Demo_InitFileShareTaskHandler
 */
 void Demo_InitFileShareTaskHandler()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	//*&s_demoFileShareTaskHandle.isAbortingFileshareTask = nullptr;
+	s_demoFileShareTaskHandle.abortResetTime = 0;
 }
 
 /*
@@ -68,7 +83,8 @@ Demo_ResetFileShareAbort
 */
 void Demo_ResetFileShareAbort()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	s_demoFileShareTaskHandle.isAbortingFileshareTask = 0;
+	s_demoFileShareTaskHandle.abortResetTime = Sys_Milliseconds();
 }
 
 /*
@@ -78,8 +94,7 @@ Demo_IsFileShareAbortInProcess
 */
 bool Demo_IsFileShareAbortInProcess()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return s_demoFileShareTaskHandle.isAbortingFileshareTask || (Sys_Milliseconds() - s_demoFileShareTaskHandle.abortResetTime) <= 250;
 }
 
 /*
@@ -89,9 +104,7 @@ Demo_GetFileShareTaskControllerIndex
 */
 ControllerIndex_t Demo_GetFileShareTaskControllerIndex()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	ControllerIndex_t tmp;
-	return tmp;
+	return s_demoFileShareTaskHandle.fileshareTaskControllerIndex;
 }
 
 /*
@@ -123,8 +136,7 @@ Demo_IsStereo3D
 */
 bool Demo_IsStereo3D()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return r_dualPlayEnable->current.enabled;
 }
 
 /*
@@ -145,8 +157,7 @@ Demo_IsHostControlsEnabled
 */
 bool Demo_IsHostControlsEnabled()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return !Com_GameMode_IsMode(GAMEMODE_THEATER) || Party_IsGameLobbyHost() != 0;
 }
 
 /*
@@ -156,8 +167,8 @@ Demo_IsClipAndScreenshotsEnabled
 */
 bool Demo_IsClipAndScreenshotsEnabled()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return !Com_GameMode_IsMode(GAMEMODE_THEATER) || !Demo_IsCameraEditMode() && !Demo_IsShoutcastMode()
+		&& Party_IsGameLobbyHost() && PartyClient_CountMembers(&g_lobbyData) == 1;
 }
 
 /*
@@ -167,8 +178,12 @@ Demo_IsWatchingWithParty
 */
 bool Demo_IsWatchingWithParty()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (Com_GameMode_IsMode(GAMEMODE_THEATER))
+	{
+		return PartyClient_CountMembers(&g_lobbyData) > 1;
+	}
+
+	return Com_GameMode_IsMode(GAMEMODE_THEATER);
 }
 
 /*
@@ -198,7 +213,10 @@ Demo_ToggleScoreboard
 */
 void Demo_ToggleScoreboard()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Demo_IsPlaybackInited())
+	{
+    	demo.playback->displayPartyScoreboard = !demo.playback->displayPartyScoreboard;
+	}
 }
 
 /*
@@ -208,8 +226,7 @@ Demo_DisplayingPartyScoreboard
 */
 bool Demo_DisplayingPartyScoreboard()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return Demo_IsPlaying() && Demo_IsPlaybackInited() && demo.playback->displayPartyScoreboard;
 }
 
 /*
@@ -229,8 +246,7 @@ Demo_CanRenderClip
 */
 bool Demo_CanRenderClip()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return !r_dualPlayEnable->current.enabled && fshEnableRender->current.enabled && PartyClient_CountMembers(&g_lobbyData) == 1;
 }
 
 /*
@@ -260,6 +276,9 @@ Demo_RegisterPartyCommands
 */
 void Demo_RegisterPartyCommands()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Cmd_AddCommandInternal("xpartyupdatedemo", Demo_PartyUpdateDemo_f, &Demo_PartyUpdateDemo_f_VAR);
+	Cmd_AddCommandInternal("xpartyplaydemo", Demo_PartyPlayDemo_f, &Demo_PartyPlayDemo_f_VAR);
+	Cmd_AddCommandInternal("xpartystopdemo", Demo_PartyStopDemo_f, &Demo_PartyStopDemo_f_VAR);
+	Cmd_AddCommandInternal("freeDemoMemory", Demo_FreeDemoMemory_f, &Demo_FreeDemoMemory_f_VAR);
 }
 
