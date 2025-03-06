@@ -120,7 +120,7 @@ Demo_SetDemoState
 */
 void Demo_SetDemoState(demoState state)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	demo.state = state;
 }
 
 /*
@@ -130,9 +130,7 @@ Demo_GetDemoState
 */
 demoState Demo_GetDemoState()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	demoState tmp;
-	return tmp;
+	return demo.state;
 }
 
 /*
@@ -142,8 +140,7 @@ Demo_IsIdle
 */
 BOOL Demo_IsIdle()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return demo.state == DEMO_STATE_IDLE;
 }
 
 /*
@@ -153,8 +150,7 @@ Demo_IsRecording
 */
 BOOL Demo_IsRecording()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return demo.state == DEMO_STATE_RECORDING;
 }
 
 /*
@@ -164,8 +160,7 @@ Demo_IsPlaying
 */
 BOOL Demo_IsPlaying()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return demo.state == DEMO_STATE_PLAYING;
 }
 
 /*
@@ -175,8 +170,7 @@ Demo_GetDemoName
 */
 demoMain *Demo_GetDemoName()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return &demo;
 }
 
 /*
@@ -186,8 +180,7 @@ Demo_GetTotalSize
 */
 int Demo_GetTotalSize()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return demo.loadedTime;
 }
 
 /*
