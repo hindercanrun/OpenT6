@@ -7,7 +7,148 @@ Demo_RegisterDvars
 */
 void Demo_RegisterDvars()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	demo_enabled = _Dvar_RegisterBool("demo_enabled",
+						TRUE,
+						DVAR_NOFLAG,
+						"Used to turn the system on/off.");
+	demo_recordBasicTraining = _Dvar_RegisterBool(
+									"demo_recordBasicTraining",
+									0,
+									0,
+									"Used to turn the basic training recording on/off.");
+	demo_recordPrivateMatch = _Dvar_RegisterBool(
+								"demo_recordPrivateMatch",
+								0,
+								0,
+								"Used to turn the private match recording on/off.");
+	demo_filesizeLimit = _Dvar_RegisterFloat(
+							"demo_filesizeLimit",
+							10.0,
+							0.1,
+							3.4028235e38,
+							0,
+							"The maximum filesize (in MB) of the demos which we support.");
+	demo_debug = _Dvar_RegisterInt("demo_debug", 0, 0, 0x7FFF, 0, "Debug info for the Server Snapshot Demo system");
+	demo_drawdebuginformation = _Dvar_RegisterInt(
+									"demo_drawdebuginformation",
+									0,
+									0,
+									3,
+									0,
+									"Used to draw debug information.");
+	demo_errortitle = _Dvar_RegisterString("demo_errortitle", "", 0x40u, "Most recent demo error's title.");
+	demo_errormessage = _Dvar_RegisterString(
+							"demo_errormessage",
+							"",
+							0x40u,
+							"Most recent demo error's message.");
+	demo_client = _Dvar_RegisterInt("demo_client", 0, 0, 32, 0, "Current viewing player");
+	demo_recordingrate = _Dvar_RegisterInt(
+							"demo_recordingrate",
+							100,
+							50,
+							0x7FFFFFFF,
+							0,
+							"Used to tweak the rate(in msec) at which we write a super snapshot");
+	demo_keyframerate = _Dvar_RegisterInt(
+							"demo_keyframerate",
+							10,
+							1,
+							0x7FFFFFFF,
+							0,
+							"Used to specify the rate(in sec) at which we generate a keyframe during playback.");
+	demo_pause = _Dvar_RegisterBool("demo_pause", 0, 0, "Used to pause a demo playback.");
+	demo_usefilesystem = _Dvar_RegisterBool("demo_usefilesystem", 0, 0, "Used to turn HDD write ON or OFF.");
+	demo_save_smp = _Dvar_RegisterBool("demo_save_smp", 0, 0, "Used to toggle threaded save for the demo system.");
+	demo_timescale = _Dvar_RegisterFloat(
+						"demo_timescale",
+						1.0,
+						0.001,
+						4.0,
+						0,
+						"The rate at which we want to scale time. For slo-mo it will be time/rate, fast mo. it will be time * rate");
+	demo_timeScaleRate = _Dvar_RegisterFloat(
+							"demo_timeScaleRate",
+							4.0,
+							1.0,
+							4.0,
+							0,
+							"The rate at which we want to scale time. For slo-mo it will be time/rate, fast mo. it will be time * rate");
+	demo_cmdNum = _Dvar_RegisterInt(
+					"demo_cmdnum",
+					0,
+					0,
+					0x7FFFFFFF,
+					0,
+					"The number of the command sent from console/ingame menu. ");
+	demo_bookmarkEventThresholdTime = _Dvar_RegisterFloat(
+										"demo_bookmarkEventThresholdTime",
+										2.0,
+										1.0,
+										4.0,
+										0,
+										"The time duration for which we want to show the bookmark event image in the demo timeline.");
+	demo_controllerConfig = _Dvar_RegisterInt(
+								"demo_controllerConfig",
+								0,
+								0,
+								2,
+								0,
+								"The number of the command sent from console/ingame menu. ");
+	demo_defaultSegmentTag = _Dvar_RegisterString(
+								"demo_defaultSegmentTag",
+								&toastPopupTitle,
+								0,
+								"The text to be displayed as the default tag for the segment in the UI (save prompt).");
+	demo_selectedSegmentIndex = _Dvar_RegisterInt(
+									"demo_selectedSegmentIndex",
+									0,
+									0,
+									0x7FFFFFFF,
+									0,
+									"Used in the Manage Segments UI. This will be used to know which segment index we have selected.");
+	demo_desiredTime = _Dvar_RegisterInt(
+							"demo_desiredtime",
+							-1,
+							-1,
+							0x7FFFFFFF,
+							0,
+							"Used to force demo to a certain time");
+	demo_desiredClient = _Dvar_RegisterInt(
+							"demo_desiredclient",
+							-1,
+							-1,
+							0x7FFFFFFF,
+							0,
+							"Used to force demo to a certain client");
+	demo_packetsPerSecondMin = _Dvar_RegisterInt(
+									"demo_packetsPerSecondMin",
+									2,
+									0,
+									0x7FFFFFFF,
+									0,
+									"Min amount of packets to send per second before throttling.");
+	demo_bytesPerSecondMin = _Dvar_RegisterInt(
+								"demo_bytesPerSecondMin",
+								2048,
+								0,
+								0x7FFFFFFF,
+								0,
+								"Min amount of bytes to send per second before throttling.");
+	demo_packetsPerSecondMax = _Dvar_RegisterInt(
+									"demo_packetsPerSecondMax",
+									10,
+									0,
+									0x7FFFFFFF,
+									0,
+									"Max amount of packets to send per second before throttling.");
+	demo_bytesPerSecondMax = _Dvar_RegisterInt(
+								"demo_bytesPerSecondMax",
+								0x2000,
+								0,
+								0x7FFFFFFF,
+								0,
+								"Max amount of bytes to send per second before throttling.");
 }
 
 /*
