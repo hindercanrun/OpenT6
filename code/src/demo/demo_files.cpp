@@ -9,7 +9,8 @@ void Demo_InitFileHandlerSystem()
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		*&s_fileHandler.ptr = nullptr;
+		s_fileHandler.ptr = 0;
+		s_fileHandler.size = 0;
 		s_fileHandler.offset = 0;
 	}
 }
@@ -23,12 +24,10 @@ void Demo_AllocateMemoryFromStreamBuffer(int size)
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		assertMsg(s_fileHandler.ptr, "(s_fileHandler.ptr == 0)");
+		assertMsg(s_fileHandler.ptr == NULL);
 		s_fileHandler.ptr = Z_VirtualAlloc(size, "demoDownloadBuffer", 12);
-
-		memset(s_fileHandler.ptr, 0, size);
-		s_fileHandler.size = size;
 		s_fileHandler.offset = 0;
+		s_fileHandler.size = size;
 	}
 }
 
@@ -41,8 +40,7 @@ void Demo_ReturnStreamBufferMemory()
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		assertMsg(!s_fileHandler.ptr, "(s_fileHandler.ptr != 0)");
-		Z_VirtualFree(s_fileHandler.ptr);
+		assert(s_fileHandler.ptr != NULL);
 		s_fileHandler.ptr = 0;
 	}
 }
@@ -96,7 +94,18 @@ void Demo_GetDemoPath(const char *demoPath)
 {
 	if (demo_usefilesystem->current.enabled)
 	{
+#if defined(XENON) || defined(RELEASE)
+		if (DmMapDevkitDrive())
+		{
+			Com_PrintError(CON_CHANNEL_DONT_FILTER, "ERROR: Couldnt map devkit drive\n");
+		}
+		else
+		{
+			FS_BuildOSPath("DEVKIT:", "demos", nullptr, demoPath);
+		}
+#else
 		FS_BuildOSPath(fs_homepath->current.string, "demos", nullptr, demoPath);
+#endif
 	}
 }
 
@@ -107,8 +116,25 @@ Demo_OpenFileWrite
 */
 int Demo_OpenFileWrite(const char *filename, const char *dir, bool supressErrors)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (!demo_usefilesystem->current.enabled)
+	{
+		return TRUE;
+	}
+
+	char name[260];
+	Com_sprintf(name, 256, "%s", filename);
+
+	int handle = FS_SV_FOpenFileWrite(name, "demos");
+	if (handle)
+	{
+		return handle;
+	}
+	if (!supressErrors)
+	{
+		Com_PrintError(CON_CHANNEL_DONT_FILTER, "ERROR: couldn't open file for write.\n");
+	}
+
+	return FALSE;
 }
 
 /*
@@ -118,8 +144,35 @@ Demo_OpenFileRead
 */
 int Demo_OpenFileRead(const char *filename, const char *dir, bool supressErrors)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (!demo_usefilesystem->current.enabled)
+	{
+		assert(s_fileHandler.ptr != NULL); // why assert tho?
+		return TRUE;
+	}
+
+	char ospath[256];
+	Com_sprintf(ospath, 256, "%s", filename);
+
+	int handle;
+	int size = FS_SV_FOpenFileRead(ospath, "demos", &handle);
+	if (handle && size)
+	{
+		return handle;
+	}
+	else
+	{
+		if (!supressErrors)
+		{
+			Com_PrintError(0, "ERROR: couldn't open file for read.\n");
+		}
+
+		if (handle)
+		{
+			FS_FCloseFile(handle);
+		}
+	}
+
+	return FALSE;
 }
 
 /*
@@ -137,19 +190,19 @@ int Demo_Write(const void *buffer, int len, int handle)
 	if (Demo_IsRecording())
 	{
 		Demo_SaveToStreamBuffer(buffer, len);
-		return len;
-	}
-	else if (s_fileHandler.ptr)
-	{
-		memcpy(&s_fileHandler.ptr[s_fileHandler.offset], buffer, len);
-
-		s_fileHandler.offset += len;
-		return len;
 	}
 	else
 	{
-		return 0;
+		if (!s_fileHandler.ptr)
+		{
+			return 0;
+		}
+
+		memcpy(&s_fileHandler.ptr[s_fileHandler.offset], buffer, len);
+		s_fileHandler.offset += len;
 	}
+
+	return len;
 }
 
 /*
@@ -191,7 +244,25 @@ Demo_SeekFile
 */
 int Demo_SeekFile(int handle, int offset, int origin)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (demo_usefilesystem->current.enabled)
+	{
+		return FS_Seek(handle, offset, origin);
+	}
+
+	switch (origin)
+	{
+	case 0:
+		s_fileHandler.offset += offset;
+		return offset;
+	case 1:
+		s_fileHandler.offset = offset + s_fileHandler.size;
+		return offset;
+	case 2:
+		s_fileHandler.offset = offset;
+		return offset;
+	}
+
+	assertMsg("Bad origin %i in FS_Seek", origin);
+	return FALSE;
 }
 
