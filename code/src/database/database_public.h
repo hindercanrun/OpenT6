@@ -173,102 +173,153 @@ char *DB_ReferencedFFChecksums();
 char *DB_ReferencedFFNameList();
 char DB_FileExists(FF_DIR a1, const char *zoneName, FF_DIR source);
 unsigned int DB_GetGfxWorldChecksum();
+
+//auto generated during compile
 void Load_PhysPresetAsset(PhysPreset **physPreset);
-void __cdecl Mark_PhysPresetAsset(PhysPreset *physPreset);
+void Mark_PhysPresetAsset(PhysPreset *physPreset);
+
 void Load_PhysConstraintsAsset(PhysConstraints **physConstraints);
-void __cdecl Mark_PhysConstraintsAsset(PhysConstraints *physConstraints);
+void Mark_PhysConstraintsAsset(PhysConstraints *physConstraints);
+
 void Load_DestructibleDefAsset(DestructibleDef **destructibleDef);
-void __cdecl Mark_DestructibleDefAsset(DestructibleDef *destructibleDef);
+void Mark_DestructibleDefAsset(DestructibleDef *destructibleDef);
+
 void Load_XAnimPartsAsset(XAnimParts **parts);
-void __cdecl Mark_XAnimPartsAsset(XAnimParts *parts);
+void Mark_XAnimPartsAsset(XAnimParts *parts);
+
 void Load_XModelAsset(XModel **model);
-void __cdecl Mark_XModelAsset(XModel *model);
+void Mark_XModelAsset(XModel *model);
+
 void Load_MaterialAsset(Material **material);
-void __cdecl Mark_MaterialAsset(Material *material);
+void Mark_MaterialAsset(Material *material);
+
 void Load_MaterialTechniqueSetAsset(MaterialTechniqueSet **techniqueSet);
-void __cdecl Mark_MaterialTechniqueSetAsset(MaterialTechniqueSet *techniqueSet);
+void Mark_MaterialTechniqueSetAsset(MaterialTechniqueSet *techniqueSet);
+
 void Load_GfxImageAsset(GfxImage **image);
-void __cdecl Mark_GfxImageAsset(GfxImage *image);
+void Mark_GfxImageAsset(GfxImage *image);
+
 void Load_SndBankAsset(SndBank **sound);
-void __cdecl Mark_SndBankAsset(SndBank *sound);
+void Mark_SndBankAsset(SndBank *sound);
+
 void Load_SndDriverGlobalsAsset(SndDriverGlobals **sndDriverGlobals);
-void __cdecl Mark_SndDriverGlobalsAsset(SndDriverGlobals *sndDriverGlobals);
+void Mark_SndDriverGlobalsAsset(SndDriverGlobals *sndDriverGlobals);
+
 void Load_SndPatchAsset(SndPatch **soundPatch);
-void __cdecl Mark_SndPatchAsset(SndPatch *soundPatch);
+void Mark_SndPatchAsset(SndPatch *soundPatch);
+
 void Load_ClipMapAsset(clipMap_t **clipMap);
-void __cdecl Mark_ClipMapAsset(clipMap_t *clipMap);
+void Mark_ClipMapAsset(clipMap_t *clipMap);
+
 void Load_ComWorldAsset(ComWorld **comWorld);
-void __cdecl Mark_ComWorldAsset(ComWorld *comWorld);
+void Mark_ComWorldAsset(ComWorld *comWorld);
+
 void Load_GameWorldSpAsset(GameWorldSp **gameWorldSp);
-void __cdecl Mark_GameWorldSpAsset(GameWorldSp *gameWorldSp);
+void Mark_GameWorldSpAsset(GameWorldSp *gameWorldSp);
+
 void Load_GameWorldMpAsset(GameWorldMp **gameWorldMp);
-void __cdecl Mark_GameWorldMpAsset(GameWorldMp *gameWorldMp);
+void Mark_GameWorldMpAsset(GameWorldMp *gameWorldMp);
+
 void Load_MapEntsAsset(MapEnts **mapEnts);
-void __cdecl Mark_MapEntsAsset(MapEnts *mapEnts);
+void Mark_MapEntsAsset(MapEnts *mapEnts);
+
 void Load_DDLAsset(ddlRoot_t **ddlRoot);
-void __cdecl Mark_DDLAsset(ddlRoot_t *ddlRoot);
+void Mark_DDLAsset(ddlRoot_t *ddlRoot);
+
 void Load_GfxWorldAsset(GfxWorld **gfxWorld);
-void __cdecl Mark_GfxWorldAsset(GfxWorld *gfxWorld);
+void Mark_GfxWorldAsset(GfxWorld *gfxWorld);
+
 void Load_LightDefAsset(GfxLightDef **lightDef);
-void __cdecl Mark_LightDefAsset(GfxLightDef *lightDef);
+void Mark_LightDefAsset(GfxLightDef *lightDef);
+
 void Load_FontAsset(Font_s **font);
-void __cdecl Mark_FontAsset(Font_s *font);
+void Mark_FontAsset(Font_s *font);
+
 void Load_FontIconAsset(FontIcon **fontIcon);
-void __cdecl Mark_FontIconAsset(FontIcon *fontIcon);
+void Mark_FontIconAsset(FontIcon *fontIcon);
+
 void Load_MenuListAsset(MenuList **menuList);
-void __cdecl Mark_MenuListAsset(MenuList *menuList);
+void Mark_MenuListAsset(MenuList *menuList);
+
 void Load_MenuAsset(menuDef_t **menu);
-void __cdecl Mark_MenuAsset(menuDef_t *menu);
+void Mark_MenuAsset(menuDef_t *menu);
+
 void Load_LocalizeEntryAsset(LocalizeEntry **localize);
-void __cdecl Mark_LocalizeEntryAsset(LocalizeEntry *localize);
+void Mark_LocalizeEntryAsset(LocalizeEntry *localize);
+
 void Load_WeaponVariantDefAsset(WeaponVariantDef **weapon);
-void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon);
+void Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon);
+
 void Load_WeaponAttachmentAsset(WeaponAttachment **attachment);
-void __cdecl Mark_WeaponAttachmentAsset(WeaponAttachment *attachment);
+void Mark_WeaponAttachmentAsset(WeaponAttachment *attachment);
+
 void Load_WeaponAttachmentUniqueAsset(WeaponAttachmentUnique **attachmentUnique);
-void __cdecl Mark_WeaponAttachmentUniqueAsset(WeaponAttachmentUnique *attachmentUnique);
+void Mark_WeaponAttachmentUniqueAsset(WeaponAttachmentUnique *attachmentUnique);
+
 void Load_WeaponCamoAsset(WeaponCamo **weaponCamo);
-void __cdecl Mark_WeaponCamoAsset(WeaponCamo *weaponCamo);
+void Mark_WeaponCamoAsset(WeaponCamo *weaponCamo);
+
 void Load_FxEffectDefAsset(const FxEffectDef **fx);
-void __cdecl Mark_FxEffectDefAsset(FxEffectDef *fx);
+void Mark_FxEffectDefAsset(FxEffectDef *fx);
+
 void Load_FxImpactTableAsset(FxImpactTable **impactFx);
-void __cdecl Mark_FxImpactTableAsset(FxImpactTable *impactFx);
+void Mark_FxImpactTableAsset(FxImpactTable *impactFx);
+
 void Load_RawFileAsset(RawFile **rawfile);
-void __cdecl Mark_RawFileAsset(RawFile *rawfile);
+void Mark_RawFileAsset(RawFile *rawfile);
+
 void Load_StringTableAsset(StringTable **stringTable);
-void __cdecl Mark_StringTableAsset(StringTable *stringTable);
+void Mark_StringTableAsset(StringTable *stringTable);
+
 void Load_LeaderboardDefAsset(LeaderboardDef **leaderboardDef);
-void __cdecl Mark_LeaderboardDefAsset(LeaderboardDef *leaderboardDef);
+void Mark_LeaderboardDefAsset(LeaderboardDef *leaderboardDef);
+
 void Load_XGlobalsAsset(XGlobals **xGlobals);
-void __cdecl Mark_XGlobalsAsset(XGlobals *xGlobals);
+void Mark_XGlobalsAsset(XGlobals *xGlobals);
+
 void Load_GlassesAsset(Glasses **glasses);
-void __cdecl Mark_GlassesAsset(Glasses *glasses);
+void Mark_GlassesAsset(Glasses *glasses);
+
 void Load_EmblemSetAsset(EmblemSet **emblemSet);
-void __cdecl Mark_EmblemSetAsset(EmblemSet *emblemSet);
+void Mark_EmblemSetAsset(EmblemSet *emblemSet);
+
 void Load_ScriptParseTreeAsset(ScriptParseTree **scriptParseTree);
-void __cdecl Mark_ScriptParseTreeAsset(ScriptParseTree *scriptParseTree);
+void Mark_ScriptParseTreeAsset(ScriptParseTree *scriptParseTree);
+
 void Load_QdbAsset(Qdb **qdb);
-void __cdecl Mark_QdbAsset(Qdb *qdb);
+void Mark_QdbAsset(Qdb *qdb);
+
 void Load_SlugAsset(Slug **slug);
-void __cdecl Mark_SlugAsset(Slug *slug);
+void Mark_SlugAsset(Slug *slug);
+
 void Load_KeyValuePairsAsset(KeyValuePairs **keyValuePairs);
-void __cdecl Mark_KeyValuePairsAsset(KeyValuePairs *keyValuePairs);
+void Mark_KeyValuePairsAsset(KeyValuePairs *keyValuePairs);
+
 void Load_VehicleDefAsset(VehicleDef **vehicleDef);
-void __cdecl Mark_VehicleDefAsset(VehicleDef *vehicleDef);
+void Mark_VehicleDefAsset(VehicleDef *vehicleDef);
+
 void Load_MemoryBlockAsset(MemoryBlock **memoryBlock);
-void __cdecl Mark_MemoryBlockAsset(MemoryBlock *memoryBlock);
+void Mark_MemoryBlockAsset(MemoryBlock *memoryBlock);
+
 void Load_AddonMapEntsAsset(AddonMapEnts **addonMapEnts);
-void __cdecl Mark_AddonMapEntsAsset(AddonMapEnts *addonMapEnts);
+void Mark_AddonMapEntsAsset(AddonMapEnts *addonMapEnts);
+
 void Load_TracerDefAsset(TracerDef **tracerDef);
-void __cdecl Mark_TracerDefAsset(TracerDef *tracerDef);
+void Mark_TracerDefAsset(TracerDef *tracerDef);
+
 void Load_SkinnedVertsDefAsset(SkinnedVertsDef **skinnedVertsDef);
-void __cdecl Mark_SkinnedVertsDefAsset(SkinnedVertsDef *skinnedVertsDef);
+void Mark_SkinnedVertsDefAsset(SkinnedVertsDef *skinnedVertsDef);
+
 void Load_FootstepTableDefAsset(FootstepTableDef **footstepTableDef);
-void __cdecl Mark_FootstepTableDefAsset(FootstepTableDef *footstepTableDef);
+void Mark_FootstepTableDefAsset(FootstepTableDef *footstepTableDef);
+
 void Load_FootstepFXTableDefAsset(FootstepFXTableDef **footstepFXTableDef);
-void __cdecl Mark_FootstepFXTableDefAsset(FootstepFXTableDef *footstepFXTableDef);
+void Mark_FootstepFXTableDefAsset(FootstepFXTableDef *footstepFXTableDef);
+
 void Load_ZBarrierDefAsset(ZBarrierDef **zbarrierDef);
-void __cdecl Mark_ZBarrierDefAsset(ZBarrierDef *zbarrierDef);
+void Mark_ZBarrierDefAsset(ZBarrierDef *zbarrierDef);
+
+
 XAssetHeader DB_AllocMaterial(void *pool);
 XAssetHeader DB_AllocGfxImage(void *pool);
 void DB_FreeMaterial(void *pool, XAssetHeader header);
