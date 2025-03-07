@@ -291,8 +291,7 @@ NET_IsLocalIP
 */
 BOOL NET_IsLocalIP(const netadr_t adr)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return adr.inaddr == 16777343 || adr.inaddr == 2130706433;
 }
 
 /*
