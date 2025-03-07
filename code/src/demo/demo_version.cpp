@@ -12,7 +12,7 @@ int Demo_GetVersion()
 		Com_Error(ERR_DROP, "Trying to get version of a demo when the demo system is idle.");
 	}
 
-	return demo.header.maxClients;
+	return demo.header.version;
 }
 
 /*
@@ -24,15 +24,14 @@ bool Demo_IsVersionAtLeast(int version)
 {
 	if (!Demo_IsPlaying())
 	{
-		return 1;
+		return TRUE;
 	}
-
 	if (Demo_IsIdle())
 	{
 		Com_Error(ERR_DROP, "Trying to get version of a demo when the demo system is idle.");
 	}
 
-	return demo.header.maxClients >= version;
+	return demo.header.version >= version;
 }
 
 /*
@@ -47,12 +46,13 @@ const NetFieldList *Demo_GetNetFieldListForType(netFieldTypes_t fieldType)
 		Com_Error(ERR_DROP, "Trying to get version of a demo when the demo system is idle.");
 	}
 
-	if (8 - demo.header.maxClients < 0)
+	int netFieldsVersionIndex = 1 - Demo_GetVersion();
+	if (netFieldsVersionIndex < 0)
 	{
 		Com_Error(ERR_DROP, "Invalid Version Handling. Grab Bat !!!");
 	}
 
-	return &s_demoOtherNetFieldLists[8 - demo.header.maxClients][fieldType];
+	return &s_demoOtherNetFieldLists[netFieldsVersionIndex][fieldType];
 }
 
 /*
@@ -60,23 +60,29 @@ const NetFieldList *Demo_GetNetFieldListForType(netFieldTypes_t fieldType)
 Demo_GetStateFieldListForEntityType
 ==============
 */
-const NetFieldList *Demo_GetStateFieldListForEntityType(const int eType)
+const NetFieldList *Demo_GetStateFieldListForEntityType(const int entityType)
 {
 	if (Demo_IsIdle())
 	{
 		Com_Error(ERR_DROP, "Trying to get version of a demo when the demo system is idle.");
 	}
 
-	if (8 - demo.header.maxClients < 0)
+	int netFieldsVersionIndex = 1 - Demo_GetVersion();
+	if (netFieldsVersionIndex < 0)
 	{
 		Com_Error(ERR_DROP, "Invalid Version Handling. Grab Bat !!!");
 	}
 
-	if (eType > 21)
+	static int fieldType;
+	if (entityType > 21)
 	{
-		eType = 21;
+		fieldType = 21;
+	}
+	else
+	{
+		fieldType = entityType;
 	}
 
-	return &s_demoEntityNetFieldLists[8 - demo.header.maxClients][eType];
+	return &s_demoEntityNetFieldLists[netFieldsVersionIndex][fieldType];
 }
 
