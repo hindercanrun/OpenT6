@@ -2978,12 +2978,7 @@ void Con_DrawInput (LocalClientNum_t localClientNum) {
 
 	bool isDvarCommand;
 
-#ifdef INCLUDE_ASSERTS
-	if ( !Sys_IsMainThread() && !Sys_IsRenderThread() )
-	{
-		Assert_MyHandler( __FILE__, __LINE__, 0, "Sys_IsMainThread() || Sys_IsRenderThread()" )
-	}
-#endif
+	assert(!Sys_IsMainThread() && !Sys_IsRenderThread());
 
 	if ( !Key_IsCatcherActive( localClientNum, 1 ) ) {
 		return;
