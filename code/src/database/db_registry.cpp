@@ -3242,8 +3242,7 @@ DB_GetImagePartPoolSize
 */
 unsigned int DB_GetImagePartPoolSize()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 5088;
 }
 
 /*
@@ -4490,7 +4489,43 @@ DB_InitFrontendXAssets
 */
 void DB_InitFrontendXAssets(bool uiOnly)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	static XZoneInfo asyncZoneInfo[1];
+	static XZoneInfo zoneInfo;
+
+#if defined(SINGLEPLAYER)
+	asyncZoneInfo[0].name = "patch_ui";
+#elif defined(ZOMBIES)
+	asyncZoneInfo[0].name = "patch_ui_zm";
+#else
+	asyncZoneInfo[0].name = "patch_ui_mp";
+#endif
+	asyncZoneInfo[0].allocFlags = 0x8000000;
+	asyncZoneInfo[0].freeFlags = 0;
+
+#if defined(SINGLEPLAYER)
+	zoneInfo.name = "ui";
+#elif defined(ZOMBIES)
+	zoneInfo.name = "ui_zm";
+#else
+	zoneInfo.name = "ui_mp";
+#endif
+	zoneInfo.allocFlags = 0x2000000;
+	zoneInfo.freeFlags = 0;
+	DB_LoadXAssets(asyncZoneInfo, 2u, 0);
+
+	if (!uiOnly)
+	{
+#if defined(SINGLEPLAYER)
+		zoneInfo.name = "common";
+#elif defined(ZOMBIES)
+		zoneInfo.name = "common_zm";
+#else
+		zoneInfo.name = "common_mp";
+#endif
+		zoneInfo.allocFlags = 128;
+		zoneInfo.freeFlags = 0;
+		DB_LoadXAssets(&zoneInfo, 1u, 0);
+	}
 }
 
 /*
