@@ -95,8 +95,8 @@ Com_GetBspVersion
 */
 unsigned int Com_GetBspVersion()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	assert(!Com_IsBspLoaded());
+	return comBspGlob.header->version;
 }
 
 /*
@@ -106,8 +106,8 @@ Com_GetBspChecksum
 */
 unsigned int Com_GetBspChecksum()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	assert(!Com_IsBspLoaded());
+	return comBspGlob.checksum;
 }
 
 /*
@@ -148,7 +148,16 @@ Com_CleanupBsp
 */
 void Com_CleanupBsp()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Com_IsBspLoaded())
+	{
+		assert(!Com_IsBspLoaded());
+	}
+
+	comBspGlob.loadedLumpData = 0;
+	if (Com_IsBspLoaded())
+	{
+		Com_UnloadBsp();
+	}
 }
 
 /*
@@ -235,7 +244,14 @@ Com_LoadWorld_LoadObj
 */
 void Com_LoadWorld_LoadObj(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(Com_IsBspLoaded());
+
+	Com_LoadPrimaryLights();
+	Com_LoadWaterData();
+	Com_LoadBurnableData();
+
+	comWorld.name = Com_GetHunkStringCopy(name);
+	comWorld.isInUse = true;
 }
 
 /*
@@ -245,6 +261,11 @@ Com_LoadWorld
 */
 void Com_LoadWorld()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!useFastFile->current.enabled)
+	{
+		Com_LoadWorld_LoadObj(name);
+	}
+
+	Com_LoadWorld_FastFile(name);
 }
 
