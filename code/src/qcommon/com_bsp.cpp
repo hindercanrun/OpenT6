@@ -7,6 +7,11 @@ Com_UnloadWorld
 */
 void Com_UnloadWorld()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(!useFastFile->current.enabled);
+
+	if (comWorld.isInUse)
+	{
+		Sys_Error("Cannot unload world while it is in use");
+	}
 }
 
