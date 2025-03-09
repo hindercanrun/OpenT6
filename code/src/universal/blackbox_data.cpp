@@ -1,5 +1,30 @@
 #include "types.h"
 
+unsigned int s_stringHashTable[1024];
+unsigned int s_stringHits;
+unsigned int s_stringMisses;
+unsigned int s_stringCollisions;
+unsigned int s_stringHitBytes;
+
+struct bb_msg_t
+{
+	unsigned __int8 *data;
+	int maxsize;
+	int cursize;
+	bool overflow;
+	unsigned __int8 *pppHashTable;
+	unsigned __int8 pppBits;
+	unsigned int pppHash;
+	int pppBitOffset;
+	int pppBitCount;
+};
+
+int s_definitionId;
+int s_definitionSentOffset;
+__int16 s_definitionMapHashTable[512];
+unsigned __int8 s_definitionData[4096];
+bb_msg_t s_definitionMsg;
+
 /*
 ==============
 BB_InitStringCache
@@ -7,7 +32,12 @@ BB_InitStringCache
 */
 void BB_InitStringCache()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	memset(s_stringHashTable, 0, sizeof(s_stringHashTable));
+
+	s_stringHits = 0;
+	s_stringMisses = 0;
+	s_stringCollisions = 0;
+	s_stringHitBytes = 0;
 }
 
 /*
@@ -17,7 +47,7 @@ BB_ClearStringCache
 */
 void BB_ClearStringCache()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	memset(s_stringHashTable, 0, sizeof(s_stringHashTable));
 }
 
 /*
@@ -59,7 +89,13 @@ BB_MsgInit
 */
 void BB_MsgInit(bb_msg_t *msg, void *data, int maxsize)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	msg->data = data;
+	msg->maxsize = maxsize;
+	msg->cursize = 0;
+	msg->overflow = 0;
+	msg->pppHashTable = 0;
+
+	memset(data, 0, maxsize);
 }
 
 /*
@@ -69,7 +105,18 @@ BB_MsgInitPPP
 */
 void BB_MsgInitPPP(bb_msg_t *msg, void *pppHashTable, int size)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(size == 4096);
+	assert(msg->pppHashTable == 0);
+
+	int cursize = msg->cursize;
+	msg->pppBitOffset = cursize;
+	msg->cursize = cursize + 1;
+	msg->pppBitCount = 0;
+	msg->pppBits = 0;
+	msg->pppHash = 0;
+	msg->pppHashTable = pppHashTable;
+
+	memset(pppHashTable, 0, size);
 }
 
 /*
@@ -79,7 +126,18 @@ BB_InitDefinitions
 */
 void BB_InitDefinitions()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	s_definitionId = 0;
+	s_definitionSentOffset = 0;
+
+	memset(s_definitionMapHashTable, 0xFFu, sizeof(s_definitionMapHashTable));
+
+	s_definitionMsg.data = s_definitionData;
+	s_definitionMsg.maxsize = 4096;
+	s_definitionMsg.cursize = 0;
+	s_definitionMsg.overflow = 0;
+	s_definitionMsg.pppHashTable = 0;
+
+	memset(s_definitionData, 0, sizeof(s_definitionData));
 }
 
 /*
@@ -87,9 +145,15 @@ void BB_InitDefinitions()
 BB_RewriteDefinitions
 ==============
 */
-void BB_RewriteDefinitions(bb_msg_t *a1, const void *a2)
+void BB_RewriteDefinitions(bb_msg_t *msg)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	s_definitionSentOffset = 0;
+
+	if (s_definitionMsg.cursize > 0)
+	{
+		BB_Copy(msg, s_definitionMsg.data, s_definitionMsg.cursize);
+		s_definitionSentOffset = s_definitionMsg.cursize;
+	}
 }
 
 /*
