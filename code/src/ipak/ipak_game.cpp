@@ -1,5 +1,7 @@
 #include "types.h"
 
+bool s_adjacencyInfoStale = FALSE;
+
 /*
 ==============
 IPak_FindPackfile
@@ -18,7 +20,7 @@ IPak_MarkAdjacencyInfoAsStale
 */
 void IPak_MarkAdjacencyInfoAsStale()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	s_adjacencyInfoStale = TRUE;
 }
 
 /*
@@ -28,8 +30,28 @@ IPak_RemovePackfile
 */
 int IPak_RemovePackfile(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	PIXBeginNamedEvent(-1, "IPak_RemovePackfile");
+
+	assert(Sys_IsMainThread() || Sys_IsRenderThread());
+
+	IPakLoadedPackfile *pak = IPak_FindPackfile(name);
+	if (!pak)
+	{
+		return FALSE;
+	}
+
+	assert(pak->refCount > 0);
+
+	if (pak->refCount-- == 1)
+	{
+		Stream_CloseFile(pak->fh);
+		pak->fh = -16777217;
+		Com_Printf(41, "Removed ipak file: %s\n", pak->name);
+
+		s_adjacencyInfoStale = TRUE;
+	}
+
+	return TRUE;
 }
 
 /*
@@ -59,27 +81,7 @@ IPak_WaitReadIndexData
 */
 void IPak_WaitReadIndexData(IPakWorkData *work, int buffer)
 {
-	if (buffer >= 2)
-	{
-		assertMsg("(unsigned)(buffer) < (unsigned)(2)", "buffer doesn't index IPAK_INDEX_BUFFER_COUNT\n\t%i not in [0, %i)", buffer, 2);
-	}
-
-	if (!*&work[1].imageParts[2 * buffer + 260])
-	{
-		assert("(work->indexBufferState[ buffer ] != 0)");
-	}
-
-	while (*&work[1].imageParts[2 * buffer + 260] == 1)
-	{
-		Sys_CheckQuitRequest();
-		NET_Sleep(1u);
-	}
-
-	if (*&work[1].imageParts[2 * buffer + 260] == 3)
-	{
-		Com_PrintError(41, "Error while reading ipak %s index data, offset %d\n", work->pak->name, *&work[1].imageParts[2 * buffer + 256]);
-		memset(&work->indexBuffer[buffer][34], 255, 0x10000);
-	}
+	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
@@ -121,46 +123,7 @@ IPak_EndIndexRead
 */
 void IPak_EndIndexRead(IPakWorkData *work)
 {
-	assert(!work->pak);
-
-	int v1 = 0;
-	unsigned __int8 *v2 = &work->indexBuffer[0][34];
-	unsigned __int16 *v3 = &work[1].imageParts[260];
-
-	do
-	{
-		if (*v3 == 1)
-		{
-			if (v1 >= 2)
-			{
-				assertMsg("(unsigned)(buffer) < (unsigned)(2)", "buffer doesn't index IPAK_INDEX_BUFFER_COUNT\n\t%i not in [0, %i)", v1, 2);
-			}
-
-			if (!*v3)
-			{
-				assert("(work->indexBufferState[ buffer ] != 0)");
-			}
-
-			while (*v3 == 1)
-			{
-				Sys_CheckQuitRequest();
-				NET_Sleep(1u);
-			}
-
-			if (*v3 == 3)
-			{
-				Com_PrintError(41, "Error while reading ipak %s index data, offset %d\n", work->pak->name, *(v3 - 2));
-				memset(v2, 255, 0x10000);
-			}
-		}
-
-		++v1;
-		v3 += 2;
-		v2 += 0x10000;
-	}
-	while (v1 < 2);
-
-	work->pak = 0;
+	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
@@ -212,6 +175,24 @@ IPak_RemovePackfilesForZone
 */
 void IPak_RemovePackfilesForZone(const char *zoneName)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	static char zoneNameRoot[64];
+	PIXBeginNamedEvent(-1, "IPak_RemovePackfilesForZone");
+
+	const char *name = 0;
+	strcpy(zoneNameRoot, zoneName);
+	strchr(zoneNameRoot, 0x21u);
+
+	static BYTE *v1;
+	if (v1)
+	{
+	  *v1 = 0;
+	}
+
+	while (KeyValuePairs_GetNextValue("ipak_read", zoneNameRoot, &name))
+	{
+		IPak_RemovePackfile(name);
+	}
+
+	IPak_InvalidateImages();
 }
 
