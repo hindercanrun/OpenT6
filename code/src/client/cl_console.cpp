@@ -422,32 +422,27 @@ Con_CheckResize
 If the line width has changed, reformat the buffer.
 ================
 */
-void Con_CheckResize (void)
+void Con_CheckResize()
 {
-	float x = ScrPlace_ApplyX (&scrPlaceFull, 4.0, 1);
+	float x = ScrPlace_ApplyX(&scrPlaceFull, 4.0, 1);
 	con.screenMin[0] = floor(x);
 
-	float y = ScrPlace_ApplyY (&scrPlaceFull, 4.0, 1);
+	float y = ScrPlace_ApplyY(&scrPlaceFull, 4.0, 1);
 	con.screenMin[1] = floor(y);
 
-	float width = ScrPlace_ApplyX (&scrPlaceFull, -4.0, 3);
+	float width = ScrPlace_ApplyX(&scrPlaceFull, -4.0, 3);
 	con.screenMax[0] = floor(width);
 
-	float height = ScrPlace_ApplyY (&scrPlaceFull, -4.0, 3);
+	float height = ScrPlace_ApplyY(&scrPlaceFull, -4.0, 3);
 	con.screenMax[1] = floor(height);
 
 	if (cls.consoleFont)
 	{
-		int fontHeight = R_TextHeight(cls.consoleFont);
-		con.fontHeight = fontHeight;
+		con.fontHeight = R_TextHeight(cls.consoleFont);
+		assert(con.fontHeight > 0);
 
-		if (fontHeight <= 0) // video hasn't been initialized yet
-		{
-			fontHeight = con.fontHeight;
-		}
-
-		con.visiblePixelWidth = (((con.screenMax[0] - con.screenMin[0]) - 10.0) - 18.0);
-		con.visibleLineCount = (((con.screenMax[1] - con.screenMin[1]) - (2 * fontHeight)) - 24.0) / fontHeight;
+		con.visibleLineCount = (((con.screenMax[1] - con.screenMin[1]) - (2 * con.fontHeight)) - (6.0 * 4.0)) / con.fontHeight;
+		con.visiblePixelWidth = (((con.screenMax[0] - con.screenMin[0]) - 10.0) - (6.0 * 3.0));
 	}
 	else
 	{
@@ -457,16 +452,15 @@ void Con_CheckResize (void)
 	}
 }
 
-
 /*
 ================
 Con_InitClientAssets
 ================
 */
-void Con_InitClientAssets (void)
+void Con_InitClientAssets()
 {
 	// check for console width changes from a vid mode change
-	Con_CheckResize (); 
+	Con_CheckResize();
 }
 
 /*
