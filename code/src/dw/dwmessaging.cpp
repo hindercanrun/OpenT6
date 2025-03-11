@@ -7,8 +7,8 @@ dwInstantHandleTestMessage
 */
 char dwInstantHandleTestMessage(unsigned __int64 senderID, const ControllerIndex_t controllerIndex, msg_t *msg)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	Com_Printf(CON_CHANNEL_LIVE, "got test message %i for controllerIndex %d from %llu\n", MSG_ReadLong(msg), controllerIndex, senderID);
+	return TRUE;
 }
 
 /*
@@ -18,8 +18,7 @@ dwInstantHandlePartyMessage
 */
 bool dwInstantHandlePartyMessage(unsigned __int64 senderID, const ControllerIndex_t controllerIndex, msg_t *msg)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return Party_DispatchInstantMessage(senderID, controllerIndex, msg);
 }
 
 /*
@@ -29,8 +28,7 @@ dwInstantHandleFriendMessage
 */
 bool dwInstantHandleFriendMessage(unsigned __int64 senderID, const ControllerIndex_t controllerIndex, msg_t *msg)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return Live_ProcessFriendInstantMessage(senderID, controllerIndex, msg);
 }
 
 /*
@@ -81,7 +79,7 @@ dwLobbyEventHandler::onMultipleLogon
 */
 /*void dwLobbyEventHandler::onMultipleLogon(dwLobbyEventHandler *notthis, unsigned __int64 userID)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Com_Error(ERR_FATAL, "PLATFORM_DW_MULTIPLE_LOGON");
 }*/
 
 /*
@@ -91,7 +89,7 @@ dwLobbyEventHandler::onYouTubeRegistration
 */
 /*void dwLobbyEventHandler::onYouTubeRegistration(dwLobbyEventHandler *notthis, const bdYouTubeRegistrationResult *registrationResult)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	LiveYouTube_AuthReceived(notthis->m_controllerIndex, registrationResult->m_result);
 }*/
 
 /*
@@ -111,7 +109,14 @@ dwInitMessaging
 */
 void dwInitMessaging(ControllerIndex_t controllerIndex)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(Sys_IsMainThread());
+	assert(controllerIndex < CONTROLLER_INDEX_COUNT);
+
+	bdLobbyService *lobby = dwGetLobby(controllerIndex);
+	assert(lobby != 0);
+
+	bdLobbyService::registerEventHandler(lobby, &s_eventHandler);
+	Com_PrintWarning(CON_CHANNEL_SYSTEM, "Initialized Messaging for controller %d.\n", controllerIndex);
 }
 
 /*

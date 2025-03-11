@@ -19,7 +19,14 @@ dwClearQoSProbes
 */
 void dwClearQoSProbes()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (g_dwNetStatus == DW_NET_STARTED_ONLINE)
+	{
+		bdQoSProbe *QoSProbe = dwGetQoSProbe();
+		if (QoSProbe)
+		{
+			bdQoSProbe::cancelProbes(QoSProbe);
+		}
+	}
 }
 
 /*
