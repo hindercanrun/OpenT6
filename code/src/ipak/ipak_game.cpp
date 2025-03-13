@@ -1,6 +1,99 @@
-#include "types.h"
+#include "ipak_public.h"
+
+#define IPAK_MAX_LOADED_PACKFILES
 
 bool s_adjacencyInfoStale = FALSE;
+
+struct IPakSection
+{
+  unsigned int type;
+  unsigned int offset;
+  unsigned int size;
+  unsigned int itemCount;
+};
+
+struct IPakLoadedPackfile
+{
+  char name[64];
+  IPakSection data;
+  IPakSection index;
+  int fh;
+  int refCount;
+  int priority;
+};
+
+IPakLoadedPackfile s_loadedPackfiles[16];
+
+
+
+/*
+==============
+IPak_ProcessString
+
+name is guessed
+==============
+*/
+char *IPak_ProcessString(char *dest, const char *src)
+{
+	char *d = dest;
+	while ((*d++ = *src++) != '\0');
+
+	char *exclamation = strchr(dest, '!');
+	if (exclamation)
+	{
+		*exclamation = '\0';
+	}
+
+	return exclamation;
+}
+
+/*
+==============
+IPak_IndexToName
+==============
+*/
+const char *IPak_IndexToName(unsigned int index)
+{
+	assert(
+		(unsigned)(index) < (unsigned)(16),
+		"index doesn't index IPAK_MAX_LOADED_PACKFILES\n\t%i not in [0, %i)",
+		index,
+		16);
+
+	IPakLoadedPackfile *packfile = &s_loadedPackfiles[index];
+
+	if (packfile->refCount <= 0)
+	{
+		return "IPAK NOT LOADED";
+	}
+
+	return packfile->name;
+}
+
+
+/*
+==============
+IPak_IndexToFileID
+==============
+*/
+int IPak_IndexToFileID(unsigned int index)
+{
+	assertMsg(
+		(unsigned)(index) < (unsigned)(16),
+		"index doesn't index IPAK_MAX_LOADED_PACKFILES\n\t%i not in [0, %i)",
+		index,
+		16);
+
+	IPakLoadedPackfile *packfile = &s_loadedPackfiles[index];
+
+	if (packfile->refCount <= 0)
+	{
+		return -16777217;
+	}
+
+	return packfile->fh;
+}
+
 
 /*
 ==============
@@ -11,16 +104,6 @@ IPakLoadedPackfile *IPak_FindPackfile(const char *name)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 	return NULL;
-}
-
-/*
-==============
-IPak_MarkAdjacencyInfoAsStale
-==============
-*/
-void IPak_MarkAdjacencyInfoAsStale()
-{
-	s_adjacencyInfoStale = TRUE;
 }
 
 /*
@@ -52,6 +135,16 @@ int IPak_RemovePackfile(const char *name)
 	}
 
 	return TRUE;
+}
+
+/*
+==============
+IPak_MarkAdjacencyInfoAsStale
+==============
+*/
+void IPak_MarkAdjacencyInfoAsStale()
+{
+	s_adjacencyInfoStale = TRUE;
 }
 
 /*

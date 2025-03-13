@@ -2,10 +2,12 @@
 
 #include "types.h"
 
-//t6/code/src_noserver/ipak/ipak_game.cpp
+char *IPak_ProcessString(char *dest, const char *src);// should probably be const char*
+const char *IPak_IndexToName(unsigned int index);
+int IPak_IndexToFileID(unsigned int index);
 IPakLoadedPackfile *IPak_FindPackfile(const char *name);
-void IPak_MarkAdjacencyInfoAsStale();
 int IPak_RemovePackfile(const char *name);
+void IPak_MarkAdjacencyInfoAsStale();
 void IPak_IndexReadCallback(int id, stream_status result, unsigned int numBytesRead, void *user);
 void IPak_ReadIndexData(IPakWorkData *work, int buffer);
 void IPak_WaitReadIndexData(IPakWorkData *work, int buffer);
