@@ -1203,7 +1203,36 @@ LiveStorage_FetchRequiredFiles
 */
 void LiveStorage_FetchRequiredFiles(const ControllerIndex_t controllerIndex)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Live_IsUserSignedInToDemonware(controllerIndex)
+		&& Live_IsSignedInToLive(controllerIndex)
+		&& s_liveStorageInitialized)
+	{
+		LiveAntiCheat_BanDoConnected();
+
+		// big checks
+
+		if (!LiveStorage_DoWeHaveFFOTD())
+		{
+			LiveStorage_FetchFFOTD(controllerIndex);
+		}
+
+		if (!LiveStorage_DoWeHaveOnlineWAD())
+		{
+			LiveStorage_FetchOnlineWAD(controllerIndex);
+		}
+
+#if defined(PC)
+		if (Com_GetClientPlatform() == CLIENT_PLATFORM_PC && !LiveStorage_DoWeHaveSignedStatsKeys())
+		{
+			LiveStorage_FetchSignedStatsKeys(controllerIndex);
+		}
+#endif
+
+		if (R_Is3DOn())
+		{
+			League_FetchTeamsList(controllerIndex, 0, 11, nullptr);
+		}
+	}
 }
 
 /*

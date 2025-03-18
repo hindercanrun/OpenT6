@@ -7,7 +7,20 @@ LiveAntiCheat_BanDoConnected
 */
 void LiveAntiCheat_BanDoConnected()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!g_bannedCon)
+	{
+		return;
+	}
+
+	Com_SessionMode_SetOnlineGame(0);
+
+	//nullptr();
+
+	LiveStorage_SetAllStatsNotFetched(CONTROLLER_INDEX_FIRST);
+	LiveMetPlayer_ResetData(CONTROLLER_INDEX_FIRST);
+
+	//now error
+	Com_Error(ERR_DROP, "PLATFORM_BANNED");
 }
 
 /*

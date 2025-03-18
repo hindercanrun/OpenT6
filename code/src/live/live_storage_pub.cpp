@@ -169,8 +169,7 @@ LiveStorage_DoWeHaveOnlineWAD
 */
 bool LiveStorage_DoWeHaveOnlineWAD()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return s_onlineWADFileInfo.fetchCompleted;
 }
 
 /*
@@ -255,8 +254,7 @@ LiveStorage_DoWeHaveFFOTD
 */
 bool LiveStorage_DoWeHaveFFOTD()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return s_ffotdInfo.downloadComplete;
 }
 
 /*
