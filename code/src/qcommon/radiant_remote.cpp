@@ -48,7 +48,7 @@ RadiantRemoteInit
 */
 void RadiantRemoteInit()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	savedCommandCount = 0;
 }
 
 /*
@@ -69,8 +69,14 @@ IsEntityType
 */
 bool IsEntityType(const SpawnVar *spawnVar)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	const char *classname = GetPairValue(spawnVar, "classname");
+
+	return I_stricmp(classname, "worldspawn")
+		&& I_stricmp(classname, "misc_prefab")
+		&& I_stricmp(classname, "script_brushmodel")
+		&& I_stricmp(classname, "rope")
+		&& I_stricmp(classname, "spawn_manager")
+		&& I_strncmp(classname, "dyn_", 4);
 }
 
 /*
@@ -80,7 +86,7 @@ G_ClearSelectedEntity
 */
 void G_ClearSelectedEntity()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	g_radiant_selected_ent = false;
 }
 
 /*
@@ -90,8 +96,15 @@ G_IsSpawnPoint
 */
 bool G_IsSpawnPoint(const char *classname)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return I_stricmp("mp_dm_spawn", classname)
+		|| I_strnicmp("mp_wager_spawn", classname, 14)
+		|| I_strnicmp("mp_tdm_spawn", classname, 12)
+		|| I_strnicmp("mp_ctf_spawn", classname, 12)
+		|| I_strnicmp("mp_dom_spawn", classname, 12)
+		|| I_strnicmp("mp_sab_spawn", classname, 12)
+		|| I_strnicmp("mp_sd_spawn", classname, 11)
+		|| I_strnicmp("mp_twar_spawn", classname, 13)
+		|| I_stricmp("mp_uspawn_point", classname);
 }
 
 /*
@@ -142,7 +155,7 @@ G_ClearSelectedMiscModel
 */
 void G_ClearSelectedMiscModel()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	g_selected_misc_model = nullptr;
 }
 
 /*
@@ -173,7 +186,7 @@ G_ClearSelectedCorona
 */
 void G_ClearSelectedCorona()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	g_selected_corona = nullptr;
 }
 
 /*
@@ -255,7 +268,8 @@ CG_ClearSelectedScriptStruct
 */
 void CG_ClearSelectedScriptStruct()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	gSelectedScriptStruct = false;
+	Scr_NotifyLevel(scr_const.obstacle);
 }
 
 /*
