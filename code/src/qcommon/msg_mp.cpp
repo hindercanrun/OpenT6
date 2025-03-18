@@ -174,7 +174,51 @@ MSG_DumpNetFieldChanges_f
 */
 void MSG_DumpNetFieldChanges_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	static const int *changeArray[6]{};
+	changeArray[0] = (const int *)&orderInfo;
+	changeArray[1] = orderInfo.arcEntState;
+	changeArray[2] = orderInfo.clientState;
+	changeArray[3] = orderInfo.playerState;
+	changeArray[4] = orderInfo.objective;
+	changeArray[5] = orderInfo.hudElem;
+
+	static int arraySize[6]{};
+	arraySize[0] = 79;
+	arraySize[1] = 10;
+	arraySize[2] = 52;
+	arraySize[3] = 179;
+	arraySize[4] = 9;
+	arraySize[5] = 43;
+
+	static const char *arrayNames[6]{};
+	arrayNames[0] = "Entity State";
+	arrayNames[1] = "Archived Entity State";
+	arrayNames[2] = "Client State";
+	arrayNames[3] = "Player State";
+	arrayNames[4] = "Objective";
+	arrayNames[5] = "HUD Elem";
+
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "========================================\n");
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "NetField changes. format: field# : #changes\n");
+
+	for (unsigned int iArrayNum = 0; iArrayNum < 6; ++iArrayNum)
+	{
+		Com_Printf(CON_CHANNEL_DONT_FILTER, "========================================\n");
+		Com_Printf(CON_CHANNEL_DONT_FILTER, "    %s\n", arrayNames[iArrayNum]);
+		Com_Printf(CON_CHANNEL_DONT_FILTER, "--------------------\n");
+
+		for (int i = 0; i < arraySize[iArrayNum]; ++i)
+		{
+			static const int *array;
+			if (array[i])
+			{
+				Com_Printf(CON_CHANNEL_DONT_FILTER, "%3i :%8i\n", i, changeArray[iArrayNum][i]);
+			}
+		}
+	}
+
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "========================================\n");
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "========================================\n");
 }
 
 /*

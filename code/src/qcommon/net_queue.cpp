@@ -116,7 +116,22 @@ NET_InitQueues
 */
 void NET_InitQueues()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(s_packetQueueBlockFreeHead == 0);
+
+	for (unsigned int i = 0; i < 26; ++i)
+	{
+		s_packetQueueBlocks[i].next = (i * 16396 + 125080676);
+	}
+
+	s_packetQueueBlocks[25].next = 0;
+	s_packetQueueBlockFreeHead = s_packetQueueBlocks;
+	s_packetQueues = 0;
+
+	net_emu_latency = Dvar_RegisterInt("net_emu_latency", 0, 0, 1000, 0, "Emulated network latency in ms");
+	net_emu_jitter = Dvar_RegisterInt("net_emu_jitter", 0, 0, 1000, 0, "Emulated network latency jitter in ms");
+	net_emu_packet_loss = Dvar_RegisterInt("net_emu_packet_loss", 0, 0, 100, 0, "Emulated network %% packet loss");
+	net_emu_server = Dvar_RegisterString("net_emu_server", nullptr, 0, "Server network emulation info string");
+	net_emu_client = Dvar_RegisterString("net_emu_client", nullptr, 0, "Client network emulation info string");
 }
 
 /*
@@ -126,7 +141,18 @@ NET_InitQueue
 */
 void NET_InitQueue(PacketQueue *queue, const char *name, bool emulation)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(queue);
+
+	memset(queue, 0, sizeof(PacketQueue));
+	queue->name = name;
+	queue->tail = 0;
+	queue->head = 0;
+	queue->emulation = emulation;
+	queue->nextQueue = queue;
+	queue->queuedBytesLimit = 0x7FFFFFFF;
+	queue->queuedPacketsLimit = 0x7FFFFFFF;
+	queue->bucketBitsPerMS = 0;
+	queue->bucketBitsLimit = 0x7FFFFFFF;
 }
 
 /*
