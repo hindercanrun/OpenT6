@@ -18,8 +18,7 @@ Com_IsFactionFastfile
 */
 BOOL Com_IsFactionFastfile(const char *mapName)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return !Com_SessionMode_IsZombiesGame() && !I_strncmp(mapName, "faction_", 8);
 }
 
 /*
