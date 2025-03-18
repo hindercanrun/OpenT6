@@ -1,5 +1,24 @@
 #include "types.h"
 
+struct tlFileBuf
+{
+  unsigned __int8 *Buf;
+  unsigned int Size;
+  unsigned int UserData;
+};
+
+struct tlSystemCallbacks
+{
+  bool (__cdecl *ReadFile)(const char *, tlFileBuf *, unsigned int, unsigned int);
+  void (__cdecl *ReleaseFile)(tlFileBuf *);
+  void (__cdecl *CriticalError)(const char *);
+  void (__cdecl *Warning)(const char *);
+  void (__cdecl *DebugPrint)(const char *);
+  void *(__cdecl *MemAlloc)(unsigned int, unsigned int, unsigned int);
+  void *(__cdecl *MemRealloc)(void *, unsigned int, unsigned int, unsigned int);
+  void (__cdecl *MemFree)(void *);
+};
+
 HunkUser *s_tlHunkUser;
 
 /*
@@ -9,7 +28,7 @@ TL_Warning
 */
 void TL_Warning(const char *Text)
 {
-	Com_PrintWarning(22, "TL Warning: %s\n", Text);
+	Com_PrintWarning(CON_CHANNEL_TL, "TL Warning: %s\n", Text);
 }
 
 /*
@@ -19,7 +38,7 @@ TL_ReadFile
 */
 bool TL_ReadFile()
 {
-	Com_PrintWarning(22, "TL Warning: %s\n", "TL_ReadFile: no implementation");
+	TL_Warning("TL_ReadFile: no implementation");
 	return 0;
 }
 
@@ -30,7 +49,7 @@ TL_ReleaseFile
 */
 void TL_ReleaseFile()
 {
-	Com_PrintWarning(22, "TL Warning: %s\n", "TL_ReleaseFile: no implementation");
+	TL_Warning("TL_ReleaseFile: no implementation");
 }
 
 /*
@@ -40,7 +59,7 @@ TL_DebugPrint
 */
 void TL_DebugPrint(const char *Text)
 {
-	Com_Printf(22, "%s", Text);
+	Com_Printf(CON_CHANNEL_TL, Text);
 }
 
 /*
@@ -50,11 +69,7 @@ TL_MemAlloc
 */
 void *TL_MemAlloc(unsigned int Size, unsigned int Align)
 {
-	Sys_EnterCriticalSection(CRITSECT_TL_MEMALLOC);
-	void* v2 = Hunk_UserAlloc(s_tlHunkUser, Size, Align, 0);
-	Sys_LeaveCriticalSection(CRITSECT_TL_MEMALLOC);
-
-	return v2;
+	return Hunk_UserAlloc(s_tlHunkUser, Size, Align, 0);
 }
 
 /*
@@ -74,7 +89,7 @@ TL_CriticalError
 */
 void TL_CriticalError(const char *msg)
 {
-	// nothing
+	assert(msg);
 }
 
 /*
@@ -84,10 +99,9 @@ Sys_SetupTLCallbacks
 */
 void Sys_SetupTLCallbacks(int hunkMemSize)
 {
+	s_tlHunkUser = Hunk_UserCreate(hunkMemSize, HU_SCHEME_DEFAULT, 4, 0, "TL_MemAlloc support", 40);
+
 	tlSystemCallbacks callbacks;
-
-	s_tlHunkUser = Hunk_UserCreate(hunkMemSize, HU_SCHEME_DEFAULT, 4u, 0, "TL_MemAlloc support", 40);
-
 	callbacks.ReadFile = TL_ReadFile;
 	callbacks.ReleaseFile = TL_ReleaseFile;
 	callbacks.CriticalError = TL_CriticalError;
@@ -96,7 +110,6 @@ void Sys_SetupTLCallbacks(int hunkMemSize)
 	callbacks.MemAlloc = TL_MemAlloc;
 	callbacks.MemRealloc = nullptr;
 	callbacks.MemFree = TL_MemFree;
-
 	tlSetSystemCallbacks(&callbacks);
 }
 
