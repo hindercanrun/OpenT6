@@ -37,7 +37,15 @@ Huff_Init
 */
 void Huff_Init(huffman_t *huff)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Com_Memset(huff, 0, 19476);
+
+	huff->compressDecompress.loc[256] = &huff->compressDecompress.nodeList[huff->compressDecompress.blocNode++];
+	huff->compressDecompress.tree = huff->compressDecompress.loc[256];
+	huff->compressDecompress.tree->symbol = 256;
+	huff->compressDecompress.tree->weight = 0;
+	huff->compressDecompress.tree->parent = 0;
+	huff->compressDecompress.tree->left = 0;
+	huff->compressDecompress.tree->right = 0;
 }
 
 /*
@@ -47,8 +55,7 @@ nodeCmp
 */
 int nodeCmp(const void *left, const void *right)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return *(DWORD *)(*(DWORD *)left + 12) - *(DWORD *)(*(DWORD *)right + 12);
 }
 
 /*
