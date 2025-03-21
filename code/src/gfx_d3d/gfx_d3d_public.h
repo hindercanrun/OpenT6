@@ -941,7 +941,7 @@ unsigned int R_FontGetRandomNumberCharacter(Font_s *font, int seed);
 void TRACK_r_font();
 Font_s *R_RegisterFont_LoadObj(const char *fontName, int imageTrack);
 Font_s *R_RegisterFont_FastFile(const char *fontName);
-Font_s *R_RegisterFont();
+Font_s *R_RegisterFont(const char *name, int imageTrack);
 double R_NormalizedTextScale(Font_s *font, float scale);
 void GetButtonProperties(LocalClientNum_t localClientNum, const char *text, Font_s *font, int *buttonCharLength, int *buttonMaterialWidth);
 int R_TextWidth(LocalClientNum_t localClientNum, const char *text, int maxChars, Font_s *font);

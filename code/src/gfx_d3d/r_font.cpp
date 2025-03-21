@@ -51,7 +51,7 @@ TRACK_r_font
 */
 void TRACK_r_font()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(registeredFont, 64, "registeredFont", 21);
 }
 
 /*
@@ -72,8 +72,7 @@ R_RegisterFont_FastFile
 */
 Font_s *R_RegisterFont_FastFile(const char *fontName)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return DB_FindXAssetHeader(ASSET_TYPE_FONT, fontName, true, -1).font;
 }
 
 /*
@@ -81,10 +80,14 @@ Font_s *R_RegisterFont_FastFile(const char *fontName)
 R_RegisterFont
 ==============
 */
-Font_s *R_RegisterFont()
+Font_s *R_RegisterFont(const char *name, int imageTrack)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (!useFastFile->current.enabled)
+	{
+		return R_RegisterFont_LoadObj(name);
+	}
+
+    return R_RegisterFont_FastFile(name, imageTrack);
 }
 
 /*
@@ -94,8 +97,10 @@ R_NormalizedTextScale
 */
 double R_NormalizedTextScale(Font_s *font, float scale)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	assert(font);
+	assert(font->pixelHeight > 0);
+
+	return scale * 48.0 / font->pixelHeight;
 }
 
 /*
@@ -126,8 +131,8 @@ R_TextHeight
 */
 int R_TextHeight(Font_s *font)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	assert(font);
+	return font->pixelHeight;
 }
 
 /*
