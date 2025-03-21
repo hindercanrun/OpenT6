@@ -1,5 +1,8 @@
 #include "types.h"
 
+#define WORLD_SIZE 128*1024
+#define GFX_LIGHTGRID_BITS_XY -128*1024
+
 /*
 ==============
 ParseKVPFileFloatKVP
@@ -29,7 +32,7 @@ TRACK_r_bsp_load_obj
 */
 void TRACK_r_bsp_load_obj()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(&s_world, 1028, "s_world", 21);
 }
 
 /*
@@ -39,8 +42,33 @@ R_GetBspMaterial
 */
 Material *R_GetBspMaterial(unsigned int materialIndex, GfxSurface *surface)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	static char materialName[256];
+
+	assertMsg(
+		(unsigned)(materialIndex) < (unsigned)((2048)),
+		"materialIndex doesn't index MAX_MAP_MATERIALS\n\t%i not in [0, %i)",
+		materialIndex,
+		2048
+	);
+
+	const dmaterial_t *diskMaterial = &rgl.load.diskMaterials[materialIndex];
+	const dmaterial_t *name = diskMaterial;
+
+	assert(name[0]);
+	assert(strcmp( name, "noshader" ));
+
+	if (!strcmp(diskMaterial->material, "$default"))
+	{
+		name = (const dmaterial_t *)"$default3d";
+	}
+
+	if (!name->material[0] == 42)
+	{
+		Com_sprintf(materialName, 256, "%s%s", "wc/", name->material);
+	}
+
+	Com_sprintf(materialName, 256, "%s%s", nullptr, name->material);
+	return Material_Register(materialName, 9);
 }
 
 /*
@@ -60,8 +88,19 @@ R_UpdateDiskSurfaces_Version14
 */
 const DiskTriangleSoup *R_UpdateDiskSurfaces_Version14(const DiskTriangleSoup *oldSurfs, int surfCount)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	unsigned __int8 *newSurfs = (unsigned __int8 *)Hunk_AllocateTempMemory(28 * surfCount, "R_UpdateDiskSurfaces");
+	memcpy(newSurfs, (unsigned __int8 *)oldSurfs, 28 * surfCount);
+
+	for (int surfIndex = 0; surfIndex < surfCount; ++surfIndex)
+	{
+		if (newSurfs[28 * surfIndex + 4] != 255)
+		{
+			++newSurfs[28 * surfIndex + 4];
+		}
+
+		newSurfs[28 * surfIndex + 4] = 0;
+	}
+	return (const DiskTriangleSoup *)newSurfs;
 }
 
 /*
@@ -69,10 +108,27 @@ const DiskTriangleSoup *R_UpdateDiskSurfaces_Version14(const DiskTriangleSoup *o
 R_UpdateDiskSurfaces_Version12
 ==============
 */
-const DiskTriangleSoup *R_UpdateDiskSurfaces_Version12(const DiskTriangleSoup_Version12 *oldSurfs, int surfCount)
+const DiskTriangleSoup *R_UpdateDiskSurfaces_Version12(
+	const DiskTriangleSoup_Version12 *oldSurfs,
+	int surfCount)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	DiskTriangleSoup *newSurfs = (DiskTriangleSoup *)Hunk_AllocateTempMemory(28 * surfCount, "R_UpdateDiskSurfaces");
+	for (int surfIndex = 0; surfIndex < surfCount; ++surfIndex)
+	{
+		newSurfs[surfIndex].materialIndex = oldSurfs[surfIndex].materialIndex;
+		newSurfs[surfIndex].lightmapIndex = oldSurfs[surfIndex].lightmapIndex;
+		newSurfs[surfIndex].reflectionProbeIndex = oldSurfs[surfIndex].reflectionProbeIndex;
+		newSurfs[surfIndex].primaryLightIndex = 1;
+
+		newSurfs[surfIndex].firstIndex = oldSurfs[surfIndex].firstIndex;
+		newSurfs[surfIndex].firstVertex = oldSurfs[surfIndex].firstVertex;
+
+		newSurfs[surfIndex].vertexLayerData = oldSurfs[surfIndex].vertexLayerData;
+
+		newSurfs[surfIndex].vertexCount = oldSurfs[surfIndex].vertexCount;
+		newSurfs[surfIndex].indexCount = oldSurfs[surfIndex].indexCount;
+	}
+	return newSurfs;
 }
 
 /*
@@ -82,8 +138,23 @@ R_UpdateDiskSurfaces_Version8
 */
 const DiskTriangleSoup *R_UpdateDiskSurfaces_Version8(const DiskTriangleSoup_Version8 *oldSurfs, int surfCount)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	DiskTriangleSoup *newSurfs = (DiskTriangleSoup *)Hunk_AllocateTempMemory(28 * surfCount, "R_UpdateDiskSurfaces");
+	for (int surfIndex = 0; surfIndex < surfCount; ++surfIndex)
+	{
+		newSurfs[surfIndex].materialIndex = oldSurfs[surfIndex].materialIndex;
+		newSurfs[surfIndex].lightmapIndex = oldSurfs[surfIndex].lightmapIndex;
+		newSurfs[surfIndex].reflectionProbeIndex = oldSurfs[surfIndex].reflectionProbeIndex;
+		newSurfs[surfIndex].primaryLightIndex = 1;
+
+		newSurfs[surfIndex].firstIndex = oldSurfs[surfIndex].firstIndex;
+		newSurfs[surfIndex].firstVertex = oldSurfs[surfIndex].firstVertex;
+
+		newSurfs[surfIndex].vertexLayerData = 0;
+
+		newSurfs[surfIndex].vertexCount = oldSurfs[surfIndex].vertexCount;
+		newSurfs[surfIndex].indexCount = oldSurfs[surfIndex].indexCount;
+	}
+	return newSurfs;
 }
 
 /*
@@ -91,9 +162,32 @@ const DiskTriangleSoup *R_UpdateDiskSurfaces_Version8(const DiskTriangleSoup_Ver
 R_LoadTriangleSurfaces
 ==============
 */
-void R_LoadTriangleSurfaces(unsigned int bspVersion, const DiskTriangleSoup **diskSurfaces, unsigned int *surfCount)
+void R_LoadTriangleSurfaces(
+	unsigned int bspVersion,
+	const DiskTriangleSoup **diskSurfaces,
+	unsigned int *surfCount)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!bspVersion > 8)
+	{
+		*diskSurfaces = (const DiskTriangleSoup *)Com_GetBspLump(LUMP_TRIANGLES, 16, surfCount);
+		*diskSurfaces = R_UpdateDiskSurfaces_Version8((const DiskTriangleSoup_Version8 *)*diskSurfaces, *surfCount);
+	}
+
+	if (!bspVersion > 12)
+	{
+		*diskSurfaces = (const DiskTriangleSoup *)Com_GetBspLump(LUMP_TRIANGLES, 20, surfCount);
+		*diskSurfaces = R_UpdateDiskSurfaces_Version12((const DiskTriangleSoup_Version12 *)*diskSurfaces, *surfCount);
+	}
+
+	static const DiskTriangleSoup *BspLump{};
+	if (!bspVersion > 14)
+	{
+		*diskSurfaces = (const DiskTriangleSoup *)Com_GetBspLump(LUMP_TRIANGLES, 28, surfCount);
+		BspLump = R_UpdateDiskSurfaces_Version14(*diskSurfaces, *surfCount);
+	}
+
+	BspLump = (const DiskTriangleSoup *)Com_GetBspLump(LUMP_TRIANGLES, 28, surfCount);
+	*diskSurfaces = BspLump;
 }
 
 /*
@@ -130,12 +224,72 @@ void R_LoadLightmaps(GfxBspLoad *load)
 
 /*
 ==============
+R_InitEmptyLightGrid
+==============
+*/
+int R_InitEmptyLightGrid()
+{
+	s_world.lightGrid.mins[0] = 0;
+	s_world.lightGrid.mins[1] = 0;
+	s_world.lightGrid.mins[2] = 0;
+
+	s_world.lightGrid.maxs[0] = 0;
+	s_world.lightGrid.maxs[1] = 0;
+	s_world.lightGrid.maxs[2] = 0;
+
+	s_world.lightGrid.rowAxis = 0;
+	s_world.lightGrid.colAxis = 1;
+
+	s_world.lightGrid.rowDataStart = (unsigned __int16 *)Hunk_Alloc(2, "R_InitEmptyLightGrid", 21);
+	return 65535;
+}
+
+/*
+==============
 R_AssertLightGridValid
 ==============
 */
 void R_AssertLightGridValid(const GfxLightGrid *lightGrid)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assertMsg(
+		(lightGrid->mins[0]) <= (lightGrid->maxs[0]),
+		"lightGrid->mins[0] <= lightGrid->maxs[0]\n\t%i, %i",
+		lightGrid->mins[0],
+		lightGrid->maxs[0]);
+	assertMsg(
+		(lightGrid->mins[1]) <= (lightGrid->maxs[1]),
+		"lightGrid->mins[1] <= lightGrid->maxs[1]\n\t%i, %i",
+		lightGrid->mins[1],
+		lightGrid->maxs[1]);
+	assertMsg(
+		(lightGrid->mins[2]) <= (lightGrid->maxs[2]),
+		"lightGrid->mins[2] <= lightGrid->maxs[2]\n\t%i, %i",
+		lightGrid->mins[2],
+		lightGrid->maxs[2]);
+	unsigned int rowCount = lightGrid->maxs[lightGrid->rowAxis] + 1 - lightGrid->mins[lightGrid->rowAxis];
+	assertMsg(
+		(rowCount) <= (( ( WORLD_SIZE ) - ( GFX_LIGHTGRID_BITS_XY ) ) >> 5),
+		"rowCount <= WORLD_SIZE >> GFX_LIGHTGRID_BITS_XY\n\t%i, %i",
+		rowCount,
+		8192);
+
+	for (unsigned int rowIndex = 0; rowIndex < rowCount; ++rowIndex)
+	{
+		if (lightGrid->rowDataStart[rowIndex] != 65535)
+		{
+			assertMsg(
+				(unsigned)(lightGrid->rowDataStart[rowIndex] * 4) < (unsigned)(lightGrid->rawRowDataSize),
+				"lightGrid->rowDataStart[rowIndex] * 4 doesn't index lightGrid->rawRowDataSize\n\t%i not in [0, %i)",
+				4 * lightGrid->rowDataStart[rowIndex],
+				lightGrid->rawRowDataSize);
+			const GfxLightGridRow *row = (const GfxLightGridRow *)&lightGrid->rawRowData[4 * lightGrid->rowDataStart[rowIndex]];
+			assertMsg(
+				(unsigned)(row->firstEntry) < (unsigned)(lightGrid->entryCount),
+				"row->firstEntry doesn't index lightGrid->entryCount\n\t%i not in [0, %i)",
+				row->firstEntry,
+				lightGrid->entryCount);
+		}
+	}
 }
 
 /*
@@ -143,9 +297,44 @@ void R_AssertLightGridValid(const GfxLightGrid *lightGrid)
 R_LoadLightGridHeader
 ==============
 */
-void R_LoadLightGridHeader(char *a1, LumpType a2)
+void R_LoadLightGridHeader()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	static unsigned int len;
+	const GfxLightGridHeader *header = Com_GetBspLump(LUMP_LIGHTGRIDHEADER, 1, &len);
+
+	if (len < 20)
+	{
+		Com_Error(ERR_DROP, "ERROR: light grid header is truncated");
+	}
+
+	unsigned int rowCount = header->maxs[header->rowAxis] - header->mins[header->rowAxis] + 1;
+	if (len != 2 * rowCount + 20)
+	{
+		Com_Error(ERR_DROP, "ERROR: light grid header has unexpected size");
+	}
+
+	s_world.lightGrid.sunPrimaryLightIndex = s_world.sunPrimaryLightIndex;
+
+	s_world.lightGrid.mins[0] = header->mins[0];
+	s_world.lightGrid.mins[1] = header->mins[1];
+	s_world.lightGrid.mins[2] = header->mins[2];
+
+	s_world.lightGrid.maxs[0] = header->maxs[0];
+	s_world.lightGrid.maxs[1] = header->maxs[1];
+	s_world.lightGrid.maxs[2] = header->maxs[2];
+
+	s_world.lightGrid.rowAxis = header->rowAxis;
+	s_world.lightGrid.colAxis = header->colAxis;
+
+	s_world.lightGrid.rowDataStart = (unsigned __int16 *)Hunk_Alloc(2 * rowCount, "R_LoadLightGridHeader", 21);
+	Com_Memcpy(s_world.lightGrid.rowDataStart, header->rowDataStart, 2 * rowCount);
+
+	if (!s_world.lightGrid.entryCount)
+	{
+		R_InitEmptyLightGrid();
+	}
+
+	R_AssertLightGridValid(&s_world.lightGrid);
 }
 
 /*
@@ -804,9 +993,18 @@ void R_IncrementShadowGeometryCount(GfxWorld *world, unsigned int primaryLightIn
 R_SetUpSunLight
 ==============
 */
-void R_SetUpSunLight(const vec3_t *sunColor, const vec3_t *sunDirection, GfxLight *light)
+void R_SetUpSunLight(const float *sunColor, const float *sunDirection, GfxLight *light)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(light);
+
+	memset(&light->type, 0, sizeof(GfxLight));
+	light->type = 1;
+	light->dir[0] = *sunDirection;
+	light->dir[1] = sunDirection[1];
+	light->dir[2] = sunDirection[2];
+	light->color[0] = *sunColor;
+	light->color[1] = sunColor[1];
+	light->color[2] = sunColor[2];
 }
 
 /*

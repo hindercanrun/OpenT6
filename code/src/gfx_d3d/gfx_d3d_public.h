@@ -444,8 +444,9 @@ void R_LoadTriangleSurfaces(unsigned int bspVersion, const DiskTriangleSoup **di
 int R_DetermineLightmapCoupling(GfxBspLoad *load, long double (*coupling)[30], LumpType lumpType);
 int R_BuildLightmapMergability(GfxBspLoad *load, r_lightmapGroup_t *groupInfo, int *reorder, LumpType lumpType);
 void R_LoadLightmaps(GfxBspLoad *load);
+int R_InitEmptyLightGrid();
 void R_AssertLightGridValid(const GfxLightGrid *lightGrid);
-void R_LoadLightGridHeader(char *a1, LumpType a2);
+void R_LoadLightGridHeader();
 void R_LoadLightGridColors(unsigned int bspVersion);
 GfxLightGridEntry *R_LoadLightGridEntries(char *a1, LumpType a2);
 void R_LoadReflectionProbes(char *a1, LumpType a2);
