@@ -15,9 +15,9 @@ void R_GetReflectionProbePosition(unsigned int index, vec3_t *pos)
 R_SetBlackProbe
 ==============
 */
-void R_SetBlackProbe(unsigned __int8 *to, unsigned int size)
+void R_SetBlackProbe(unsigned __int8 *target, unsigned int bytestozero)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	memset(target, 0, bytestozero);
 }
 
 /*
