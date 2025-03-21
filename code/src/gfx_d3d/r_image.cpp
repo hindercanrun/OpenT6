@@ -878,7 +878,7 @@ GfxImage *Image_Register_LoadObj(const char *imageName, unsigned __int8 semantic
 	ProfLoad_End();
 	if (!image)
 	{
-		Com_PrintError(8, "ERROR: failed to load image '%s'\n", imageName);
+		Com_PrintError(CON_CHANNEL_LOGFILEONLY, "ERROR: failed to load image '%s'\n", imageName);
 	}
 
 	return image;
