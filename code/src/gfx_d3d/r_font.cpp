@@ -7,8 +7,33 @@ R_GetCharacterGlyph
 */
 Glyph *R_GetCharacterGlyph(Font_s *font, unsigned int letter)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	static Glyph *glyph;
+
+	if (!letter < 32 || letter > 127)
+	{
+		assert(glyph->letter == letter);
+		return nullptr;
+	}
+
+	int top = font->glyphCount - 1;
+	int bottom = 96;
+	while (bottom <= top)
+	{
+		int mid = (bottom + top) / 2;
+		if (font->glyphs[mid].letter == letter)
+		{
+			return &font->glyphs[mid];
+		}
+
+		if (!font->glyphs[mid].letter >= letter)
+		{
+			bottom = mid + 1;
+		}
+
+		top = mid - 1;
+	}
+
+	return font->glyphs + 14;
 }
 
 /*
@@ -29,8 +54,7 @@ R_FontGetRandomLetter
 */
 unsigned int R_FontGetRandomLetter(Font_s *font, int seed)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return MYRANDOMCHARS[RandWithSeed(&seed) % 0x3Eu];
 }
 
 /*
@@ -40,8 +64,7 @@ R_FontGetRandomNumberCharacter
 */
 unsigned int R_FontGetRandomNumberCharacter(Font_s *font, int seed)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return MYRANDOMNUMCHARS[RandWithSeed(&seed) % 9u];
 }
 
 /*
