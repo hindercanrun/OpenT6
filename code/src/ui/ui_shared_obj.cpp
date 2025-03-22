@@ -997,8 +997,7 @@ UI_LoadMenus_FastFile
 */
 MenuList *UI_LoadMenus_FastFile(const char *menuFile)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return DB_FindXAssetHeader(ASSET_TYPE_MENULIST, menuFile, true, -1).menuList;
 }
 
 /*
@@ -2038,10 +2037,14 @@ MenuList *UI_LoadMenu()
 Load_Menu
 ==============
 */
-int Load_Menu(const char **p, int imageTrack)
+int Load_Menu(const char *menuFile, int imageTrack)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (!useFastFile->current.enabled)
+	{
+		return UI_LoadMenu_LoadObj(menuFile, imageTrack);
+	}
+
+	return UI_LoadMenus_FastFile(menuFile, imageTrack);
 }
 
 /*
@@ -2060,9 +2063,18 @@ MenuList *UI_LoadMenus_LoadObj(const char *menuFile)
 UI_LoadMenus
 ==============
 */
-MenuList *UI_LoadMenus()
+MenuList *UI_LoadMenus(const char *menuFile, int imageTrack)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (G_ExitAfterToolComplete())
+	{
+    	return 0;
+	}
+
+	if (!useFastFile->current.enabled)
+	{
+		return UI_LoadMenus_LoadObj(menuFile, imageTrack);
+	}
+
+	return UI_LoadMenus_FastFile(menuFile, imageTrack);
 }
 

@@ -616,7 +616,14 @@ LoadWorld
 */
 int LoadWorld(const char *mapname)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	static int checksum;
+	R_LoadWorld(mapname, &checksum, false, Com_IsMenuLevel(0));
+
+	if (!useFastFile->current.enabled)
+	{
+		Com_UnloadBsp();
+	}
+
+	return checksum;
 }
 
