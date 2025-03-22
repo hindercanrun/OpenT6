@@ -210,7 +210,9 @@ Com_LoadWorld_FastFile
 */
 void Com_LoadWorld_FastFile(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	ComWorld *asset = DB_FindXAssetHeader(ASSET_TYPE_COMWORLD, name, 1, -1).comWorld;
+	assert(asset == &comWorld);
+	assert(comWorld.isInUse);
 }
 
 /*
@@ -259,7 +261,7 @@ void Com_LoadWorld_LoadObj(const char *name)
 Com_LoadWorld
 ==============
 */
-void Com_LoadWorld()
+void Com_LoadWorld(const char *name)
 {
 	if (!useFastFile->current.enabled)
 	{

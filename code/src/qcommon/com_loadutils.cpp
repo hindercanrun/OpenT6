@@ -99,7 +99,7 @@ Com_LoadRawTextFile_FastFile
 */
 const char *Com_LoadRawTextFile_FastFile(const char *fullpath)
 {
-	RawFile *rawfile = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE, fullpath, 1, -1).rawfile;
+	RawFile *rawfile = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE, fullpath, true, -1).rawfile;
 	if (!rawfile)
 	{
 		return false;
