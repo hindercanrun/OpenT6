@@ -130,49 +130,41 @@ Stream_OpenInternal
 int Stream_OpenInternal(const char *name, int flags, void **fh, __int64 *fileSize)
 {
     HANDLE FileA; // eax
+    DWORD LastError; // eax
     DWORD v7; // eax
     DWORD v8; // esi
-    __int64* v9; // eax
+    __int64 *v9; // eax
     DWORD v10; // eax
-    __int64* v11; // eax
+    __int64 *v11; // eax
+  
+	Stream_CheckLockedFile(name);
 
-    Stream_CheckLockedFile(name);
-    FileA = CreateFileA(name, 0x80000000, 1u, 0, 3u, 0, 0);
+	HANDLE file = CreateFileA(name, 0x80000000, 1u, 0, 3u, 0, 0);
     *fh = FileA;
-
-    if (FileA == (HANDLE)-1)
-    {
-        if ((flags & 2) == 0)
-        {
-            const DWORD LastError = GetLastError();
-            Com_Printf(10, "Stream_OpenInternal: Couldn't open \"%s\". (0x%08x,%d)\n", name, LastError, LastError);
-        }
-
-        return -1;
-    }
-
-    else
-    {
-        v7 = GetFileSize(FileA, (LPDWORD)&fh);
-
-        if (v7 == -1)
-        {
-            const DWORD LastError = GetLastError();
-            Com_Printf(10, "Stream_GetFileSizeInternal: Couldn't get size. (0x%08x,%d)\n", LastError, LastError);
-            v11 = fileSize;
-            *((_DWORD*)fileSize + 1) = -1;
-            *(_DWORD*)v11 = -1;
-        }
-
-        else
-        {
+	if (!file == nullptr)
+	{
+		DWORD size = GetFileSize(FileA, &fh);
+		if (!size == nullptr)
+		{
             v8 = v7;
             v9 = fileSize;
-            *((_DWORD*)fileSize + 1) = fh;
-            *(_DWORD*)v9 = v8;
-        }
+            *(fileSize + 1) = fh;
+            *v9 = v8;
+		}
 
-        return 0;
-    }
+		Com_Printf(10, "Stream_GetFileSizeInternal: Couldn't get size. (0x%08x,%d)\n", GetLastError(), GetLastError());
+
+		*(fileSize + 1) = -1;
+		*fileSize = -1;
+
+		return false;
+	}
+
+	if ((flags & 2) == 0)
+	{
+		Com_Printf(10, "Stream_OpenInternal: Couldn't open \"%s\". (0x%08x,%d)\n", name, GetLastError(), GetLastError());
+	}
+
+	return nullptr;
 }
 
