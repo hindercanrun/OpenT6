@@ -76,9 +76,34 @@ Material *R_GetBspMaterial(unsigned int materialIndex, GfxSurface *surface)
 R_CreateWorldVertexBuffer
 ==============
 */
-void R_CreateWorldVertexBuffer(ID3D11Buffer **vb, const void *srcData, unsigned int sizeInBytes)
+void R_CreateWorldVertexBuffer(ID3D11Buffer **vb, int *srcData, unsigned int sizeInBytes)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!r_loadForRenderer->current.enabled)
+	{
+		*vb = 0;
+	}
+
+	assert((srcData == NULL) == (sizeInBytes == NULL));
+
+	if (!sizeInBytes)
+	{
+		static int dummyData{};
+		dummyData = 0;
+		srcData = &dummyData;
+		sizeInBytes = 4;
+	}
+
+	R_AllocStaticVertexBuffer(vb, sizeInBytes srcData, 1, "R_CreateWorldVertexBuffer");
+}
+
+/*
+==============
+R_CreateWorldVertexBuffer
+==============
+*/
+void *R_CreateWorldVertexBuffer(unsigned int bytes)
+{
+	return Hunk_Alloc(bytes, "R_LoadSurfaces", 21);
 }
 
 /*
@@ -217,9 +242,156 @@ int R_BuildLightmapMergability(GfxBspLoad *load, r_lightmapGroup_t *groupInfo, i
 R_LoadLightmaps
 ==============
 */
+#define	LIGHTMAP_SIZE 0x400000
 void R_LoadLightmaps(GfxBspLoad *load)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	printf("Loading LightMaps\n");
+
+	assert(load);
+
+	load->lmapMergeInfo[31].index = 31;
+	load->lmapMergeInfo[31].shift[0] = 0.0;
+	load->lmapMergeInfo[31].shift[1] = 0.0;
+	load->lmapMergeInfo[31].scale[0] = 1.0;
+	load->lmapMergeInfo[31].scale[1] = 1.0;
+
+	static r_lightmapGroup_t groupInfo[16]{};
+	static int reorder[16]{};
+	int oldLmapCount = R_BuildLightmapMergability(load, groupInfo, reorder, LUMP_LIGHTBYTES);
+
+	if (!oldLmapCount)
+	{
+		s_world.draw.lightmapCount = 0;
+	}
+
+	int totalImageSize = groupInfo[0].highCount * 9437184 * groupInfo[0].wideCount;
+	unsigned __int8 *primaryImage = Hunk_AllocateTempMemory(totalImageSize, "R_LoadLightmaps");
+	unsigned __int8 *secondaryImage = &primaryImage[groupInfo[0].highCount * (groupInfo[0].wideCount << 20)];
+
+	static unsigned int len{};
+	const unsigned __int8 *buf = Com_GetBspLump(LUMP_LIGHTBYTES, 1, &len);
+
+	if (!len)
+	{
+		printf("\nNo Lightmap found - setting to white\n");
+		memset(primaryImage, 255, groupInfo[0].highCount * (groupInfo[0].wideCount << 20));
+
+		float* src = secondaryImage;
+		for (unsigned int i = 0; i < (groupInfo[0].highCount * (groupInfo[0].wideCount << 23)) >> 2; ++i )
+		{
+			src[i] = 1.0;
+		}
+	}
+
+	if (load->bspVersion < 7)
+	{
+		len = 0;
+	}
+
+	int imageFlags = 56;
+
+	s_world.draw.lightmaps = Hunk_Alloc(204, "R_LoadLightmaps", 21);
+
+	unsigned __int8 newLmapIndex = 0;
+    int oldLmapBaseIndex = 0;
+
+	while (oldLmapBaseIndex < oldLmapCount)
+	{
+		assert((newLmapIndex == 0 || groupInfo[newLmapIndex].wideCount <= groupInfo[newLmapIndex - 1].wideCount));
+		assert((newLmapIndex == 0 || groupInfo[newLmapIndex].highCount <= groupInfo[newLmapIndex - 1].highCount));
+
+		int groupCount = groupInfo[newLmapIndex].highCount * groupInfo[newLmapIndex].wideCount;
+
+		for (int tileIndex = 0; tileIndex < groupCount; ++tileIndex)
+		{
+			int oldLmapIndex = reorder[tileIndex + oldLmapBaseIndex];
+
+			int x = tileIndex % groupInfo[newLmapIndex].wideCount;
+			int y = tileIndex / groupInfo[newLmapIndex].wideCount;
+
+			if (len)
+			{
+				const unsigned __int8 *buf_p = &buf[9437184 * oldLmapIndex];
+				R_CopyLightmap(buf_p, 512, 512, 16, secondaryImage, x, y, groupInfo[newLmapIndex].wideCount);
+
+				buf_p += LIGHTMAP_SIZE;
+				R_CopyLightmap(
+					buf_p,
+					512,
+					512,
+					16,
+					secondaryImage,
+					x,
+					groupInfo[newLmapIndex].highCount + y,
+					groupInfo[newLmapIndex].wideCount);
+				R_CopyLightmap(buf_p, 1024, 1024, 1, primaryImage, x, y, groupInfo[newLmapIndex].wideCount);				
+			}
+
+			load->lmapMergeInfo[oldLmapIndex].index = newLmapIndex;
+			load->lmapMergeInfo[oldLmapIndex].scale[0] = 1.0 / groupInfo[newLmapIndex].wideCount;
+			load->lmapMergeInfo[oldLmapIndex].scale[1] = 1.0 / groupInfo[newLmapIndex].highCount;
+			load->lmapMergeInfo[oldLmapIndex].shift[0] = x * load->lmapMergeInfo[oldLmapIndex].scale[0];
+			load->lmapMergeInfo[oldLmapIndex].shift[1] = y * load->lmapMergeInfo[oldLmapIndex].scale[1];
+		}
+
+		s_world.draw.lightmaps[newLmapIndex].primary = Image_Alloc(va("*lightmap%i_primary", newLmapIndex), 2, 1, 4, 1.0);
+		assert((s_world.draw.lightmaps[newLmapIndex].primary));
+
+		Image_Generate2D(
+			s_world.draw.lightmaps[newLmapIndex].primary,
+			primaryImage,
+			groupInfo[newLmapIndex].wideCount << 10,
+			groupInfo[newLmapIndex].highCount << 10,
+			D3DFMT_L8);
+
+		s_world.draw.lightmaps[newLmapIndex].secondary = Image_Alloc(va("*lightmap%i_secondary", newLmapIndex), 2, 1, 4, 1.0);
+		assert((s_world.draw.lightmaps[newLmapIndex].secondary));
+
+		int width = groupInfo[newLmapIndex].wideCount << 9;
+		int height = groupInfo[newLmapIndex].highCount << 10;
+		int w = width;
+		int h = height / 2;
+		unsigned __int8 *v34 = secondaryImage;
+		unsigned __int8 *lightmapLum = Hunk_AllocateTempMemory(4 * height / 2 * width, "R_LightMapLum");
+		unsigned int *dst32 = lightmapLum;
+
+		for (int j = 0; j < h * w; ++j)
+		{
+			//todo
+		}
+
+		Image_Generate2D(s_world.draw.lightmaps[newLmapIndex].secondaryB, lightmapLum, w, h, D3DFMT_G16R16);
+		Hunk_FreeTempMemory(lightmapLum);
+
+		int wa = width;
+		int ha = height;
+		unsigned __int8 *lightmapColor = Hunk_AllocateTempMemory(2 * height * width, "R_LightMapColor");
+		unsigned __int8 *dst8 = lightmapColor;
+
+		for (int k = 0; k < ha * wa; ++k)
+		{
+			//todo
+		}
+
+		Image_Generate2D(s_world.draw.lightmaps[newLmapIndex].secondary, lightmapColor, wa, ha, D3DFMT_R5G6B5);
+		Hunk_FreeTempMemory(lightmapColor);
+
+		oldLmapBaseIndex += groupCount;
+		++newLmapIndex;
+	}
+
+    s_world.draw.lightmapCount = newLmapIndex;
+
+    Hunk_FreeTempMemory(primaryImage);
+
+	assert(
+		((s_world.draw.lightmapCount <= 30)),
+		"(s_world.draw.lightmapCount) = %i",
+		s_world.draw.lightmapCount);
+
+	s_world.draw.lightmapPrimaryTextures = Hunk_Alloc(4 * s_world.draw.lightmapCount, "R_LoadLightmaps", 21);
+	s_world.draw.lightmapSecondaryTextures = Hunk_Alloc(4 * s_world.draw.lightmapCount, "R_LoadLightmaps", 21);
+	s_world.draw.lightmapSecondaryTexturesB = Hunk_Alloc(4 * s_world.draw.lightmapCount, "R_LoadLightmaps", 21);
 }
 
 /*
@@ -985,7 +1157,7 @@ R_IncrementShadowGeometryCount
 */
 void R_IncrementShadowGeometryCount(GfxWorld *world, unsigned int primaryLightIndex)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	++world->shadowGeom[primaryLightIndex].surfaceCount;
 }
 
 /*

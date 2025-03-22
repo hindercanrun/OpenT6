@@ -436,7 +436,7 @@ bool ParseKVPFileFloatKVP(char *kvpFile, char *kvp, vec3_t *vec);
 bool ParseKVPFileVec3KVP(char *kvpFile, char *kvp, vec3_t *vec);
 void TRACK_r_bsp_load_obj();
 Material *R_GetBspMaterial(unsigned int materialIndex, GfxSurface *surface);
-void R_CreateWorldVertexBuffer(ID3D11Buffer **vb, const void *srcData, unsigned int sizeInBytes);
+void R_CreateWorldVertexBuffer(ID3D11Buffer **vb, int *srcData, unsigned int sizeInBytes);
 const DiskTriangleSoup *R_UpdateDiskSurfaces_Version14(const DiskTriangleSoup *oldSurfs, int surfCount);
 const DiskTriangleSoup *R_UpdateDiskSurfaces_Version12(const DiskTriangleSoup_Version12 *oldSurfs, int surfCount);
 const DiskTriangleSoup *R_UpdateDiskSurfaces_Version8(const DiskTriangleSoup_Version8 *oldSurfs, int surfCount);
