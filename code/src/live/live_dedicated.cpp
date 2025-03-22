@@ -384,7 +384,37 @@ Live_Base_Pump
 */
 void Live_Base_Pump()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	switch (s_dediUserData[0].connectionState)
+	{
+	case DEDI_STATUS_ERROR:
+		Live_Base_StateError(s_dediUserData);
+		break;
+	case DEDI_STATUS_NOT_CONNECTED:
+		if ( NET_IsWinsockReady() )
+		{
+			dwNetStart(1);
+			Live_Base_AuthorizeLicenseWithDW(CONTROLLER_INDEX_FIRST, s_dediUserData);
+		}
+		break;
+	case DEDI_STATUS_AUTHORIZING:
+		Live_Base_StateAuthorizing(CONTROLLER_INDEX_FIRST, s_dediUserData);
+		break;
+	case DEDI_STATUS_CONNECTING:
+		Live_Base_StateConnecting(CONTROLLER_INDEX_FIRST, s_dediUserData);
+		break;
+	case DEDI_STATUS_CONNECTED:
+		Live_Base_StateConnected(CONTROLLER_INDEX_FIRST, s_dediUserData);
+		break;
+	case DEDI_STATUS_IN_BACKOFF:
+		if ( (int)Sys_Milliseconds() > dword_1CF7DD8 )
+		{
+			s_dediUserData[0].connectionState = DEDI_STATUS_NOT_CONNECTED;
+		}
+		break;
+	default:
+		assertMsg("Unknown state %i in Live_Base_PumpForController!\n", s_dediUserData[0].connectionState);
+		break;
+	}
 }
 
 /*
