@@ -30,8 +30,37 @@ Com_GetBspLump
 */
 const void *Com_GetBspLump(char *a1, LumpType type, unsigned int elemSize, unsigned int *count)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assert(Com_IsBspLoaded());
+
+	if (comBspGlob.header->version > 18)
+	{
+		unsigned int offset = 8 * comBspGlob.header->chunkCount + 12;
+		for (unsigned int chunkIter = 0; chunkIter < comBspGlob.header->chunkCount; ++chunkIter)
+		{
+			if (comBspGlob.header->chunks[chunkIter].type == type)
+			{
+				return Com_ValidateBspLumpData(type, offset, comBspGlob.header->chunks[chunkIter].length, elemSize, count);
+			}
+
+			offset += (comBspGlob.header->chunks[chunkIter].length + 3) & 0xFFFFFFFC;
+		}
+		*count = 0;
+		return 0;
+	}
+	else if (type < Com_GetBspLumpCountForVersion(comBspGlob.header->version))
+	{
+		return Com_ValidateBspLumpData(
+				type,
+				comBspGlob.header->chunks[type].type,
+				*(&comBspGlob.header->chunkCount + 2 * type),
+				elemSize,
+				count);
+	}
+	else
+	{
+		*count = 0;
+		return 0;
+	}
 }
 
 /*
