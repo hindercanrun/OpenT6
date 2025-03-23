@@ -1620,9 +1620,9 @@ Field_Clear
 */
 void Field_Clear( field_t *edit ) {
 #if XENON
-  XMemSet(edit->buffer, 0, MAX_EDIT_LINE);
+	XMemSet(edit->buffer, 0, MAX_EDIT_LINE);
 #else
-  memset(edit->buffer, 0, MAX_EDIT_LINE);
+	memset(edit->buffer, 0, MAX_EDIT_LINE);
 	edit->cursor = 0;
 	edit->scroll = 0;
 	edit->drawWidth = 256;

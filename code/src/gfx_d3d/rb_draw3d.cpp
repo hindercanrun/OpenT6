@@ -411,7 +411,29 @@ RB_Draw3DCommon
 */
 void RB_Draw3DCommon()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(rgp.world);
+
+	if (!gfxDrawMethod.drawScene) return;
+
+	if (gfxDrawMethod.drawScene == GFX_DRAW_SCENE_FULLBRIGHT)
+	{
+		RB_FullbrightDrawCommandsCommon();
+	}
+
+	else if (gfxDrawMethod.drawScene == GFX_DRAW_SCENE_DEBUGSHADER)
+	{
+		RB_DebugShaderDrawCommandsCommon();
+	}
+	else
+	{
+		assertMsg(
+			gfxDrawMethod.drawScene == GFX_DRAW_SCENE_STANDARD,
+			"(gfxDrawMethod.drawScene) = %i",
+			gfxDrawMethod.drawScene
+		);
+
+		RB_StandardDrawCommandsCommon();
+	}
 }
 
 /*
