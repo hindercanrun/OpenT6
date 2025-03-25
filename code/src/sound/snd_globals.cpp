@@ -7,8 +7,7 @@ SND_IsInitialized
 */
 BOOL SND_IsInitialized()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return g_snd.init != FALSE;
 }
 
 /*
@@ -18,8 +17,13 @@ SND_GetGroupByIndex
 */
 SndVolumeGroup *SND_GetGroupByIndex(unsigned int index)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assertMsg(
+		(unsigned)index < (unsigned)g_snd.global_constants->groupCount,
+		"index doesn't index g_snd.global_constants->groupCount\n\t%i not in [0, %i)",
+		index,
+		g_snd.global_constants->groupCount
+	);
+	return &g_snd.global_constants->groups[index];
 }
 
 /*

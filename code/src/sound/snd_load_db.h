@@ -37,6 +37,10 @@ Mark_SndDriverGlobalsPtr
 */
 void Mark_SndDriverGlobalsPtr()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (*varSndDriverGlobalsPtr)
+	{
+		varSndDriverGlobals = *varSndDriverGlobalsPtr;
+		Mark_SndDriverGlobalsAsset(varSndDriverGlobals);
+	}
 }
 
