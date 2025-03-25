@@ -7,7 +7,7 @@ SND_DebugFini
 */
 void SND_DebugFini()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Cmd_RemoveCommand("snd_playLocal");
 }
 
 /*
