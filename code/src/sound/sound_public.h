@@ -141,7 +141,7 @@ void SND_SetGlobalFutz(const char *futzName, SndCallLocation callLocation);
 
 //t6/code/src/sound/snd_asset_bank.cpp
 void SND_ChecksumToString(const unsigned __int8 *checksum, char *string);
-char SND_AssetBankValidateHeader(const char *filename, const SndAssetBankHeader *header, __int64 size, const unsigned __int8 *checksum);
+char SND_AssetBankValidateHeader(const char *filename, const SndAssetBankHeader *header, int64_t size, const uint8_t *checksum);
 char SND_AssetBankValidateEntry(const char *name, const SndAssetBankHeader *header, const SndAssetBankEntry *entry);
 int SND_EntryCompare(const void *va, const void *vb);
 char SND_AssetBankFindEntry(unsigned int id, SndAssetBankEntry *entries, unsigned int entryCount, SndAssetBankEntry **entry);
@@ -150,7 +150,6 @@ unsigned int SND_AssetBankGetChannelCount(const SndAssetBankEntry *entry);
 BOOL SND_AssetBankGetLooping(const SndAssetBankEntry *entry);
 unsigned int SND_AssetBankGetFrameCount(const SndAssetBankEntry *entry);
 unsigned int SND_AssetBankGetLengthMs(const SndAssetBankEntry *entry);
-char SND_AssetBankFindEntry(unsigned int id, SndAssetBankEntry **entry, int *fid, bool streamed);
 
 //#include "sound/snd_asset_bank_load_db.h"
 
