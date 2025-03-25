@@ -7,7 +7,15 @@ Phys_EnterPhysicsCriticalSection
 */
 void Phys_EnterPhysicsCriticalSection()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Sys_IsMainThread() && !Sys_TryEnterCriticalSection(CRITSECT_PHYSICS_UPDATE))
+	{
+		while (!Sys_TryEnterCriticalSection(CRITSECT_PHYSICS_UPDATE))
+		{
+			IW_task_manager_flush();
+		}
+	}
+
+	Sys_EnterCriticalSection(CRITSECT_PHYSICS);
 }
 
 /*
@@ -17,7 +25,12 @@ Phys_LeavePhysicsCriticalSection
 */
 void Phys_LeavePhysicsCriticalSection()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
+
+	if (!Sys_IsMainThread())
+	{
+		Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
+	}
 }
 
 /*
@@ -27,7 +40,17 @@ PhysPrint
 */
 void PhysPrint(const char *fmt, ...)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	va_list ap;
+
+	va_start(ap, fmt);
+	if (phys_verbose->current.enabled)
+	{
+		char msg[512] = {0};
+		_vsnprintf(msg, 0x200u, fmt, ap);
+
+		msg[511] = 0;
+		Com_Printf(CON_CHANNEL_PHYS, "(%s): %s\n", Sys_GetCurrentThreadName(), msg);
+	}
 }
 
 /*
@@ -37,7 +60,19 @@ Phys_ObjGetPosition
 */
 void Phys_ObjGetPosition(int id, phys_mat44 *m2w)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(id);
+	m2w->x = id[24];
+	m2w->x = id[25];
+	m2w->x = id[26];
+	m2w->y = id[28];
+	m2w->y = id[29];
+	m2w->y = id[30];
+	m2w->z = id[32];
+	m2w->z = id[33];
+	m2w->z = id[34];
+	m2w->w = id[36];
+	m2w->w = id[37];
+	m2w->w = id[38];
 }
 
 /*
@@ -245,8 +280,7 @@ Phys_GetCurrentTime
 */
 int Phys_GetCurrentTime()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return physGlob.timeLastUpdate;
 }
 
 /*
