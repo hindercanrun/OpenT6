@@ -155,7 +155,7 @@ void CG_DrawRotatedPicW(const ScreenPlacement *scrPlace, float x, float y, float
 void CG_DrawRotatedPic(const ScreenPlacement *scrPlace, float x, float y, float width, float height, int horzAlign, int vertAlign, float angle, const vec4_t *color, Material *material);
 void CG_DrawRotatedQuadPic(const ScreenPlacement *scrPlace, float x, float y, const vec2_t *verts, float angle, const vec4_t *color, Material *material);
 void CG_DrawStringExt(const ScreenPlacement *scrPlace, float x, float y, const char *string, const vec4_t *setColor, int forceColor, int shadow, float charHeight);
-int CG_DrawDevString(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, float x, float y, float xScale, float yScale, const char *s, const vec4_t *color, int align, Font_s *font);
+int CG_DrawDevString(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, float x, float y, float xScale, float yScale, const char *string, const float *color, int align, Font_s *font);
 int CG_DrawSmallDevStringColor(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, float x, float y, const char *s, const vec4_t *color, int align);
 double CG_FadeAlpha(int timeNow, int startMsec, int totalMsec, int fadeMsec);
 vec4_t *CG_FadeColor(int timeNow, int startMsec, int totalMsec, int fadeMsec);

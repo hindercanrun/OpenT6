@@ -71,15 +71,57 @@ void CG_DrawStringExt(const ScreenPlacement *scrPlace, float x, float y, const c
 	UNIMPLEMENTED(__FUNCTION__);
 }
 
+#define CG_ALIGN_X 3
+#define CG_ALIGN_Y 12
+
+#define CG_ALIGN_LEFT 1
+#define CG_ALIGN_RIGHT 2
+#define CG_ALIGN_CENTER 3
+#define CG_ALIGN_TOP 4
+#define CG_ALIGN_BOTTOM 8
+#define CG_ALIGN_MIDDLE 12
+
 /*
 ==============
 CG_DrawDevString
 ==============
 */
-int CG_DrawDevString(LocalClientNum_t localClientNum, const ScreenPlacement *scrPlace, float x, float y, float xScale, float yScale, const char *s, const vec4_t *color, int align, Font_s *font)
+int CG_DrawDevString(
+	LocalClientNum_t localClientNum,
+	const ScreenPlacement *scrPlace,
+	float x,
+	float y,
+	float xScale,
+	float yScale,
+	const char *string,
+	const float *color,
+	int align, Font_s *font)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	assert((align & CG_ALIGN_X) == CG_ALIGN_LEFT || (align & CG_ALIGN_X) == CG_ALIGN_RIGHT || (align & CG_ALIGN_X) == CG_ALIGN_CENTER);
+
+	if ((align & 3) == 2)
+	{
+		x = x - (R_TextWidth(s, 0, font) * xScale);
+	}
+	else if ((align & 3) == 3)
+	{
+		x = x - ((R_TextWidth(s, 0, font) * xScale) * 0.5);
+	}
+
+	assert((align & CG_ALIGN_Y) == CG_ALIGN_TOP || (align & CG_ALIGN_Y) == CG_ALIGN_BOTTOM || (align & CG_ALIGN_Y) == CG_ALIGN_MIDDLE);
+
+	int step = R_TextHeight(font);
+	if ((align & 0xC) == 4)
+	{
+	  y = y + (step * yScale);
+	}
+	else if ((align & 0xC) == 0xC)
+	{
+	  y = ((step * yScale) * 0.5) + y;
+	}
+
+	CL_DrawText(scrPlace, string, 0x7FFFFFFF, font, x, y, 1, 1, xScale, yScale, color, 0);
+	return step;
 }
 
 /*
