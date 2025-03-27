@@ -113,11 +113,11 @@ int CG_DrawDevString(
 	int step = R_TextHeight(font);
 	if ((align & 0xC) == 4)
 	{
-	  y = y + (step * yScale);
+		y = y + (step * yScale);
 	}
 	else if ((align & 0xC) == 0xC)
 	{
-	  y = ((step * yScale) * 0.5) + y;
+		y = ((step * yScale) * 0.5) + y;
 	}
 
 	CL_DrawText(scrPlace, string, 0x7FFFFFFF, font, x, y, 1, 1, xScale, yScale, color, 0);
