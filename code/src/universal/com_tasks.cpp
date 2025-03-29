@@ -413,6 +413,13 @@ TaskManager2_ComErrorCleanup
 */
 void TaskManager2_ComErrorCleanup()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Sys_IsMainThread())
+	{
+		Com_PrintWarning(CON_CHANNEL_DONT_FILTER, "Skipped TaskManager2_ComErrorCleanup because I'm not the main thread.\n");
+	}
+
+	TaskManager2_FreeDeadTasks(CONTROLLER_INDEX_FIRST);
+	TaskManager2_CancelEndlessTasks(CONTROLLER_INDEX_FIRST);
+	TaskManager2_ProcessTasks(CONTROLLER_INDEX_FIRST);
 }
 
