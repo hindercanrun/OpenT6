@@ -37,8 +37,7 @@ DB_GetStreamPos
 */
 unsigned __int8 *DB_GetStreamPos()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return g_streamPos;
 }
 
 /*
@@ -48,8 +47,9 @@ DB_AllocStreamPos
 */
 unsigned __int8 *DB_AllocStreamPos(int alignment)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assert(g_streamPos);
+	g_streamPos = (~alignment & &g_streamPos[alignment]);
+	return g_streamPos;
 }
 
 /*
@@ -59,7 +59,9 @@ DB_IncStreamPos
 */
 void DB_IncStreamPos(int size)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(g_streamPos);
+	assert(g_streamPos + size <= g_streamBlocks[g_streamPosIndex].data + g_streamBlocks[g_streamPosIndex].size);
+	g_streamPos += size;
 }
 
 /*
@@ -69,7 +71,14 @@ DB_InsertPointer
 */
 const void **DB_InsertPointer()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	DB_PushStreamPos(5);
+
+	assert(g_streamPos);
+	g_streamPos = ((g_streamPos + 3) & 0xFFFFFFFC);
+
+	DB_IncStreamPos(4);
+	DB_PopStreamPos();
+
+	return g_streamPos;
 }
 

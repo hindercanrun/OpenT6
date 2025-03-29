@@ -3221,7 +3221,7 @@ DB_Cleanup
 void DB_Cleanup()
 {
 	Sys_SyncDatabase();
-	assert(!g_archiveBuf);
+	assert(g_archiveBuf);
 }
 
 /*
@@ -3231,8 +3231,14 @@ DB_GetImageAtIndex
 */
 /*XAssetPoolEntry<GfxImage> *DB_GetImageAtIndex(unsigned int index)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assertMsg(
+		(unsigned)(index) < (unsigned)((sizeof( g_GfxImagePool.entries )
+		/ (sizeof( g_GfxImagePool.entries[0] ) * (sizeof( g_GfxImagePool.entries ) != 4
+		|| sizeof( g_GfxImagePool.entries[0] ) <= 4)))),
+		"index doesn't index ARRAY_COUNT( g_GfxImagePool.entries )\n\t%i not in [0, %i)",
+		index,
+		5088);
+	return &g_GfxImagePool.entries[index];
 }*/
 
 /*
@@ -3252,8 +3258,14 @@ DB_GetImagePartAtIndex
 */
 GfxStreamedPartInfo *DB_GetImagePartAtIndex(unsigned int index)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assertMsg(
+		(unsigned)(index) < (unsigned)((sizeof( g_GfxImagePool.entries )
+		/ (sizeof( g_GfxImagePool.entries[0] ) * (sizeof( g_GfxImagePool.entries ) != 4
+		|| sizeof( g_GfxImagePool.entries[0] ) <= 4)))),
+		"index doesn't index ARRAY_COUNT( g_GfxImagePool.entries )\n\t%i not in [0, %i)",
+		index,
+		5088);
+	return &g_GfxImagePool.entries[index];
 }
 
 /*
@@ -4319,25 +4331,6 @@ DB_PostLoadXZone
 */
 char DB_PostLoadXZone()
 {
-#if 0
-	unsigned int i;
-	int remoteScreenUpdateNesting;
-
-	assert(Sys_IsMainThread() || Sys_IsRenderThread());
-	assert(!g_loadingZone);
-	assert(!g_zoneInfoCount);
-
-	if (Sys_IsDatabaseReady2())
-	{
-		return;
-	}
-
-	PIXBeginNamedEvent(-1, "DB_PostLoadXZone");
-	DB_PostLoadPerXZone();
-
-	//TODO
-#endif
-
 	UNIMPLEMENTED(__FUNCTION__);
 	return NULL;
 }
@@ -4356,10 +4349,6 @@ void DB_SyncXAssets()
 	R_EndRemoteScreenUpdate();
 	BG_EvalVehicleName();
 	DB_PostLoadXZone();
-	if (Sys_IsRenderThread())
-	{
-		D3DPERF_EndEvent();
-	}
 }
 
 /*
@@ -4393,7 +4382,77 @@ DB_EndReorderZone
 */
 void DB_EndReorderZone()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!s_dbReorder.entryCount)
+	{
+		return;
+	}
+
+	s_dbReorder.alreadyFinished = TRUE;
+		
+	char csvName[256];
+	char bakName[256];
+	Com_sprintf(csvName, sizeof(csvName), "..\\share\\zone_source\\%s.csv", s_dbReorder.zoneName);
+	Com_sprintf(bakName, sizeof(bakName), "%s.bak", csvName);
+		
+	DeleteFileA(bakName);
+	rename(csvName, bakName);
+		
+	HANDLE fileHandle = CreateFileA(csvName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (fileHandle == INVALID_HANDLE_VALUE)
+	{
+		return;
+	}
+		
+	DB_SetReorderIncludeSequence();
+		
+	std::_Sort(
+		s_dbReorder.entries,
+		&s_dbReorder.entries[s_dbReorder.entryCount],
+		s_dbReorder.entryCount,
+		DB_CompareReorderEntries);
+		
+	bool wroteBlank = FALSE;
+	unsigned int written;
+	char line[512];
+		
+	for (unsigned int i = 0; i < s_dbReorder.entryCount; i++)
+	{
+		DBReorderAssetEntry *entry = &s_dbReorder.entries[i];
+			
+		if (!wroteBlank && entry->someField == nullptr)
+		{
+			switch (entry->type)
+			{
+			case 9:
+			case 11:
+			case 12:
+			case 24:
+			case 60:
+				break;
+			default:
+				wroteBlank = TRUE;
+				WriteFile(fileHandle, "\r\n", 2, &written, NULL);
+				break;
+			}
+		}
+			
+		if (entry->type == 25)
+		{
+			Com_sprintf(line, sizeof(line), "%s,%s%s\r\n", entry->name, "mp/", entry->asset);
+		}
+		else if (entry->type == 9)
+		{
+			Com_sprintf(line, sizeof(line), "%s,%s,%s,%s\r\n", entry->name, entry->asset, s_dbReorder.zoneName, "all_mp");
+		}
+		else
+		{
+			Com_sprintf(line, sizeof(line), "%s,%s\r\n", entry->name, entry->asset);
+		}
+			
+		WriteFile(fileHandle, line, strlen(line), &written, NULL);
+	}
+		
+	CloseHandle(fileHandle);
 }
 
 /*
@@ -4479,7 +4538,23 @@ DB_LoadGraphicsAssetsForPC
 */
 void DB_LoadGraphicsAssetsForPC()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	XZoneInfo syncZoneInfo[3]{};
+	syncZoneInfo[0].name = "patch_mp";
+	syncZoneInfo[0].allocFlags = 2;
+	syncZoneInfo[0].freeFlags = 0;
+
+	syncZoneInfo[1].name = "code_post_gfx_mp";
+	syncZoneInfo[1].allocFlags = 8;
+	syncZoneInfo[1].freeFlags = 0;
+
+if defined(RELEASE) || defined(DEBUG)
+	syncZoneInfo[2].name = "dev";
+	syncZoneInfo[2].allocFlags = 64;
+	syncZoneInfo[2].freeFlags = 0;
+#endif
+
+	DB_LoadXAssets(syncZoneInfo, 3, 0);
+	DB_SyncXAssets();
 }
 
 /*
@@ -4533,9 +4608,12 @@ void DB_InitFrontendXAssets(bool uiOnly)
 Load_FxEffectDefFromName
 ==============
 */
-void Load_FxEffectDefFromName(const char **name)
+void Load_FxEffectDefFromName(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (name)
+	{
+		name = DB_FindXAssetHeader(ASSET_TYPE_FX, name, true, nullptr);
+	}
 }
 
 /*
