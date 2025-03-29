@@ -17,7 +17,7 @@ GScr_Throw
 */
 void GScr_Throw()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Scr_Error(SCRIPTINSTANCE_SERVER, "Forced script exception.", 0);
 }
 
 /*
@@ -27,7 +27,10 @@ GScr_CreatePrintChannel
 */
 void GScr_CreatePrintChannel()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Con_OpenChannel(Scr_GetString(SCRIPTINSTANCE_SERVER, 0), 1))
+	{
+		Scr_Error(SCRIPTINSTANCE_SERVER, "Unable to create new channel.  Maximum number of channels exeeded.", 0);
+	}
 }
 
 /*
@@ -37,7 +40,7 @@ GScr_getEnterButton
 */
 void GScr_getEnterButton()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Scr_AddString(SCRIPTINSTANCE_SERVER, Key_KeynumToString(LOCAL_CLIENT_FIRST, 1, 0));
 }
 
 /*
@@ -57,7 +60,9 @@ Scr_MakeGameMessage
 */
 void Scr_MakeGameMessage(int iClientNum, const char *pszCmd)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char string[1028] = { 0 };
+	Scr_ConstructMessageString(0, Scr_GetNumParam(SCRIPTINSTANCE_SERVER) - 1, "Game Message", string, 1024);
+	SV_GameSendServerCommand(iClientNum, SV_CMD_CAN_IGNORE, va("%s \"%s\"", pszCmd, string));
 }
 
 /*
@@ -67,7 +72,7 @@ iprintln
 */
 void iprintln()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Scr_MakeGameMessage(nullptr, va("%c", 102));
 }
 
 /*
@@ -77,7 +82,7 @@ iprintlnbold
 */
 void iprintlnbold()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Scr_MakeGameMessage(nullptr, va("%c", 103));
 }
 
 /*
