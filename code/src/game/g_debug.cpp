@@ -5,9 +5,9 @@
 G_DebugLine
 ==============
 */
-void G_DebugLine(clientDebugLineInfo_t *a1, const vec3_t *start, const vec3_t *end, const vec4_t *color, int depthTest)
+void G_DebugLine(const float *start, const float *end, const float *color, int depthTest)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	CL_AddDebugLine(start, end, color, depthTest, 0);
 }
 
 /*
@@ -15,9 +15,9 @@ void G_DebugLine(clientDebugLineInfo_t *a1, const vec3_t *start, const vec3_t *e
 CG_DebugLine
 ==============
 */
-void CG_DebugLine(clientDebugLineInfo_t *a1, const vec3_t *start, const vec3_t *end, const vec4_t *color, int depthTest, int duration)
+void CG_DebugLine(const float *start, const float *end, const float *color, int depthTest, int duration)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	CL_AddDebugLine(start, end, color, depthTest, duration);
 }
 
 /*
@@ -45,9 +45,9 @@ void G_DebugStarWithText(clientDebugLineInfo_t *a1, const vec3_t *point, const v
 G_DebugSphere
 ==============
 */
-void G_DebugSphere(const vec3_t *center, float radius, const vec4_t *floatColor, int sideCount, int depthTest, int duration)
+void G_DebugSphere(const float *center, float radius, const float *floatColor, int sideCount, int depthTest, int duration)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	CL_AddDebugSphere(center, radius, floatColor, sideCount, depthTest, duration);
 }
 
 /*
