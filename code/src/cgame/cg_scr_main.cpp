@@ -570,8 +570,46 @@ CScr_SetDvar
 */
 char CScr_SetDvar()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+    constexpr int INTERNAL_DVAR_FLAG = 0x4000;
+    
+    PIXBeginNamedEvent(-1, "SetDvar");
+
+    const char *dvarName = Scr_GetString(0, SCRIPTINSTANCE_CLIENT);
+    const char *text = Scr_GetString(1, SCRIPTINSTANCE_CLIENT);
+
+    char outString[1024];
+    
+    // Copy text while replacing " with '
+    for (int i = 0; i < 1023 && text[i]; i++)
+    {
+        outString[i] = (text[i] == '"') ? '\'' : text[i];
+    }
+    outString[1023] = '\0';
+
+    if (!Dvar_IsValidName(dvarName))
+    {
+        Scr_Error(SCRIPTINSTANCE_CLIENT, va("Dvar %s has an invalid dvar name", dvarName), 0);
+        
+        if (GetCurrentThreadId() != g_DXDeviceThread || HIDWORD(g_DXDeviceThread))
+            return 0;
+
+        return D3DPERF_EndEvent();
+    }
+
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar && !(dvar->flags & INTERNAL_DVAR_FLAG))
+    {
+        Scr_Error(SCRIPTINSTANCE_CLIENT, 
+                  va("Invalid Dvar set: %s - Internal Dvars cannot be changed by script. Use 'setsaveddvar' to alter SAVED internal dvars\n", 
+                  dvarName), 
+                  0);
+    }
+    else
+    {
+        Dvar_SetFromStringByNameFromSource(dvarName, outString, DVAR_SOURCE_SCRIPT, 0);
+    }
+
+    return (GetCurrentThreadId() == g_DXDeviceThread) ? D3DPERF_EndEvent() : 0;
 }
 
 /*

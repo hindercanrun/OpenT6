@@ -820,7 +820,7 @@ void CG_LoadAnimTrees(LocalClientNum_t localClientNum, cg_t *cgameGlob, const ch
 CG_Init
 ==============
 */
-void CG_Init(char *a1, LocalClientNum_t localClientNum, int serverMessageNum, int serverCommandSequence, ClientNum_t clientNum)
+void CG_Init(LocalClientNum_t localClientNum, int serverMessageNum, int serverCommandSequence, ClientNum_t clientNum)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
