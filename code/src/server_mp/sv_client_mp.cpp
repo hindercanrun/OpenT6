@@ -69,7 +69,21 @@ SV_DelayDropClient
 */
 void SV_DelayDropClient(client_t *drop, const char *reason)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(drop);
+	assert(reason);
+	assert(drop->header.state != CS_FREE);
+
+	if (!drop->dropReason)
+	{
+		drop->dropReason = reason;
+	}
+	else
+	{
+		assertMsg(
+			(drop->dropReason == 0),
+			"\t(drop->dropReason) = %s",
+			drop->dropReason);
+	}
 }
 
 /*
