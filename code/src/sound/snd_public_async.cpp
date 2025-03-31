@@ -439,7 +439,14 @@ SND_BankLoadedNotify
 */
 void SND_BankLoadedNotify()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	PIXBeginNamedEvent(-1, "SND_BankLoadedNotify");
+
+	SndNotify *NewNotify = SND_GetNewNotify();
+	if (NewNotify)
+	{
+		NewNotify->type = SND_NOTIFY_BANK_FREE;
+		SND_NotifyPush(NewNotify);
+	}
 }
 
 /*
