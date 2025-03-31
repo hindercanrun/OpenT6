@@ -1,5 +1,7 @@
 #include "types.h"
 
+const dvar_t* band_dedicated;
+
 /*
 ==============
 Live_GetNecessaryBandwidth
@@ -7,8 +9,7 @@ Live_GetNecessaryBandwidth
 */
 int Live_GetNecessaryBandwidth()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return band_dedicated->current.integer;
 }
 
 /*
@@ -18,7 +19,6 @@ Live_HowManyPlayersCanWeHost
 */
 int Live_HowManyPlayersCanWeHost()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 18;
 }
 
