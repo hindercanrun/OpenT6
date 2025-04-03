@@ -47,9 +47,12 @@ R_Cinematic_CancelQueuedMovie
 */
 void R_Cinematic_CancelQueuedMovie(CinematicInfo *info)
 {
-	info->commonflags.packed &= ~1u;
-	info->id = 0;
-	info->name[0] = 0;
+	assert(info->commonflags.fields.active == NULL);
+	assert(info->id != CINEMATIC_ID_INVALID);
+
+	info->commonflags.packed &= ~1;
+	info->id = CINEMATIC_ID_INVALID;
+	info->name[0] = NULL;
 }
 
 /*
