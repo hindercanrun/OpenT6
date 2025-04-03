@@ -68,10 +68,10 @@ void TRACK_cmd()
 {
 	track_static_alloc_internal(g_cmd_args,			20952,		"g_cmd_args",		11);
 	track_static_alloc_internal(cmd_textArray,		12,			"cmd_textArray",	11);
-	track_static_alloc_internal(cmd_text_buf,		0x10000,	"cmd_text_buf",		11);
+	track_static_alloc_internal(cmd_text_buf,		65536,		"cmd_text_buf",		11);
 	track_static_alloc_internal(sv_cmd_args,		10476,		"sv_cmd_args",		11);
 	track_static_alloc_internal(sv_cmd_text,		12,			"sv_cmd_text",		11);
-	track_static_alloc_internal(sv_cmd_text_buf,	0x10000,	"sv_cmd_text_buf",	11);
+	track_static_alloc_internal(sv_cmd_text_buf,	65536,		"sv_cmd_text_buf",	11);
 }
 
 /*
@@ -96,10 +96,8 @@ void Cmd_Wait_f()
 	{
 		cmd_wait = atoi(Cmd_Argv(1));
 	}
-	else
-	{
-		cmd_wait = 1;
-	}
+
+	cmd_wait = 1;
 }
 
 /*
@@ -110,13 +108,17 @@ Cbuf_Init
 void Cbuf_Init()
 {
 	Sys_EnterCriticalSection(CRITSECT_CBUF);
+
 	cmd_textArray[0].data = cmd_text_buf[0];
-	cmd_textArray[0].maxsize = 0x10000;
+	cmd_textArray[0].maxsize = 65536;
 	cmd_textArray[0].cmdsize = 0;
+
 	cmd_insideCBufExecute[0] = 0;
+
 	sv_cmd_text.data = sv_cmd_text_buf;
-	sv_cmd_text.maxsize = 0x10000;
+	sv_cmd_text.maxsize = 65536;
 	sv_cmd_text.cmdsize = 0;
+
 	Sys_LeaveCriticalSection(CRITSECT_CBUF);
 }
 
