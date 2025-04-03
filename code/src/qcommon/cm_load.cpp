@@ -7,7 +7,10 @@ TRACK_cm_load
 */
 void TRACK_cm_load()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(&cm, 332, "cm", 29);
+	track_static_alloc_internal(g_box_brush, 1248, "g_box_brush", 29);
+	track_static_alloc_internal(g_box_model, 988, "g_box_model", 29);
+	track_static_alloc_internal(g_geoms, 52, "g_geoms", 29);
 }
 
 /*
@@ -17,7 +20,7 @@ Load_ClipInfoFixup
 */
 void Load_ClipInfoFixup(ClipInfo **pInfo, ClipInfo *info)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	*pInfo = info;
 }
 
 /*
@@ -48,7 +51,24 @@ CM_LoadMapData_LoadObj
 */
 void CM_LoadMapData_LoadObj(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!cm.isInUse || I_stricmp(cm.name, name))
+	{
+		ProfLoad_Begin("Load bsp collision");
+
+		CM_LoadMapFromBsp(name, 1);
+
+		ProfLoad_End();
+		ProfLoad_Begin("Load static model collision");
+
+		CM_LoadStaticModels();
+
+		ProfLoad_End();
+		ProfLoad_Begin("Load dynamic entities");
+
+		DynEnt_LoadEntities();
+
+		ProfLoad_End();
+	}
 }
 
 /*
@@ -58,7 +78,8 @@ CM_LoadMapData_FastFile
 */
 void CM_LoadMapData_FastFile(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(clipMap == &cm);
+	return DB_FindXAssetHeader(ASSET_TYPE_CLIPMAP_PVS, name, true, -1).clipMap != &cm;
 }
 
 /*
@@ -98,7 +119,12 @@ CM_LoadAddOnMapEnts
 */
 void CM_LoadAddOnMapEnts(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!Com_IsAddonMap(name, 0))
+	{
+		g_addonMapEnts = FALSE;
+	}
+
+	CM_LoadAddonMapEnts(name);
 }
 
 /*
@@ -128,7 +154,9 @@ CM_Shutdown
 */
 void CM_Shutdown()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Com_Memset(&cm, 0, 332);
+	cm.name = cm.name;//uh?
+	assert(!cm.isInUse);
 }
 
 /*
@@ -138,7 +166,11 @@ CM_Unload
 */
 void CM_Unload()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(IsFastFileLoad());
+	if (cm.isInUse)
+	{
+		Sys_Error("Cannot unload collision while it is in use");
+	}
 }
 
 /*
@@ -146,9 +178,16 @@ void CM_Unload()
 CM_ModelBounds
 ==============
 */
-void CM_ModelBounds(unsigned int model, vec3_t *mins, vec3_t *maxs)
+void CM_ModelBounds(unsigned int model, float *mins, float *maxs)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	cmodel_t *v3 = CM_ClipHandleToModel(model);
+	*mins = v3->mins[0];
+	mins[1] = v3->mins[1];
+	mins[2] = v3->mins[2];
+
+	*maxs = v3->maxs[0];
+	maxs[1] = v3->maxs[1];
+	maxs[2] = v3->maxs[2];
 }
 
 /*
@@ -169,8 +208,7 @@ CM_Hunk_Alloc
 */
 void *CM_Hunk_Alloc(int size, const char *name, int type)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return Hunk_Alloc(size, name, type);
 }
 
 /*
@@ -178,9 +216,9 @@ void *CM_Hunk_Alloc(int size, const char *name, int type)
 CM_Hunk_CheckTempMemoryHighClear
 ==============
 */
-void CM_Hunk_CheckTempMemoryHighClear(int a1, int a2)
+void CM_Hunk_CheckTempMemoryHighClear()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Hunk_CheckTempMemoryHighClear();
 }
 
 /*
@@ -190,8 +228,7 @@ CM_Hunk_AllocateTempMemoryHigh
 */
 void *CM_Hunk_AllocateTempMemoryHigh(int size, const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return Hunk_AllocateTempMemoryHigh(size, name);
 }
 
 /*
@@ -199,8 +236,8 @@ void *CM_Hunk_AllocateTempMemoryHigh(int size, const char *name)
 CM_Hunk_ClearTempMemoryHigh
 ==============
 */
-void __cdecl CM_Hunk_ClearTempMemoryHigh()
+void CM_Hunk_ClearTempMemoryHigh()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Hunk_ClearTempMemoryHigh();
 }
 
