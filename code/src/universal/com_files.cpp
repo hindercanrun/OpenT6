@@ -4,6 +4,8 @@
 #include <stringed/stringed_public.h>
 #include <qcommon/qcommon_public.h>
 
+#define BASEGAME "main"
+
 fileHandleData_t fsh[70];
 char fs_gamedir[256];
 
@@ -2154,11 +2156,16 @@ void FS_Startup(const char *gameName, bool allow_devraw)
 		FS_AddGameDirectory(fs_basepath_string, fs_gameDirVar->current.string, 0, 0);
 	}
 
+	// add our commands
 	FS_AddCommands();
+
+	// print the current search paths
 	FS_DisplayPath(1);
-	Dvar_ClearModified(fs_gameDirVar);
-	Com_Printf(15, "----------------------\n");
-	Com_Printf(15, "%d files in iwd files\n", fs_iwdFileCount);
+
+	fs_gameDirVar->modified = false; // We just loaded, it's not modified
+
+	Com_Printf(CON_CHANNEL_FILES, "----------------------\n");
+	Com_Printf(CON_CHANNEL_FILES, "%d files in iwd files\n", fs_iwdFileCount);
 }
 
 /*
@@ -2221,10 +2228,17 @@ void FS_ShutDownIwdPureCheckReferences()
 /*
 ==============
 FS_InitFilesystem
+
+Called only at inital startup, not when the filesystem
+is resetting due to a game change
 ==============
 */
 void FS_InitFilesystem(bool allow_devraw)
 {
+	// allow command line parms to override our defaults
+	// we have to specially handle this, because normal command
+	// line variable sets don't happen until after the filesystem
+	// has already been initialized
 	Com_StartupVariable("fs_cdpath");
 	Com_StartupVariable("fs_basepath");
 	Com_StartupVariable("fs_homepath");
@@ -2232,10 +2246,17 @@ void FS_InitFilesystem(bool allow_devraw)
 	Com_StartupVariable("fs_copyfiles");
 	Com_StartupVariable("fs_restrict");
 	Com_StartupVariable("loc_language");
+
 	SEH_InitLanguage();
-	FS_Startup("main", allow_devraw);
+
+	// try to start up normally
+	FS_Startup(BASEGAME, allow_devraw);
+
+	// try to update language information
 	SEH_Init_StringEd();
 	SEH_UpdateLanguageInfo();
+
+	// see if we are going to allow add-ons
 	FS_SetRestrictions();
 }
 
@@ -2255,15 +2276,23 @@ void FS_Restart(LocalClientNum_t localClientNum, int checksumFeed)
 	// clear iwd references
 	FS_ClearIwdReferences();
 	FS_ShutDownIwdPureCheckReferences();
+
+	// clear pure checks
 	fs_iwdPureChecks = 0;
+
 	ProfLoad_Begin("Start file system");
-	FS_Startup("main", 1);
+	// try to start up normally
+	FS_Startup(BASEGAME, true);
 	ProfLoad_End();
+
 	ProfLoad_Begin("Init text localization");
+	// try to update language information
 	SEH_Init_StringEd();
 	SEH_UpdateLanguageInfo();
 	ProfLoad_End();
+
 	ProfLoad_Begin("Set restrictions");
+	// see if we are going to allow add-ons
 	FS_SetRestrictions();
 	ProfLoad_End();
 }
