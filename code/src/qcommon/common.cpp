@@ -175,18 +175,18 @@ void Com_AssetLoadUI(const char* name)
 Com_BeginRedirect
 ==============
 */
-void Com_BeginRedirect(char *buffer, unsigned int buffersize, void (*flush)(char *))
+void Com_BeginRedirect(char *buffer, int buffersize, void (*flush)(char *))
 {
-	if (buffer && buffersize)
+	if (!buffer || !buffersize || !flush)
 	{
-		if (flush)
-		{
-			rd_buffer = buffer;
-			rd_buffersize = buffersize;
-			rd_flush = flush;
-			*buffer = 0;
-		}
+		return;
 	}
+
+	rd_buffer = buffer;
+	rd_buffersize = buffersize;
+	rd_flush = flush;
+
+	*rd_buffer = 0;
 }
 
 /*
@@ -200,6 +200,7 @@ void Com_EndRedirect()
 	{
 		rd_flush(rd_buffer);
 	}
+
 	rd_buffer = NULL;
 	rd_buffersize = 0;
 	rd_flush = NULL;
@@ -333,6 +334,11 @@ void Com_PrintMessage(int channel, const char *msg, int error)
 /*
 ==============
 Com_Printf
+
+Both client and server can use this, and it will output
+to the apropriate place.
+
+A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 ==============
 */
 void Com_Printf(int channel, const char *fmt, ...)
