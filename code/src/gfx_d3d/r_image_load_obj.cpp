@@ -191,25 +191,25 @@ void Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, unsigne
 	image->texture.basemap = NULL;
 	switch (fileHeader->format)
 	{
-	case 1u:
+	case 1:
 		Image_LoadBitmap(image, fileHeader, srcData, DXGI_FORMAT_R8G8B8A8_UNORM, 4, allocFlags, outStreamedSize);
 		break;
-	case 5u:
+	case 5:
 		Image_LoadBitmap(image, fileHeader, srcData, DXGI_FORMAT_A8_UNORM, 1, allocFlags, outStreamedSize);
 		break;
-	case 0xBu:
+	case 11:
 		Image_LoadDxtc(image, fileHeader, srcData, DXGI_FORMAT_BC1_UNORM, 8, allocFlags, outStreamedSize);
 		break;
-	case 0xCu:
+	case 12:
 		Image_LoadDxtc(image, fileHeader, srcData, DXGI_FORMAT_BC2_UNORM, 16, allocFlags, outStreamedSize);
 		break;
-	case 0xDu:
+	case 13:
 		Image_LoadDxtc(image, fileHeader, srcData, DXGI_FORMAT_BC3_UNORM, 16, allocFlags, outStreamedSize);
 		break;
-	case 0xEu:
+	case 14:
 		Image_LoadDxtc(image, fileHeader, srcData, DXGI_FORMAT_BC5_UNORM, 16, allocFlags, outStreamedSize);
 		break;
-	case 0x13u:
+	case 19:
 		Image_LoadDxtc(image, fileHeader, srcData, DXGI_FORMAT_R16G16B16A16_FLOAT, 128, allocFlags, outStreamedSize);
 		break;
 	default:
