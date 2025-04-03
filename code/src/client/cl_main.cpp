@@ -703,7 +703,24 @@ CL_ParseBadPacket_f
 */
 void CL_ParseBadPacket_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char *file;
+	int file_size = FS_ReadFile("badpacket.dat", &file);
+	if (file_size >= 0)
+	{
+		msg_t msg = { 0 };
+		memset(&msg, NULL, sizeof(msg));
+
+		msg.cursize = file_size;
+		msg.data = file;
+
+		MSG_ReadLong(&msg);
+		MSG_ReadLong(&msg);
+
+		assertMsg(true, "Time to debug this packet, baby!");
+
+		CL_ParseServerMessage(LOCAL_CLIENT_0, &msg);
+		FS_FreeFile(file);
+	}
 }
 
 /*
