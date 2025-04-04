@@ -111,9 +111,24 @@ void CG_DrawModelBoneAxis(LocalClientNum_t localClientNum)
 CG_DrawFxText
 ==============
 */
-void CG_DrawFxText(const char *text, vec2_t *profilePos)
+void CG_DrawFxText(const char *text, float *profilePos)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(text);
+
+	CL_DrawText(
+		&scrPlaceFull,
+		text,
+		0x7FFFFFFF,
+		cgMedia.smallDevFont,
+		profilePos[0],
+		profilePos[1],
+		1,
+		1,
+		0.75f,
+		0.75f,
+		&colorWhiteFaded,
+		128);
+	profilePos[1] = profilePos[1] + 9.0f;
 }
 
 /*
@@ -123,7 +138,23 @@ CG_DrawFxPriorityText
 */
 void CG_DrawFxPriorityText(const char *text, vec2_t *profilePos)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(text);
+
+	CL_DrawText(
+		&scrPlaceFull,
+		text,
+		0x7FFFFFFF,
+		cgMedia.smallDevFont,
+		profilePos[0],
+		profilePos[1],
+		1,
+		1,
+		0.75f,
+		0.75f,
+		&colorWhiteFaded,
+		128);
+
+	profilePos[1] = profilePos[1] + 9.0f;
 }
 
 /*
@@ -213,7 +244,40 @@ CG_DrawVersion
 */
 void CG_DrawVersion(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Font_s* font = UI_GetFontHandle(&scrPlaceFullUnsafe, 0, 0.5f);
+
+	float shadow_colour[4] = { 0.0f, 0.0f, 0.0f, 0.69f };
+	float colour[4] = { 0.4f, 0.69f, 1.0f, 0.69f };
+
+	float width = UI_TextWidth(localClientNum, version->current.string, 0, font, 0.25f);
+	float height = UI_TextHeight(font, 0.25f);
+
+	UI_DrawText(
+		&scrPlaceFullUnsafe,
+		version->current.string,
+		0x7FFFFFFF,
+		font,
+		1.0f - (cg_drawVersionX->current.value + width),
+		1.0f - (cg_drawVersionY->current.value + height),
+		3,
+		3,
+		0.25f,
+		shadow_colour,
+		0,
+		LOCAL_CLIENT_FIRST);
+	UI_DrawText(
+		&scrPlaceFullUnsafe,
+		version->current.string,
+		0x7FFFFFFF,
+		font,
+		1.0f - (cg_drawVersionX->current.value + width),
+		1.0f - (cg_drawVersionY->current.value + height),
+		3,
+		3,
+		0.25f,
+		colour,
+		0,
+		LOCAL_CLIENT_FIRST);
 }
 
 /*
@@ -315,9 +379,15 @@ void CG_DebugLineVertical(const vec3_t *p, const vec4_t *color, int depthTest, i
 CG_DebugStarWithText
 ==============
 */
-void CG_DebugStarWithText(const vec3_t *point, const vec4_t *starColor, const vec4_t *textColor, const char *string, float fontsize, int duration)
+void CG_DebugStarWithText(
+	const float *point,
+	const float *starColor,
+	const float *textColor,
+	const char *string,
+	float fontsize,
+	int duration)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	CL_AddDebugStarWithText(point, starColor, textColor, string, fontsize, duration);
 }
 
 /*
@@ -445,6 +515,54 @@ CG_DrawUpperRightDebugInfo
 */
 void CG_DrawUpperRightDebugInfo(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	meminfo_t meminfo{};
+	track_getbasicinfo(&meminfo);
+
+	float y = cg_debugInfoCornerOffset->current.vector[1];
+
+	// don't draw other information if material debug is enabled
+	if (cg_drawMaterial->current.integer == 0)
+	{
+		R_TrackStatistics(0);
+
+		if (cg_drawFPS->current.integer)
+		{
+			y = CG_DrawFPS(localClientNum, &scrPlaceFull, y, &meminfo);
+		}
+	
+		if (com_statmon->current.enabled)
+		{
+			//y = CG_DrawStatmon(&scrPlaceFull, y, &meminfo);
+		}
+	
+		if (cg_drawAnimAttachTags->current.enabled)
+		{
+			y = CG_DrawAnimTagInfo(localClientNum, &scrPlaceFull, y);
+		}
+	
+		if (cg_drawSnapshot->current.enabled)
+		{
+			y = CG_DrawSnapshot(localClientNum, y);
+		}
+	
+		DrawEntityCounts(localClientNum, &scrPlaceFull, y);
+	
+		if (debug_show_viewpos->current.integer)
+		{
+			y = CG_DrawViewpos(&scrPlaceFull, y, localClientNum);
+		}
+	
+		if (r_showCullDistDebug->current.enabled)
+		{
+			CG_DrawCullDistDebugText(&scrPlaceFull, y, localClientNum);
+		}
+	
+		if (r_showShadowMapDebugText->current.enabled)
+		{
+			CG_DrawShadowMapDebugText(&scrPlaceFull, y, localClientNum);
+		}
+	
+		CG_DrawGfxStats(&scrPlaceFull, y);
+	}
 }
 
