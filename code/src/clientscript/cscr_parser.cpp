@@ -48,10 +48,35 @@ char *Scr_ReadFile_LoadObj(const char *a1, FsThread a2, scriptInstance_t inst, c
 Scr_ReadFile
 ==============
 */
-char *Scr_ReadFile(scriptInstance_t inst, const char *filename, const char *extFilename, const unsigned __int8 *codePos, bool archive)
+char *Scr_ReadFile(
+	scriptInstance_t inst,
+	const char *filename,
+	const char *extFilename,
+	const unsigned __int8 *codePos,
+	bool archive)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	int file = { 0 };
+
+	if (fs_gameDirVar->current.integer)
+	{
+		if (FS_FOpenFileRead(extFilename, &file) < NULL)
+		{
+			return Scr_ReadFile_FastFile(inst, filename, extFilename, codePos, archive);
+		}
+		else
+		{
+			FS_FCloseFile(file);
+			return Scr_ReadFile_LoadObj(inst, filename, extFilename, codePos, archive);
+		}
+	}
+	else if (useFastFile->current.enabled)
+	{
+		return Scr_ReadFile_FastFile(inst, filename, extFilename, codePos, archive);
+	}
+	else
+	{
+		return Scr_ReadFile_LoadObj(inst, filename, extFilename, codePos, archive);
+	}
 }
 
 /*
