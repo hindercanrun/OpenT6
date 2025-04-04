@@ -1,5 +1,7 @@
 #include "types.h"
 
+float colorWhiteFaded[4] = { 1.0, 1.0, 1.0, 0.75 };
+
 /*
 ==============
 CG_DrawScriptUsage
@@ -317,10 +319,55 @@ double CG_GetCornerDebugPrintScale_Y()
 CG_CornerDebugPrint
 ==============
 */
-double CG_CornerDebugPrint(LocalClientNum_t localClientNum, const ScreenPlacement *sP, float posX, float posY, float labelWidth, const char *text, const char *label, const vec4_t *color, Font_s *font)
+double CG_CornerDebugPrint(
+	LocalClientNum_t localClientNum,
+	const ScreenPlacement *scrPlace,
+	float posX,
+	float posY,
+	float labelWidth,
+	const char *text,
+	const char *label,
+	const float *color,
+	Font_s *font)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int yDelta;
+  
+	if (!cg_drawFPSLabels->current.enabled)
+	{
+		yDelta = CG_DrawDevString(scrPlace, posX, posY, 1.0f, 1.1f, text, color, 6, cgMedia.smallDevFont);
+	}
+
+	int textDelta = CG_DrawDevString(
+		scrPlace,
+		posX - labelWidth,
+		posY,
+		1.0f,
+		1.1f,
+		text,
+		color,
+		6,
+		cgMedia.smallDevFont);
+	int labelDelta = CG_DrawDevString(
+		scrPlace,
+		posX - labelWidth,
+		posY,
+		1.0f,
+		1.1f,
+		label,
+		colorWhiteFaded,
+		5,
+		cgMedia.smallDevFont);
+
+	if (textDelta < labelDelta)
+	{
+		yDelta = labelDelta;
+	}
+	else
+	{
+		yDelta = textDelta;
+	}
+
+	return yDelta * 0.75;
 }
 
 /*
