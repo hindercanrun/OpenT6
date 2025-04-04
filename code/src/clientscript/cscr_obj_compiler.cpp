@@ -17,7 +17,7 @@ Scr_ServerStubFunctionUseError
 */
 void Scr_ServerStubFunctionUseError()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Scr_StubErrorReport(SCRIPTINSTANCE_SERVER);
 }
 
 /*
@@ -27,7 +27,7 @@ Scr_ClientStubFunctionUseError
 */
 void Scr_ClientStubFunctionUseError()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Scr_StubErrorReport(SCRIPTINSTANCE_CLIENT);
 }
 
 /*
@@ -35,10 +35,17 @@ void Scr_ClientStubFunctionUseError()
 GetFunction
 ==============
 */
-void (*GetFunction(scriptInstance_t inst, const char **pName, int *type, int *min_args, int *max_args))()
+void (*GetFunction(
+	scriptInstance_t inst,
+	const char **pName,
+	int *type,
+	int *min_args,
+	int *max_args))()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (inst)
+		return CScr_GetFunction(pName, type, min_args, max_args);
+	else
+		return Scr_GetFunction(pName, type, min_args, max_args);
 }
 
 /*
@@ -46,10 +53,17 @@ void (*GetFunction(scriptInstance_t inst, const char **pName, int *type, int *mi
 GetMethod
 ==============
 */
-void (*GetMethod(scriptInstance_t inst, const char **pName, int *type, int *min_args, int *max_args))(scr_entref_t)
+void (*GetMethod(
+	scriptInstance_t inst,
+	const char **pName,
+	int *type,
+	int *min_args,
+	int *max_args))(scr_entref_t)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (inst)
+		return CScr_GetMethod(pName, type, min_args, max_args);
+	else
+		return Scr_GetMethod(pName, type, min_args, max_args);
 }
 
 /*
@@ -326,7 +340,8 @@ Scr_ReportDeadCodeDebugger
 */
 void Scr_ReportDeadCodeDebugger()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	_ReportDeadCodeDebugger(SCRIPTINSTANCE_SERVER);
+	_ReportDeadCodeDebugger(SCRIPTINSTANCE_CLIENT);
 }
 
 /*
@@ -416,8 +431,72 @@ NextOpAddress
 */
 unsigned __int8 *NextOpAddress(unsigned __int8 *op)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	unsigned __int8 *next = op + 1;
+
+	switch (*op)
+	{
+	case 4:
+	case 5:
+	case 25:
+	case 36:
+	case 39:
+	case 47:
+	case 49:
+	case 51:
+	case 53:
+	case 84:
+	case 94:
+		next = op + 2;
+		break;
+	case 6:
+	case 7:
+	case 10:
+	case 11:
+	case 32:
+	case 33:
+	case 34:
+	case 59:
+	case 60:
+	case 61:
+	case 62:
+	case 63:
+	case 64:
+		next = (unsigned __int8 *)(((uintptr_t)(op + 2) & ~1) + 2);
+		break;
+	case 8:
+	case 9:
+	case 19:
+	case 21:
+	case 92:
+		next = (unsigned __int8 *)(((uintptr_t)(op + 4) & ~3) + 4);
+		break;
+	case 23:
+		int count = *(op + 1);
+		next = op + 2;
+		while (count--)
+		{
+			next = (unsigned __int8 *)(((uintptr_t)(next + 1) & ~1) + 2);
+		}
+		break;
+	case 41:
+	case 42:
+	case 46:
+	case 48:
+	case 50:
+	case 52:
+		next = (unsigned __int8 *)(((uintptr_t)(op + 5) & ~3) + 4);
+		break;
+	case 89:
+		uint32_t *aligned = (uint32_t *)((uintptr_t)(op + 4) & ~3);
+		uint32_t count = *aligned;
+		uint32_t *start = (uint32_t *)(((uintptr_t)aligned + 7) & ~3);
+		next = (unsigned __int8 *)(start + 2 * count);
+		break;
+	default:
+		break;
+	}
+
+	return next;
 }
 
 /*
