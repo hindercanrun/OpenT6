@@ -95,29 +95,30 @@ int CG_DrawDevString(
 	float yScale,
 	const char *string,
 	const float *color,
-	int align, Font_s *font)
+	int align,
+	Font_s *font)
 {
 	assert((align & CG_ALIGN_X) == CG_ALIGN_LEFT || (align & CG_ALIGN_X) == CG_ALIGN_RIGHT || (align & CG_ALIGN_X) == CG_ALIGN_CENTER);
 
 	if ((align & 3) == 2)
 	{
-		x = x - (R_TextWidth(s, 0, font) * xScale);
+		x = x - (R_TextWidth(localClientNum, string, 0, font) * xScale);
 	}
 	else if ((align & 3) == 3)
 	{
-		x = x - ((R_TextWidth(s, 0, font) * xScale) * 0.5);
+		x = x - ((R_TextWidth(localClientNum, string, 0, font) * xScale) * 0.5f);
 	}
 
 	assert((align & CG_ALIGN_Y) == CG_ALIGN_TOP || (align & CG_ALIGN_Y) == CG_ALIGN_BOTTOM || (align & CG_ALIGN_Y) == CG_ALIGN_MIDDLE);
 
 	int step = R_TextHeight(font);
-	if ((align & 0xC) == 4)
+	if ((align & 12) == 4)
 	{
 		y = y + (step * yScale);
 	}
-	else if ((align & 0xC) == 0xC)
+	else if ((align & 12) == 12)
 	{
-		y = ((step * yScale) * 0.5) + y;
+		y = ((step * yScale) * 0.5f) + y;
 	}
 
 	CL_DrawText(scrPlace, string, 0x7FFFFFFF, font, x, y, 1, 1, xScale, yScale, color, 0);
