@@ -334,10 +334,11 @@ double CG_CornerDebugPrint(
   
 	if (!cg_drawFPSLabels->current.enabled)
 	{
-		yDelta = CG_DrawDevString(scrPlace, posX, posY, 1.0f, 1.1f, text, color, 6, cgMedia.smallDevFont);
+		yDelta = CG_DrawDevString(localClientNum, scrPlace, posX, posY, 1.0f, 1.1f, text, color, 6, cgMedia.smallDevFont);
 	}
 
 	int textDelta = CG_DrawDevString(
+		localClientNum,
 		scrPlace,
 		posX - labelWidth,
 		posY,
@@ -348,6 +349,7 @@ double CG_CornerDebugPrint(
 		6,
 		cgMedia.smallDevFont);
 	int labelDelta = CG_DrawDevString(
+		localClientNum,
 		scrPlace,
 		posX - labelWidth,
 		posY,
