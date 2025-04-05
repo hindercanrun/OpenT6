@@ -1,5 +1,30 @@
 #include "types.h"
 
+/*
+
+packet header
+-------------
+4	outgoing sequence.  high bit will be set if this is a fragmented message
+[2	qport (only for client to server)]
+[2	fragment start byte]
+[2	fragment length. if < FRAGMENT_SIZE, this is the last fragment]
+
+if the sequence number is -1, the packet should be handled as an out-of-band
+message instead of as part of a netcon.
+
+All fragments will have the same sequence numbers.
+
+The qport field is a workaround for bad address translating routers that
+sometimes remap the client's source port on a packet during gameplay.
+
+If the base part of the net address matches and the qport matches, then the
+channel matches even if the IP port differs.  The IP port should be updated
+to the new value before sending out any replies.
+
+*/
+
+int net_iProfilingOn = FALSE;
+
 // Only used inside NET_AdrToString
 char s[64] = {};
 
@@ -15,7 +40,6 @@ char str_1[256] = {};
 PacketQueue loopbackQueues[5];
 PacketQueue deferredQueue;
 
-// Used within net_chan.cpp
 char* netsrcString[5] =
 {
 	'client1', 'client2', 'client3', 'client4', 'client5'
@@ -31,12 +55,16 @@ char *NET_AdrToString(netadr_t a)
 	Com_sprintf(s, sizeof(s), "unknown");
 
 	if (a.type == NA_LOOPBACK)
+	{
 		Com_sprintf(s, sizeof(s), "loopback");
-
+	}
 	else
 	{
 		if (a.type == NA_IP)
-			Com_sprintf(s, sizeof(s), "%i.%i.%i.%i:%i:%i (%d)", a.ip[0], a.ip[1], a.ip[2], a.ip[3], BigShort(a.port), a.serverID, a.localNetID);
+		{
+			Com_sprintf(
+				s, sizeof(s), "%i.%i.%i.%i:%i:%i (%d)", a.ip[0], a.ip[1], a.ip[2], a.ip[3], BigShort(a.port), a.serverID, a.localNetID);
+		}
 	}
 
 	return s;
@@ -52,12 +80,15 @@ char *NET_AdrToStringDW(netadr_t a)
 	Com_sprintf(s_0, sizeof(s_0), "unknown");
 
 	if (a.type == NA_LOOPBACK)
+	{
 		Com_sprintf(s_0, sizeof(s_0), "loopback");
-
+	}
 	else
 	{
 		if (a.type == NA_IP)
+		{
 			Com_sprintf(s_0, sizeof(s_0), "%i.%i.%i.%i:%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3], a.port);
+		}
 	}
 
 	return s_0;
@@ -70,7 +101,33 @@ NetProf_PrepProfiling
 */
 void NetProf_PrepProfiling(netProfileInfo_t *prof)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (net_profile->current.integer)
+	{
+		if (!net_iProfilingOn)
+		{
+			int value;
+			if (!com_sv_running->current.enabled || CL_AnyLocalClientsRunning() && net_profile->current.integer == 2)
+			{
+				value = 1;
+			}
+			else
+			{
+				value = 2;
+			}
+
+			net_iProfilingOn = value;
+
+			Com_Printf(CON_CHANNEL_SYSTEM, "Net Profiling turned on: %s\n", connectionString_194[value + 10]);//ehh
+			memset(prof, 0, sizeof(netProfileInfo_t));
+		}
+	}
+	else if (net_iProfilingOn)
+	{
+		net_iProfilingOn = FALSE;
+
+		Com_Printf(CON_CHANNEL_SYSTEM, "Net Profiling turned off\n");
+		memset(prof, 0, sizeof(netProfileInfo_t));
+	}
 }
 
 /*
@@ -80,7 +137,15 @@ NetProf_AddPacket
 */
 void NetProf_AddPacket(netProfileStream_t *pProfStream, int iSize, int bFragment)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(net_iProfilingOn);
+  
+	int currentPacket = (pProfStream->iCurrPacket + 1) % 60;
+	pProfStream->iCurrPacket = currentPacket;
+
+	netProfilePacket_t *packet = &pProfStream->packets[currentPacket];
+	packet->iTime = Sys_Milliseconds();
+	packet->iSize = iSize;
+	packet->bFragment = bFragment;
 }
 
 /*
@@ -90,7 +155,21 @@ NetProf_NewRecievePacket
 */
 void NetProf_NewRecievePacket(netchan_t *pChan, int iSize, int bFragment)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (net_iProfilingOn)
+	{
+		NetProf_AddPacket(&pChan->prof.recieve, iSize, bFragment);
+
+		if (net_showprofile->current.integer != 0)
+		{
+			const char *msg = " fragment";
+			if (!bFragment)
+			{
+				msg = "";
+			}
+
+			Com_Printf(CON_CHANNEL_SYSTEM, "[%s] recieve%s: %i\n", netsrcString[pChan->sock], msg, iSize);
+		}
+	}
 }
 
 /*
@@ -105,42 +184,25 @@ void NetProf_UpdateStatistics(netProfileStream_t *pStream)
 
 /*
 ==============
-Net_DumpProfile_f
-==============
-*/
-void Net_DumpProfile_f()
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-Net_GetQPort_f
-==============
-*/
-void Net_GetQPort_f()
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-Net_SetQPort_f
-==============
-*/
-void Net_SetQPort_f()
-{
-	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
 Net_DisplayProfile
 ==============
 */
 void Net_DisplayProfile(LocalClientNum_t localClientNum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (!net_profile->current.integer)
+	{
+		Dvar_SetInt(net_profile, 2 - com_sv_running=>current.enabled);
+	}
+
+	if (!net_iProfilingOn)
+	{
+		return;
+	}
+
+	if (net_iProfilingOn == 1)
+	{
+		CL_Netchan_PrintProfileStats(localClientNum, 0);
+	}
 }
 
 /*
@@ -150,12 +212,15 @@ TRACK_net_chan
 */
 void TRACK_net_chan()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(netsrcString, 20, "netsrcString", 11);
+	track_static_alloc_internal(loopbackQueues, 420, "loopbackQueues", 11);
+	track_static_alloc_internal(tempNetchanPacketBuf, 65536, "tempNetchanPacketBuf", 11);
 }
 
 /*
 ==============
 Netchan_Init
+
 ==============
 */
 void Netchan_Init(int port)
@@ -166,11 +231,41 @@ void Netchan_Init(int port)
 /*
 ==============
 Netchan_Setup
+
+called to open a channel to a remote system
 ==============
 */
-void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, char *outgoingBuffer, int outgoingBufferSize, char *incomingBuffer, int incomingBufferSize)
+void Netchan_Setup(
+	netsrc_t sock,
+	netchan_t *chan,
+	netadr_t adr,
+	int qport,
+	char *outgoingBuffer,
+	int outgoingBufferSize,
+	char *incomingBuffer,
+	int incomingBufferSize)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	memset(chan, 0, sizeof(netchan_t));
+
+	chan->remoteAddress.ip = adr.ip;
+	chan->remoteAddress.type = adr.type;
+	chan->sock = sock;
+	chan->remoteAddress.serverID = adr.serverID;
+
+	if (!Com_UseRawUDP())
+	{
+		chan->qport = qport;
+		assert(adr.type == NA_BOT || qport != NULL);
+	}
+
+	chan->unsentBuffer = outgoingBuffer;
+	chan->incomingSequence = 0;
+	chan->outgoingSequence = 1;
+	chan->unsentBufferSize = outgoingBufferSize;
+	chan->fragmentBuffer = incomingBuffer;
+	chan->fragmentBufferSize = incomingBufferSize;
+
+	NetProf_PrepProfiling(&chan->prof);
 }
 
 /*
@@ -180,8 +275,17 @@ Netchan_BorrowBuffer
 */
 unsigned __int8 *Netchan_BorrowBuffer(netchan_t *chan, int size)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assert(chan->unsentBuffer);
+	assert(chan->unsentOnLoan == qfalse);
+	assert(chan->unsentBufferSize <= size);
+
+	if (chan->unsentFragments)
+	{
+		return FALSE;
+	}
+
+	chan->unsentOnLoan = TRUE;
+	return chan->unsentBuffer;
 }
 
 /*
@@ -195,8 +299,7 @@ void Netchan_ReturnBuffer(netchan_t *chan, unsigned __int8 *ptr)
 	{
 		assert(chan->unsentOnLoan == qtrue);
 		assert(chan->unsentFragments == qfalse);
-
-		chan->unsentOnLoan = 0;
+		chan->unsentOnLoan = FALSE;
 	}
 }
 
@@ -473,6 +576,8 @@ bool NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to)
 /*
 ==============
 NET_OutOfBandPrint
+
+Sends a text message in an out-of-band datagram
 ==============
 */
 bool NET_OutOfBandPrint(netsrc_t sock, netadr_t adr, const char *data)
@@ -484,6 +589,8 @@ bool NET_OutOfBandPrint(netsrc_t sock, netadr_t adr, const char *data)
 /*
 ==============
 NET_OutOfBandData
+
+Sends a data message in an out-of-band datagram (only used for "connect")
 ==============
 */
 BOOL NET_OutOfBandData(netsrc_t sock, netadr_t adr, const unsigned __int8 *format, int len)
@@ -506,6 +613,8 @@ BOOL NET_OutOfBandVoiceData(netsrc_t sock, netadr_t adr, unsigned __int8 *format
 /*
 ==============
 NET_StringToAdr
+
+Traps "localhost" for loopback, passes everything else to system
 ==============
 */
 int NET_StringToAdr(const char *s, netadr_t *a)
@@ -602,28 +711,6 @@ StringToXNAddr
 void StringToXNAddr(const char *str, XNADDR *xnaddr)
 {
 	UNIMPLEMENTED(__FUNCTION__);
-}
-
-/*
-==============
-Sys_Checksum
-==============
-*/
-unsigned __int16 Sys_Checksum(const unsigned __int8 *src, int len)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
-}
-
-/*
-==============
-Sys_ChecksumCopy
-==============
-*/
-unsigned __int16 Sys_ChecksumCopy(unsigned __int8 *dest, const unsigned __int8 *src, int len)
-{
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
 }
 
 /*
@@ -773,12 +860,256 @@ bool Netchan_Transmit(netchan_t *chan, int length, const unsigned __int8 *data, 
 /*
 ==============
 Netchan_Process
+
+Returns qfalse if the message should not be processed due to being
+out of order or a fragment.
+
+Msg must be large enough to hold MAX_MSGLEN, because if this is the
+final fragment of a multi-part message, the entire thing will be
+copied out.
 ==============
 */
 int Netchan_Process(netchan_t *chan, msg_t *msg)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int fragmentOffset;
+	int fragmentSize;
+	int fragmentLength;
+	int incomingSequence;
+	int maxFragmentIndex = 0;
+	bool previouslyAcked;
+	unsigned __int8 data[2048];
+	msg_t buf;
+
+	PIXBeginNamedEvent(-1, "Netchan_Process");
+
+	bool ack_requested = qfalse;
+	bool force_ack = qfalse;
+
+	NetProf_PrepProfiling(&chan->prof);
+	MSG_BeginReading(msg);
+
+	// get sequence numbers
+	int sequence = MSG_ReadLong(msg);
+
+	// read the qport if we are a server
+	if (!Com_UseRawUDP() && chan->sock == NS_SERVER)
+	{
+		MSG_ReadShort(msg);
+	}
+
+	if (sequence < 0)
+	{
+		ack_requested = (sequence & 0x40000000) != 0;
+
+		if (sequence & 0x20000000)
+		{
+			MSG_ReadByte(msg);
+			MSG_ReadByte(msg);
+			int fragmentLength = MSG_ReadShort(msg);
+			MSG_ReadShort(msg);
+
+			if (fragmentLength != 1232)
+			{
+				Com_Printf(
+					CON_CHANNEL_SYSTEM,
+					"%08d: [%s] Warning: Invalid fragment size %d\n",
+					Sys_Milliseconds(),
+					NET_AdrToString(chan->remoteAddress),
+					fragmentLength);
+			}
+
+			int fragmentAck[4];
+			fragmentAck[0] = MSG_ReadLong(msg);
+			fragmentAck[1] = MSG_ReadLong(msg);
+			fragmentAck[2] = MSG_ReadLong(msg);
+			fragmentAck[3] = MSG_ReadLong(msg);
+
+			if ((sequence & 0x1FFFFFFF) == chan->outgoingSequence)
+			{
+				// mark them as acknowledged
+				for (int i = 0; i < 4; ++i)
+				{
+					chan->fragment_ack[i] |= fragmentAck[i];
+				}
+			}
+
+			return qfalse;
+		}
+
+		sequence &= 0x1FFFFFFF;
+		maxFragmentIndex = 1;
+	}
+
+	int incomingSequence = chan->incomingSequence;
+
+	//
+	// discard out of order or duplicated packets
+	//
+	if (sequence <= incomingSequence)
+	{
+		if (sequence != incomingSequence || !ack_requested)
+		{
+			if (showdrop->current.enabled || (chan->remoteAddress.type != NA_LOOPBACK && showpackets->current.integer > 0))
+			{
+				Com_Printf(
+					CON_CHANNEL_SYSTEM,
+					"[%s] %s: Out of order packet %i at %i\n",
+					netsrcString[chan->sock],
+					NET_AdrToString(chan->remoteAddress),
+					sequence,
+					chan->incomingSequence);
+			}
+			return qfalse;
+		}
+
+		force_ack = qtrue;
+	}
+
+	NetProf_NewRecievePacket(chan, msg->cursize, maxFragmentIndex);
+
+	if (!maxFragmentIndex)
+	{
+		chan->incomingSequence = sequence;
+		return qtrue;
+	}
+
+	int fragmentIndex = MSG_ReadByte(msg);
+	maxFragmentIndex = MSG_ReadByte(msg);
+	fragmentSize = MSG_ReadShort(msg);
+	fragmentLength = MSG_ReadShort(msg);
+
+	// make sure we add the fragments in correct order
+	// either a packet was dropped, or we received this one too soon
+	// we don't reconstruct the fragments. we will wait till this fragment gets to us again
+	// (NOTE: we could probably try to rebuild by out of order chunks if needed)
+	if (sequence > chan->fragmentSequence)
+	{
+		chan->fragmentSequence = sequence;
+		chan->fragmentLength = 0;
+		memset(chan->fragment_ack, 0, sizeof(chan->fragment_ack));
+	}
+
+	fragmentOffset = fragmentIndex * fragmentSize;
+	int *ackPtr = &chan->fragment_ack[fragmentIndex >> 5];
+	int ackBit = 1 << (fragmentIndex & 31);
+	previouslyAcked = (*ackPtr & ackBit) != 0;
+
+	if (!force_ack)
+	{
+		*ackPtr |= ackBit;
+	}
+
+	if (!ack_requested)
+	{
+		if (!previouslyAcked)
+		{
+			chan->fragmentLength += fragmentLength;
+			memcpy(&chan->fragmentBuffer[fragmentOffset], &msg->data[msg->readcount], fragmentLength);
+		}
+
+		bool allFragmentsReceived = qtrue;
+		for (int i = 0; i <= maxFragmentIndex; ++i)
+		{
+			if ((chan->fragment_ack[i >> 5] & (1 << (i & 31))) == 0)
+			{
+				allFragmentsReceived = qfalse;
+				break;
+			}
+		}
+
+		if (!allFragmentsReceived || chan->fragmentLength > msg->maxsize)
+		{
+			return qfalse;
+		}
+
+		*(int *)msg->data = LittleLong(sequence);
+		memcpy(msg->data + 4, chan->fragmentBuffer, chan->fragmentLength);
+		msg->cursize = chan->fragmentLength + 4;
+
+		chan->fragmentLength = 0;
+		memset(chan->fragment_ack, 0, sizeof(chan->fragment_ack));
+
+		MSG_BeginReading(msg);
+		MSG_ReadLong(msg);
+
+		chan->incomingSequence = sequence;
+		return qtrue;
+	}
+
+	MSG_Init(&buf, data, sizeof(data));
+	MSG_WriteLong(&buf, chan->fragmentSequence | 0xA0000000);
+
+	if (chan->sock < NS_SERVER)
+	{
+		MSG_WriteShort(&buf, chan->qport);
+	}
+
+	MSG_WriteByte(&buf, fragmentIndex);
+	MSG_WriteByte(&buf, maxFragmentIndex);
+	MSG_WriteShort(&buf, fragmentSize);
+	MSG_WriteShort(&buf, fragmentLength);
+
+	if (!force_ack)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			MSG_WriteLong(&buf, chan->fragment_ack[i]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			MSG_WriteLong(&buf, -1);
+		}
+	}
+
+	NET_SendPacket(chan->sock, buf.cursize, buf.data, chan->remoteAddress);
+
+	if (!force_ack)
+	{
+		goto reprocess_fragment;
+	}
+	return qtrue;
+
+reprocess_fragment:
+	if (!previouslyAcked)
+	{
+		chan->fragmentLength += fragmentLength;
+		memcpy(&chan->fragmentBuffer[fragmentOffset], &msg->data[msg->readcount], fragmentLength);
+	}
+
+	bool complete = qtrue;
+	for (int i = 0; i <= maxFragmentIndex; ++i)
+	{
+		if ((chan->fragment_ack[i >> 5] & (1 << (i & 31))) == 0)
+		{
+			complete = qfalse;
+			break;
+		}
+	}
+
+	if (!complete || chan->fragmentLength > msg->maxsize)
+	{
+		return qfalse;
+	}
+
+	*(int *)msg->data = LittleLong(sequence);
+	memcpy(msg->data + 4, chan->fragmentBuffer, chan->fragmentLength);
+	msg->cursize = chan->fragmentLength + 4;
+
+	chan->fragmentLength = 0;
+	memset(chan->fragment_ack, 0, sizeof(chan->fragment_ack));
+
+	MSG_BeginReading(msg);
+	MSG_ReadLong(msg);
+
+	//
+	// the message can now be read from the current message pointer
+	//
+	chan->incomingSequence = sequence;
+
+	return qtrue;
 }
 
 /*
@@ -843,3 +1174,63 @@ char *XSessionToString(const XSESSION_INFO *info)
 	return NULL;
 }
 
+/*
+==============
+Net_DumpProfile_f
+==============
+*/
+void Net_DumpProfile_f()
+{
+	if (!net_iProfilingOn)
+	{
+		Com_Printf(CON_CHANNEL_DONT_FILTER, "Network profiling is not on. Set net_profile to turn on network profiling\n");
+	}
+
+	if (net_iProfilingOn == 1)
+	{
+		CL_Netchan_PrintProfileStats(LOCAL_CLIENT_FIRST, 1);
+	}
+}
+
+/*
+==============
+Net_GetQPort_f
+==============
+*/
+void Net_GetQPort_f()
+{
+	Com_Printf(CON_CHANNEL_SYSTEM, "qport = %i\n", g_qport);
+}
+
+/*
+==============
+Net_SetQPort_f
+==============
+*/
+void Net_SetQPort_f()
+{
+	if (Cmd_Argc() < 1)
+	{
+		Com_PrintError(CON_CHANNEL_SYSTEM, "setqport usage: setqport <qport>\n");
+	}
+
+	g_qport = atoi(Cmd_Argv(1));
+}
+
+/*
+==============
+Sys_Checksum
+==============
+*/
+void Sys_Checksum()
+{
+}
+
+/*
+==============
+Sys_ChecksumCopy
+==============
+*/
+void Sys_ChecksumCopy()
+{
+}
