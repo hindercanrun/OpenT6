@@ -1224,6 +1224,7 @@ Sys_Checksum
 */
 void Sys_Checksum()
 {
+	UNIMPLEMENTED(__FUNCTION__);
 }
 
 /*
@@ -1233,4 +1234,5 @@ Sys_ChecksumCopy
 */
 void Sys_ChecksumCopy()
 {
+	UNIMPLEMENTED(__FUNCTION__);
 }
