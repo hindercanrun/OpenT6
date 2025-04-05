@@ -555,29 +555,29 @@ void Image_PicmipForSemantic(unsigned __int8 semantic, Picmip *picmip)
 
 	switch (semantic)
 	{
-	case 0u:
-	case 1u:
+	case 0:
+	case 1:
 		picmip = nullptr;
 		break;
-	case 2u:
-	case 0xAu:
-	case 0xCu:
-	case 0xDu:
-	case 0xEu:
-	case 0xFu:
-	case 0x10u:
-	case 0x11u:
-	case 0x12u:
-	case 0x13u:
-	case 0x14u:
-	case 0x15u:
-	case 0x16u:
-	case 0x17u:
-	case 0x18u:
-	case 0x19u:
-	case 0x1Au:
-	case 0x1Bu:
-	case 0x1Cu:
+	case 2:
+	case 10:
+	case 12:
+	case 13:
+	case 14:
+	case 15:
+	case 16:
+	case 17:
+	case 18:
+	case 19:
+	case 20:
+	case 21:
+	case 22:
+	case 23:
+	case 24:
+	case 25:
+	case 26:
+	case 27:
+	case 28:
 		picmipBump = imageGlobals.picmip;
 		picmip->platform[1] = 2;
 		if (picmipBump >= 0)
@@ -593,7 +593,7 @@ void Image_PicmipForSemantic(unsigned __int8 semantic, Picmip *picmip)
 			picmip->platform[0] = 0;
 		}
 		break;
-	case 5u:
+	case 5:
 		picmipBump = imageGlobals.picmipBump;
 		picmip->platform[1] = 2;
 		if (picmipBump >= 0)
@@ -609,7 +609,7 @@ void Image_PicmipForSemantic(unsigned __int8 semantic, Picmip *picmip)
 			picmip->platform[0] = 0;
 		}
 		break;
-	case 8u:
+	case 8:
 		picmipBump = imageGlobals.picmipSpec;
 		picmip->platform[1] = 2;
 		if (picmipBump >= 0)

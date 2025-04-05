@@ -189,6 +189,7 @@ void Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, unsigne
 	image->baseSize = fileHeader->fileSizeForPicmip[0] - sizeof(GfxImageFileHeader);
 	Image_TrackBytes += image->loadedSize;
 	image->texture.basemap = NULL;
+
 	switch (fileHeader->format)
 	{
 	case 1:
@@ -242,19 +243,19 @@ char Image_LoadFromFileInternal(GfxImage *image)
 
 	if (Com_sprintf(filepath, 64, "%s%s%s", "images/", image->name, ".iwi") < 0)
 	{
-		Com_PrintError(13, "ERROR: filename '%s' too long\n", filepath);
+		Com_PrintError(CON_CHANNEL_GFX, "ERROR: filename '%s' too long\n", filepath);
 		return 0;
 	}
 
 	fileSize = FS_FOpenFileRead(filepath, &fileHandle);
 	if (fileSize < 0)
 	{
-		Com_PrintError(13, "ERROR: image '%s' is missing\n", filepath);
+		Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is missing\n", filepath);
 		return 0;
 	}
 	if (FS_Read(&fileHeader, 64, fileHandle) != 64)
 	{
-		Com_PrintError(13, "ERROR: image '%s' is truncated.  Delete the file and run converter to fix.\n", filepath);
+		Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is truncated.  Delete the file and run converter to fix.\n", filepath);
 		FS_FCloseFile(fileHandle);
 		return 0;
 	}
@@ -263,13 +264,13 @@ char Image_LoadFromFileInternal(GfxImage *image)
 	{
 		if (fileHeader.tag[0] != 73 || fileHeader.tag[1] != 87 || fileHeader.tag[2] != 105)
 		{
-			Com_PrintError(13, "ERROR: image '%s' is not an IW image\n", filepath);
+			Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is not an IW image\n", filepath);
 			FS_FCloseFile(fileHandle);
 			return 0;
 		}
 		if (fileHeader.version != 27)
 		{
-			Com_PrintError(13, "ERROR: image '%s' is version %i but should be version %i\n", filepath, fileHeader.version, 27);
+			Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is version %i but should be version %i\n", filepath, fileHeader.version, 27);
 			FS_FCloseFile(fileHandle);
 			return 0;
 		}
@@ -296,7 +297,7 @@ char Image_LoadFromFileInternal(GfxImage *image)
 
 		if (n < 0)
 		{
-			Com_PrintError(13, "ERROR: image '%s' is invalid. fileHeader.fileSizeForPicmip[0] != fileSize (%d != %d)\n", filepath, fileHeader.fileSizeForPicmip[0], fileSize);
+			Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is invalid. fileHeader.fileSizeForPicmip[0] != fileSize (%d != %d)\n", filepath, fileHeader.fileSizeForPicmip[0], fileSize);
 			FS_FCloseFile(fileHandle);
 			return 0;
 		}
@@ -304,7 +305,7 @@ char Image_LoadFromFileInternal(GfxImage *image)
 		fileSize -= fileHeader.fileSizeForPicmip[0];
 		if (FS_Read(&fileHeader, 64, fileHandle) != 64)
 		{
-			Com_PrintError(13, "ERROR: image '%s' is truncated.  Delete the file and run converter to fix.\n", filepath);
+			Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is truncated.  Delete the file and run converter to fix.\n", filepath);
 			FS_FCloseFile(fileHandle);
 			return 0;
 		}
@@ -348,7 +349,7 @@ char Image_LoadFromFileInternal(GfxImage *image)
 	}
 	else
 	{
-		Com_PrintError(13, "ERROR: image '%s' is truncated.  Delete the file and run converter to fix.\n", filepath);
+		Com_PrintError(CON_CHANNEL_GFX, "ERROR: image '%s' is truncated.  Delete the file and run converter to fix.\n", filepath);
 		Image_FreeTempMemory(tempmem, picmipsize);
 		FS_FCloseFile(fileHandle);
 		return 0;
@@ -529,10 +530,10 @@ GfxImage *Image_LoadBuiltin(const char *name, unsigned __int8 semantic, int imag
 
 	for (tableIndex = 0; ; ++tableIndex)
 	{
-		if (tableIndex >= 0xC)
+		if (tableIndex >= 12)
 		{
-			Com_PrintError(8, "ERROR: Unknown built-in image '%s'", name);
-			return 0;
+			Com_PrintError(CON_CHANNEL_LOGFILEONLY, "ERROR: Unknown built-in image '%s'", name);
+			return FALSE;
 		}
 		if (!strcmp(constructorTable[tableIndex].name, name))
 		{
@@ -560,7 +561,7 @@ GfxImage *Image_Load(const char *name, int semantic, int imageTrack)
 	{
 		return Image_LoadBuiltin(name, semantic, imageTrack);
 	}
-	image = Image_Alloc(name, 3u, semantic, imageTrack);
+	image = Image_Alloc(name, 3, semantic, imageTrack);
 	assert(image);
 	assert(image->texture.basemap == 0);
 

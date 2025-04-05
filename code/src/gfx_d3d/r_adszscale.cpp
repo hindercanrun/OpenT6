@@ -7,6 +7,7 @@ R_SetADSZScaleConstants
 */
 void R_SetADSZScaleConstants(GfxCmdBufInput *input, float adsZScale)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	*input->consts[157].v = adsZScale;
+	*&input->consts[157].b = 0LL;
 }
 
