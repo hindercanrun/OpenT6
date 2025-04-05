@@ -7,7 +7,10 @@ R_DrawSonarCallback
 */
 void R_DrawSonarCallback(const void *__formal, GfxCmdBufContext context, const GfxViewInfo *viewInfo)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	RB_TrackStageBegin(&context.state->prim.frameStats, GFX_PRIM_STATS_STAGE_SONAR);
+	R_SetRenderTarget(context, 57);
+	R_DrawSurfs(context, viewInfo->drawList + 6);
+	RB_TrackStageEnd(&context.state->prim.frameStats);
 }
 
 /*

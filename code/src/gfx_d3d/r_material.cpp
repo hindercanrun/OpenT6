@@ -7,7 +7,11 @@ TRACK_r_material
 */
 void TRACK_r_material()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(&materialGlobals, 8196, "materialGlobals", 21);
+	track_static_alloc_internal(s_streamSourceInfo, 660, "s_streamSourceInfo", 21);
+	track_static_alloc_internal(s_streamDestInfo, 160, "s_streamDestInfo", 21);
+	track_static_alloc_internal(s_builtInMaterials, 792, "s_builtInMaterials", 21);
+	track_static_alloc_internal(s_permapMaterials, 32, "s_permapMaterials", 21);
 }
 
 /*
@@ -15,10 +19,9 @@ void TRACK_r_material()
 Material_Alloc
 ==============
 */
-unsigned __int8 *Material_Alloc(int size)
+void *Material_Alloc(int size)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return Hunk_Alloc(size, "Material_Alloc", 25);
 }
 
 /*
@@ -119,9 +122,9 @@ void Material_SetTechniqueSet(const char *name, MaterialTechniqueSet *techniqueS
 Material_SetAlwaysUseDefaultMaterial
 ==============
 */
-void Material_SetAlwaysUseDefaultMaterial(const bool alwaysUseDefaultMaterial)
+void Material_SetAlwaysUseDefaultMaterial(bool alwaysUseDefaultMaterial)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	g_alwaysUseDefaultMaterial = alwaysUseDefaultMaterial;
 }
 
 /*
@@ -172,7 +175,7 @@ Material_DirtySort
 */
 void Material_DirtySort()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	dword_83DA480 = 1;
 }
 
 /*
@@ -213,8 +216,7 @@ Material_Register_FastFile
 */
 Material *Material_Register_FastFile(const char *name, int imageTrack, bool errorIfMissing, int waitTime)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return DB_FindXAssetHeader(ASSET_TYPE_MATERIAL, name, errorIfMissing, waitTime).material;
 }
 
 /*
@@ -254,8 +256,8 @@ Material_GetName
 */
 const char *Material_GetName(Material *handle)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assert(handle);
+	return Material_FromHandle(handle)->info.name;
 }
 
 /*
@@ -265,8 +267,10 @@ Material_LoadFile
 */
 int Material_LoadFile(const char *filename, int *file)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	char fullFilename[64] = { 0 };
+
+	Com_sprintf(fullFilename, sizeof(fullFilename), "materials/%s", filename);
+	return FS_FOpenFileReadCurrentThread(fullFilename, file);
 }
 
 /*
@@ -276,8 +280,8 @@ IsValidMaterialHandle
 */
 BOOL IsValidMaterialHandle(Material *const handle)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	assert((0x0003 & reinterpret_cast<int>(handle)) == 0x0)
+	return handle && handle->info.name && *handle->info.name;
 }
 
 /*
@@ -287,8 +291,7 @@ GetCodeConst_GenericParam0
 */
 int GetCodeConst_GenericParam0()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 169;
 }
 
 /*
@@ -298,8 +301,7 @@ GetCodeConst_GenericParam1
 */
 int GetCodeConst_GenericParam1()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 170;
 }
 
 /*
@@ -309,8 +311,7 @@ GetCodeConst_GenericParam2
 */
 int GetCodeConst_GenericParam2()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 171;
 }
 
 /*
@@ -320,8 +321,7 @@ GetCodeConst_GenericParam3
 */
 int GetCodeConst_GenericParam3()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 172;
 }
 
 /*
@@ -331,8 +331,7 @@ GetCodeConst_GenericParamA
 */
 int GetCodeConst_GenericParamA()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 165;
 }
 
 /*
@@ -342,8 +341,7 @@ GetCodeConst_GenericParamB
 */
 int GetCodeConst_GenericParamB()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return 166;
 }
 
 /*
@@ -385,8 +383,15 @@ Material_MakeDefault
 */
 Material *Material_MakeDefault(const char *name)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	assert(name);
+
+	if (!mtlCopy)
+	{
+		Com_Error(ERR_FATAL, "couldn't load material '$default'");
+	}
+
+	Com_PrintWarning(CON_CHANNEL_GFX, "WARNING: Could not find material '%s'\n", name);
+	return Material_Duplicate(mtlCopy, name);
 }
 
 /*

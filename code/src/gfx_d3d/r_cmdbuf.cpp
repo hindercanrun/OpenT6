@@ -5,9 +5,13 @@
 R_ShutdownCmdBuf
 ==============
 */
-void R_ShutdownCmdBuf(GfxCmdBuf *cmdBuf)
+void R_ShutdownCmdBuf(GfxCmdBuf *context)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(context);
+	assert(dx.cmdBuf[cmdBuf->viewIndex].list[cmdBuf->deviceIndex] == NULL);
+
+	ID3D11DeviceContext *buf = dx.cmdBuf[cmdBuf->viewIndex].context[cmdBuf->deviceIndex];
+	buf->FinishCommandList(buf, 0, (4 * (cmdBuf->deviceIndex + 99 * cmdBuf->viewIndex) + 138259804));
 }
 
 /*
@@ -17,6 +21,6 @@ R_InitContext
 */
 void R_InitContext(const GfxBackEndData *data, GfxCmdBuf *cmdBuf)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	cmdBuf->device = dx.context;
 }
 

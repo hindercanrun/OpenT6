@@ -747,10 +747,44 @@ void R_SetSkyDynamicIntensity(float viewForward, const vec3_t *a2, GfxCmdBufInpu
 R_WaitForFXUpdateWorkerCmds
 ==============
 */
-int R_WaitForFXUpdateWorkerCmds()
+void R_WaitForFXUpdateWorkerCmds()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	PIXBeginNamedEvent(-1, "R_WaitForFXUpdateWorkerCmds");
+	PIXBeginNamedEvent(-1, "wait & assist fx_update");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_updateWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	PIXBeginNamedEvent(-1, "wait & assist fx_update_remaining");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_update_remainingWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	PIXBeginNamedEvent(-1, "wait & assist fx_update_portalled");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_update_portalledWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	PIXBeginNamedEvent(-1, "wait & assist fx_post_update");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_post_updateWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
 }
 
 /*
@@ -758,10 +792,35 @@ int R_WaitForFXUpdateWorkerCmds()
 R_WaitForFXNonSpriteWorkerCmds
 ==============
 */
-int R_WaitForFXNonSpriteWorkerCmds()
+void R_WaitForFXNonSpriteWorkerCmds()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	PIXBeginNamedEvent(-1, "R_WaitForFXNonSpriteWorkerCmds");
+	PIXBeginNamedEvent(-1, "wait & assist fx_update_nonsprite");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_update_nonspriteWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	PIXBeginNamedEvent(-1, "wait & assist fx_update_portalled");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_update_portalledWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	PIXBeginNamedEvent(-1, "wait & assist fx_draw_nonsprite");
+
+	Sys_AssistAndWaitWorkerCmdInternal(&fx_draw_nonspriteWorkerCmd);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
 }
 
 /*
@@ -811,7 +870,7 @@ R_DrawRecordFrame
 */
 void R_DrawRecordFrame()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	++g_drawRecordGlob.frame;
 }
 
 /*
@@ -831,8 +890,7 @@ R_GetDrawRecordFrame
 */
 unsigned int R_GetDrawRecordFrame()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return g_drawRecordGlob.frame;
 }
 
 /*
@@ -852,8 +910,18 @@ R_UpdateCachedLightUsage
 */
 int R_UpdateCachedLightUsage()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	int result;
+	for (result = 0; result < 255; result += 5 )
+	{
+	  scene.cachedShadowableLightIsUsed[frontEndDataOut->viewInfoIndex][result] = scene.shadowableLightIsUsed[result];
+	  scene.cachedShadowableLightIsUsed[frontEndDataOut->viewInfoIndex][result + 1] = scene.cachedShadowableLightIsUsed[-1][result];
+	  scene.cachedShadowableLightIsUsed[frontEndDataOut->viewInfoIndex][result + 2] = scene.shadowableLightIsUsed[result + 2];
+	  scene.cachedShadowableLightIsUsed[frontEndDataOut->viewInfoIndex][result + 3] = scene.shadowableLightIsUsed[result + 3];
+	  scene.cachedShadowableLightIsUsed[frontEndDataOut->viewInfoIndex][result + 4] = scene.shadowableLightIsUsed[result + 4];
+	}
+
+	scene.invalidateShadowableLightCache = 0;
+	return result;
 }
 
 /*
@@ -863,7 +931,10 @@ R_InitCachedVisibleLights
 */
 void R_InitCachedVisibleLights()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	scene.cachedVisibleLightCounts[0] = 0;
+	scene.cachedVisibleLightCounts[1] = 0;
+	scene.cachedVisibleLightCounts[2] = 0;
+	scene.cachedVisibleLightCounts[3] = 0;
 }
 
 /*
@@ -881,9 +952,44 @@ void R_GetCachedVisibleLights(GfxViewInfo *viewInfo)
 R_SetupVisibility
 ==============
 */
-void R_SetupVisibility(GfxViewInfo *viewInfo, const GfxViewParms *viewParmsDpvs, bool recalculateShadows)
+void R_SetupVisibility(
+	GfxViewInfo *viewInfo,
+	const GfxViewParms *viewParmsDpvs,
+	bool recalculateShadows)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	PIXBeginNamedEvent(-1, "R_SetupVisibility");
+
+	R_SetViewFrustumPlanes(viewInfo);
+
+	PIXBeginNamedEvent(-1, "R_InitialEntityCulling");
+
+	R_InitialEntityCulling();
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	PIXBeginNamedEvent(-1, "R_AddWorldSurfacesDpvs");
+
+	R_AddWorldSurfacesDpvs(viewParmsDpvs->bspCellIndex, 0);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
+
+	if (recalculateShadows)
+	{
+		R_FinishSunShadowMaps(2);
+	}
+
+	R_SetSunShadowConstants(viewInfo->input, &frontEndDataOut->sunShadow.sunProj);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
 }
 
 /*
@@ -954,9 +1060,7 @@ R_GetLocalClientNum
 */
 LocalClientNum_t R_GetLocalClientNum()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	LocalClientNum_t tmp;
-	return tmp;
+	return scene.dpvs.localClientNum;
 }
 
 /*
@@ -1069,7 +1173,15 @@ R_LinkDObjEntity
 */
 void R_LinkDObjEntity(LocalClientNum_t localClientNum, unsigned int entnum, vec3_t *origin, float radius)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	PIXBeginNamedEvent(-1, "R_LinkDObjEntity");
+
+	R_FilterDObjIntoCells(localClientNum, entnum, origin, radius);
+	R_LinkSphereEntityToPrimaryLights(localClientNum, entnum, origin, radius);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
 }
 
 /*
@@ -1079,7 +1191,15 @@ R_LinkBModelEntity
 */
 void R_LinkBModelEntity(LocalClientNum_t localClientNum, unsigned int entnum, GfxBrushModel *bmodel)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	PIXBeginNamedEvent(-1, "R_LinkBModelEntity");
+
+	R_FilterBModelIntoCells(localClientNum, entnum, bmodel);
+	R_LinkBoxEntityToPrimaryLights(localClientNum, entnum, &bmodel->writable.mins, &bmodel->writable.maxs);
+
+	if (Sys_IsRenderThread())
+	{
+		D3DPERF_EndEvent();
+	}
 }
 
 /*
@@ -1089,7 +1209,8 @@ R_UnlinkEntity
 */
 void R_UnlinkEntity(LocalClientNum_t localClientNum, unsigned int entnum)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_UnfilterEntFromCells(localClientNum, entnum);
+	R_UnlinkEntityFromPrimaryLights(localClientNum, entnum);
 }
 
 /*
@@ -1097,9 +1218,10 @@ void R_UnlinkEntity(LocalClientNum_t localClientNum, unsigned int entnum)
 R_LinkDynEnt
 ==============
 */
-void R_LinkDynEnt(DynEntityDrawType a1, unsigned int a2, unsigned int dynEntId, DynEntityDrawType drawType, vec3_t *mins, vec3_t *maxs)
+void R_LinkDynEnt(unsigned int dynEntId, DynEntityDrawType drawType, vec3_t *mins, vec3_t *maxs)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_FilterDynEntIntoCells(dynEntId, drawType, mins, maxs);
+	R_LinkDynEntToPrimaryLights(dynEntId, drawType, mins, maxs);
 }
 
 /*
@@ -1109,7 +1231,8 @@ R_UnlinkDynEnt
 */
 void R_UnlinkDynEnt(unsigned int dynEntId, DynEntityDrawType drawType)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_UnfilterDynEntFromCells(dynEntId, drawType);
+	R_UnlinkDynEntFromPrimaryLights(dynEntId, drawType);
 }
 
 /*
@@ -1129,7 +1252,7 @@ R_PvsLock_GetViewAxis
 */
 void R_PvsLock_GetViewAxis(vec3_t *out)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	AxisCopy(lockPvsViewParms.axis, out);
 }
 
 /*
@@ -1139,8 +1262,7 @@ R_PvsLock_GetViewParms
 */
 GfxViewParms *R_PvsLock_GetViewParms()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	return &lockPvsViewParms;
 }
 
 /*
@@ -1160,7 +1282,9 @@ R_PerMap_Init
 */
 void R_PerMap_Init()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_PerMap_DpvsGlobInit();
+
+	r_glob.remoteScreenLastSceneResolveTarget = 0;
 }
 
 /*
