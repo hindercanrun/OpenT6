@@ -77,7 +77,7 @@
 #define INVALID_CLIENT_NUMBER -1
 
 #define IsPowerOf2(x) !((x) * ((x) - 1))
-#define IsFastFileLoad() Dvar_GetBool(useFastFile)
+#define IsFastFileLoad() useFastFile->current.enabled;
 #define IsUsingMods() (fs_gameDirVar && fs_gameDirVar->current.string[0])
 
 #define assert(cond) if (!(cond)) { __debugbreak(); }

@@ -800,7 +800,14 @@ CL_InitDevGui
 */
 void CL_InitDevGui()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	DevGui_Init();
+
+	Cmd_AddCommandInternal("devgui_dvar", CL_DevGuiDvar_f, &CL_DevGuiDvar_f_VAR);
+	Cmd_AddCommandInternal("devgui_list", CL_DevGuiDvarList_f, &CL_DevGuiDvarList_f_VAR);
+	Cmd_AddCommandInternal("devgui_cmd", CL_DevGuiCmd_f, &CL_DevGuiCmd_f_VAR);
+	Cmd_AddCommandInternal("devgui_open", CL_DevGuiOpen_f, &CL_DevGuiOpen_f_VAR);
+
+	CL_CreateDevGui();
 }
 
 /*
@@ -810,7 +817,31 @@ CL_StartHunkUsers
 */
 void CL_StartHunkUsers()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(!cls.hunkUsersStarted);
+
+	if (!CL_AnyLocalClientsRunning())
+	{
+		return;
+	}
+
+	assert(cls.soundStarted);
+	assert(cls.rendererStarted);
+
+	if (!cls.uiStarted)
+	{
+		CL_InitUI();
+		assert(cls.uiStarted);
+
+		if (!cls.devGuiStarted)
+		{
+			cls.devGuiStarted = true;
+			CL_InitDevGui();
+		}
+
+		Com_DvarDump(8, false);
+
+		cls.hunkUsersStarted = true;
+	}
 }
 
 /*
@@ -1173,25 +1204,38 @@ void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, Font_s *font,
 CL_DrawTextWithCursor
 ==============
 */
-void CL_DrawTextWithCursor(const ScreenPlacement *scrPlace, const char *text, int maxChars, Font_s *font, float x, float y, int horzAlign, int vertAlign, float xScale, float yScale, const vec4_t *color, int style, int cursorPos, char cursor)
+void CL_DrawTextWithCursor(
+	const ScreenPlacement *scrPlace,
+	const char *text,
+	int maxChars,
+	Font_s *font,
+	float x,
+	float y,
+	int horzAlign,
+	int vertAlign,
+	float xScale,
+	float yScale,
+	const float *color,
+	int style,
+	int cursorPos,
+	char cursor)
 {
 	ScrPlace_ApplyRect(scrPlace, &x, &y, &xScale, &yScale, horzAlign, vertAlign);
-
 	R_AddCmdDrawTextWithCursorInternal(
 		text,
 		maxChars,
 		font,
 		x,
 		y,
-		1.0,
+		1.0f,
 		xScale,
 		yScale,
-		0.0,
+		0.0f,
 		color,
 		style,
 		cursorPos,
 		cursor,
-		0.0);
+		0.0f);
 }
 
 /*
@@ -1313,7 +1357,13 @@ vec3_t *CL_GetMapCenter()
 CL_ConnectFromParty
 ==============
 */
-void CL_ConnectFromParty(ControllerIndex_t controllerIndex, XSESSION_INFO *hostInfo, netadr_t addr, int numPublicSlots, int numPrivateSlots, const char *mapname)
+void CL_ConnectFromParty(
+	ControllerIndex_t controllerIndex,
+	XSESSION_INFO *hostInfo,
+	netadr_t addr,
+	int numPublicSlots,
+	int numPrivateSlots,
+	const char *mapname)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -1385,17 +1435,20 @@ CL_ShutdownAll
 */
 void CL_ShutdownRenderer(int destroyWindow)
 {
-	cls.rendererStarted = 0;
+	cls.rendererStarted = false;
+
 	Com_ShutdownWorld();
-	if (Dvar_GetBool(useFastFile) && destroyWindow)
+	if (IsFastFileLoad() && destroyWindow)
 	{
 		CM_Shutdown();
 	}
+
 	R_Shutdown(destroyWindow);
-	cls.whiteMaterial = 0;
-	cls.consoleMaterial = 0;
-	cls.consoleFont = 0;
-	cls.spinnerMaterial = 0;
+
+	cls.whiteMaterial = nullptr;
+	cls.consoleMaterial = nullptr;
+	cls.consoleFont = nullptr;
+	cls.spinnerMaterial = nullptr;
 }
 
 /*
@@ -1407,7 +1460,7 @@ void CL_ShutdownAll()
 {
 	if (cls.rendererStarted)
 	{
-		CL_ShutdownRenderer(0);
+		CL_ShutdownRenderer(false);
 	}
 }
 

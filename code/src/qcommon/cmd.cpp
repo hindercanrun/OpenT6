@@ -902,6 +902,7 @@ void Cmd_AddCommandInternal(const char *cmdName, void (*function)(), cmd_functio
 	if (cmd)
 	{
 		assert(cmd == allocedCmd);
+		// allow completion-only commands to be silently doubled
 		if (function != NULL)
 		{
 			Com_Printf(CON_CHANNEL_SYSTEM, "Cmd_AddCommand: %s already defined\n", cmdName);
