@@ -9,9 +9,9 @@ void Demo_InitFileHandlerSystem()
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		s_fileHandler.ptr = 0;
-		s_fileHandler.size = 0;
-		s_fileHandler.offset = 0;
+		s_fileHandler.ptr = NULL;
+		s_fileHandler.size = NULL;
+		s_fileHandler.offset = NULL;
 	}
 }
 
@@ -24,9 +24,11 @@ void Demo_AllocateMemoryFromStreamBuffer(int size)
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		assertMsg(s_fileHandler.ptr == NULL);
+		assert(s_fileHandler.ptr == NULL);
+
 		s_fileHandler.ptr = Z_VirtualAlloc(size, "demoDownloadBuffer", 12);
-		s_fileHandler.offset = 0;
+		memset(s_fileHandler.ptr, 0, size);//why?
+		s_fileHandler.offset = NULL;
 		s_fileHandler.size = size;
 	}
 }
@@ -41,7 +43,8 @@ void Demo_ReturnStreamBufferMemory()
 	if (!demo_usefilesystem->current.enabled)
 	{
 		assert(s_fileHandler.ptr != NULL);
-		s_fileHandler.ptr = 0;
+		Z_VirtualFree(s_fileHandler.ptr);
+		s_fileHandler.ptr = NULL;
 	}
 }
 
@@ -52,7 +55,7 @@ Demo_IsStreamBufferAllocated
 */
 bool Demo_IsStreamBufferAllocated()
 {
-	return !demo_usefilesystem->current.enabled && s_fileHandler.ptr != 0;
+	return !demo_usefilesystem->current.enabled && s_fileHandler.ptr != NULL;
 }
 
 /*
@@ -122,7 +125,7 @@ int Demo_OpenFileWrite(const char *filename, const char *dir, bool supressErrors
 	}
 
 	char name[260];
-	Com_sprintf(name, 256, "%s", filename);
+	Com_sprintf(name, sizeof(name), "%s", filename);
 
 	int handle = FS_SV_FOpenFileWrite(name, "demos");
 	if (handle)
@@ -146,12 +149,12 @@ int Demo_OpenFileRead(const char *filename, const char *dir, bool supressErrors)
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		assert(s_fileHandler.ptr != NULL); // why assert tho?
+		assert(s_fileHandler.ptr != NULL);
 		return TRUE;
 	}
 
 	char ospath[256];
-	Com_sprintf(ospath, 256, "%s", filename);
+	Com_sprintf(ospath, sizeof(ospath), "%s", filename);
 
 	int handle;
 	int size = FS_SV_FOpenFileRead(ospath, "demos", &handle);
@@ -163,7 +166,7 @@ int Demo_OpenFileRead(const char *filename, const char *dir, bool supressErrors)
 	{
 		if (!supressErrors)
 		{
-			Com_PrintError(0, "ERROR: couldn't open file for read.\n");
+			Com_PrintError(CON_CHANNEL_DONT_FILTER, "ERROR: couldn't open file for read.\n");
 		}
 
 		if (handle)
@@ -195,7 +198,7 @@ int Demo_Write(const void *buffer, int len, int handle)
 	{
 		if (!s_fileHandler.ptr)
 		{
-			return 0;
+			return false;
 		}
 
 		memcpy(&s_fileHandler.ptr[s_fileHandler.offset], buffer, len);
@@ -231,7 +234,7 @@ void Demo_CloseFile(int handle)
 {
 	if (!demo_usefilesystem->current.enabled)
 	{
-		s_fileHandler.offset = 0;
+		s_fileHandler.offset = NULL;
 	}
 
 	FS_FCloseFile(handle);
@@ -260,9 +263,9 @@ int Demo_SeekFile(int handle, int offset, int origin)
 	case 2:
 		s_fileHandler.offset = offset;
 		return offset;
+	default:
+		assertMsg(false, va("Bad origin %i in FS_Seek", origin));
+		return false;
 	}
-
-	assertMsg("Bad origin %i in FS_Seek", origin);
-	return FALSE;
 }
 
