@@ -17,8 +17,7 @@ Dtp_CalcSurfaceType
 */
 int Dtp_CalcSurfaceType(pmove_t *pm, pml_t *pml)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return Dtp_SurfaceRemapTable[PM_GroundSurfaceType(pm->ps, pml)];
 }
 
 /*
@@ -28,8 +27,7 @@ Dtp_IsSliding
 */
 BOOL Dtp_IsSliding(const playerState_s *ps)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return dtp->current.enabled && (ps->pm_flags & 0x200000) != 0 && ps->jumpTime < 0;
 }
 
 /*

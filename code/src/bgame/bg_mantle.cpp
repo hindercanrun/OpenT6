@@ -17,7 +17,11 @@ Mantle_DebugPrint
 */
 void Mantle_DebugPrint(const char *msg)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(msg);
+	if (mantle_debug->current.enabled)
+	{
+		Com_Printf(CON_CHANNEL_PLAYERWEAP, "%s\n", msg);
+	}
 }
 
 /*
