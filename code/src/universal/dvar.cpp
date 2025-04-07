@@ -39,7 +39,8 @@ TRACK_dvar
 */
 void TRACK_dvar()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(s_dvarPool, 403200, "s_dvarPool", 12);
+	track_static_alloc_internal(s_dvarHashTable, 4200, "s_dvarHashTable", 12);
 }
 
 /*
@@ -957,8 +958,9 @@ Dvar_PrintDomain
 void Dvar_PrintDomain(dvarType_t type, DvarLimits domain)
 {
 	char domainBuffer[1024];
-
-	Com_Printf(CON_CHANNEL_SYSTEM, "  %s\n", Dvar_DomainToString_Internal(type, domain, domainBuffer, sizeof(domainBuffer), 0));
+	Com_Printf(
+		CON_CHANNEL_SYSTEM, "  %s\n",
+		Dvar_DomainToString_Internal(type, domain, domainBuffer, sizeof(domainBuffer), 0));
 }
 
 /*
@@ -1119,7 +1121,7 @@ dvar_t *Dvar_FindMalleableVar(int dvarHash)
 		NET_Sleep(0);
 	}
 
-	for (var = s_dvarHashTable[dvarHash & 0x437]; var; var = var->hashNext)
+	for (var = s_dvarHashTable[dvarHash & 1079]; var; var = var->hashNext)
 	{
 		if (var->hash == dvarHash)
 		{
