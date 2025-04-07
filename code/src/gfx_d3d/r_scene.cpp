@@ -291,7 +291,7 @@ R_SetEnablePlayerShadowFlag
 */
 void R_SetEnablePlayerShadowFlag(bool flag)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	rg.enablePlayerShadowFlag = flag;
 }
 
 /*
