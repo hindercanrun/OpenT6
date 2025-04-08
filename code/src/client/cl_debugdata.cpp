@@ -79,8 +79,33 @@ CreateDebugLinesIfNeeded
 */
 BOOL CreateDebugLinesIfNeeded()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (!cls.debug.clLines.lines)
+	{
+		assert(cls.debug.svLines.lines == NULL);
+		assert(cls.debug.svLinesBuffer.lines == NULL);
+
+		cls.debug.clLines.max = 4096;
+		cls.debug.svLines.max = 4096;
+		cls.debug.svLinesBuffer.max = 4096;
+
+		R_DebugAlloc(&cls.debug.clLines.lines, 180224, "Client Debug Lines");
+		R_DebugAlloc(&cls.debug.clLines.durations, 16384, "Client Debug Lines");
+
+		cls.debug.clLines.num = 0;
+		R_DebugAlloc(&cls.debug.svLines.lines, 180224, "Client Debug Lines");
+		R_DebugAlloc(&cls.debug.svLines.durations, 16384, "Client Debug Lines");
+
+		cls.debug.svLines.num = 0;
+		R_DebugAlloc(&cls.debug.svLinesBuffer.lines, 180224, "Client Debug Lines");
+
+		cls.debug.svLinesBuffer.num = 0;
+		return false;
+	}
+
+	return cls.debug.clLines.durations
+		&& cls.debug.svLines.lines
+		&& cls.debug.svLines.durations
+		&& cls.debug.svLinesBuffer.lines;
 }
 
 /*

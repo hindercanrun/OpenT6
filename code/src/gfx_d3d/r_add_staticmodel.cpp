@@ -49,7 +49,12 @@ R_StaticModelWriteInfoHeader
 */
 void R_StaticModelWriteInfoHeader(int fileHandle)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	char dest[4096];
+	Com_sprintf(
+		dest,
+		sizeof(dest),
+		"index,name,radius,numLods,lodDist,lodPixels720p,1PixelDist720p,scaledDist,posx,posy,posz,pixels\n");
+	FS_Write(dest, strlen(dest), fileHandle);
 }
 
 /*
