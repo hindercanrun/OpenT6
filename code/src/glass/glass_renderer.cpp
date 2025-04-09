@@ -245,7 +245,40 @@ GlassRenderer::PrintHwm
 */
 /*void GlassRenderer::PrintHwm(GlassRenderer *notthis)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Com_Printf(
+		CON_CHANNEL_DONT_FILTER,
+		"glasses:                %7d\n", clGlasses->numGlasses);
+	Com_Printf(
+		CON_CHANNEL_DONT_FILTER,
+		"glass_smallAllocator:   %7d [%5.1f%%]\n",
+		notthis->smallAllocator.maxUsed,
+		(double)notthis->smallAllocator.maxUsed * 100.0f / (double)notthis->smallAllocator.numBlocks);
+	Com_Printf(
+		CON_CHANNEL_DONT_FILTER,
+		"glass_groupsAllocator:  %7d [%5.1f%%]\n",
+		notthis->groupsAllocator->maxUsed,
+		(double)notthis->groupsAllocator->maxUsed * 100.0f / (double)notthis->groupsAllocator->size);
+	Com_Printf(
+		CON_CHANNEL_DONT_FILTER,
+		"glass_shardsAllocator:  %7d [%5.1f%%]\n",
+		notthis->shardsAllocator->maxUsed,
+		(double)notthis->shardsAllocator->maxUsed * 100.0f / (double)notthis->shardsAllocator->size);
+	Com_Printf(
+		CON_CHANNEL_DONT_FILTER,
+		"glass_physicsAllocator: %7d [%5.1f%%]\n",
+		notthis->physicsAllocator->maxUsed,
+		(double)notthis->physicsAllocator->maxUsed * 100.0f / (double)notthis->physicsAllocator->size);
+	Com_Printf(
+		CON_CHANNEL_DONT_FILTER,
+		"glass_sharedMemory:     %7d [%5.1f%%]\n",
+		notthis->shardMemoryAllocator.maxUsed,
+		(float)((float)((float)notthis->shardMemoryAllocator.maxUsed * 100.0)
+			/ (float)((char *)notthis->shardMemoryAllocator.tail - (char *)notthis->shardMemoryAllocator.head)));
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "sizeof(GlassClient)     %7d\n", 24);
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "sizeof(GlassRenderer)   %7d\n", 19912);
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "sizeof(ShardGroup)      %7d (%d)\n", 84, 96);
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "sizeof(GlassShard)      %7d (%d)\n", 168, 180);
+	Com_Printf(CON_CHANNEL_DONT_FILTER, "sizeof(GlassPhysics)    %7d (%d)\n", 160, 176);
 }*/
 
 /*
