@@ -49,7 +49,17 @@ Menu_Setup
 */
 void Menu_Setup(UiContext *dc)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	dc->menuCount = 0;
+	dc->openMenuCount = 0;
+	dc->blurMenuStackIndex = -1;
+	dc->uiBlurMenu = 0;
+	dc->menuToastPopupMenu = 0;
+	*&dc->historyPos = 0;
+
+	Item_SetupKeywordHash();
+	Menu_SetupKeywordHash();
+
+	UILocalVar_Init(&dc->localVars);
 }
 
 /*

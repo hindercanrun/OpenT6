@@ -7,7 +7,7 @@ UILocalVar_Init
 */
 void UILocalVar_Init(UILocalVarContext *context)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(context);
 }
 
 /*
