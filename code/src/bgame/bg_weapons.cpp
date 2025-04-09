@@ -713,7 +713,26 @@ PM_Weapon_Idle
 */
 void PM_Weapon_Idle(playerState_s *ps)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	ps->weapFlags &= ~2;
+	ps->pm_flags &= ~512;
+
+	if (G_IsServerGameSystem(ps->clientNum))
+	{
+		Com_Printf(CON_CHANNEL_ANIM, "end weapon (idle)\n");
+	}
+
+	ps->weaponTime = 0;
+	ps->weaponDelay = 0;
+	ps->weaponstate = 0;
+	ps->weaponTimeLeft = 0;
+	ps->weaponDelayLeft = 0;
+	ps->weaponstateLeft = 0;
+
+	if (ps->pm_type < 10)
+	{
+		ps->weapAnim = ~ps->weapAnim & 1024;
+		ps->weapAnimLeft = ~ps->weapAnimLeft & 1024;
+	}
 }
 
 /*
@@ -733,7 +752,17 @@ PM_Weapon_RiotshieldHold
 */
 void PM_Weapon_RiotshieldHold(playerState_s *ps)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(!ps);
+	assert(ps->weapon.weaponIdx == NULL);
+
+	ps->weaponstate = 32;
+	ps->weaponTime = 0;
+	ps->weaponDelay = 0;
+
+	if (G_IsServerGameSystem(ps->clientNum))
+	{
+		Com_Printf(CON_CHANNEL_ANIM , "end weapon (riotshield hold)\n");
+	}
 }
 
 /*
