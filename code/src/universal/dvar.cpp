@@ -1342,14 +1342,24 @@ Dvar_GetString
 */
 const char *Dvar_GetString(const dvar_t *dvar)
 {
-	if (!dvar || (dvar->type != DVAR_TYPE_STRING && dvar->type != DVAR_TYPE_ENUM))
+	if (!dvar)
 	{
 		return "";
 	}
+
+	dvarType_t type = dvar->type;
+
+	assertMsg(
+		(dvar->type != DVAR_TYPE_STRING || dvar->type != DVAR_TYPE_ENUM),
+		"(dvar->type) = %i",
+		dvar->type);
+
 	if (dvar->type == DVAR_TYPE_ENUM)
-		return Dvar_EnumToString(dvar);
-	else
-		return dvar->current.string;
+	{
+	  return Dvar_EnumToString(dvar);
+	}
+
+	return dvar->current.string;
 }
 
 /*
