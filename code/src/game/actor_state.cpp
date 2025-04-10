@@ -7,7 +7,12 @@ Actor_SetDefaultState
 */
 void Actor_SetDefaultState(actor_t *actor)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(actor->state.stateLevel == NULL);
+	assert(actor->state.simulatedStateLevel == NULL);
+	assert(actor->state.transitionCount == NULL);
+
+	actor->state.eState[0] = AIS_EXPOSED;
+	actor->state.eSimulatedState[0] = AIS_EXPOSED;
 }
 
 /*

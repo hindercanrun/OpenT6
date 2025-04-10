@@ -891,8 +891,49 @@ Actor_Alloc
 */
 actor_t *Actor_Alloc()
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	actor_t *actors = level.actors;
+	assert(actors != NULL);
+  
+	int count = 0;
+	while ((actors->flags & 1) != NULL)
+	{
+		++count;
+		++actors;
+		if (count >= 32)
+		{
+			Com_DPrintf(CON_CHANNEL_AI, "Actor allocation failed\n");
+			return NULL;
+		}
+	}
+
+	memset(actors, 0, sizeof(actor_t));
+	Actor_SetDefaultState(actors);
+
+	actors->flags.allBits |= 1;
+	actors->sight.fovDot = ACTOR_DEFAULT_FOV_COS;
+	actors->sight.fovDotBusy = ACTOR_DEFAULT_FOV_COS_BUSY;
+	actors->sight.fMaxSightDistSqrd = 6.7108864e7f;
+	actors->orientation.maxFaceEnemyDistSq = 250000.0f;
+	actors->navigation.fWalkDist = ACTOR_DEFAULT_WALK_DIST;
+	actors->navigation.fWalkDistFacingMotion = ACTOR_DEFAULT_WALK_DIST;
+	actors->species = Com_SessionMode_IsZombiesGame() ? AI_SPECIES_ZOMBIE : AI_SPECIES_DOG;
+	actors->navigation.fInterval = ACTOR_DEFAULT_INTERVAL;
+	actors->grenade.grenadeAwareness = ACTOR_DEFAULT_GRENADE_AWARENESS;
+	actors->orientation.dontTurnTime = -1;
+	actors->combat.exposedResumeTime = -1;
+	actors->combat.stopPathTime = -1;
+	actors->painDeath.deathContents = &g_hunk_track[161271].name[40];
+	actors->sight.latency = 100;
+	actors->anim.eTraverseMode = AI_TRAVERSE_NOGRAVITY;
+	actors->CodeOrient.eMode = AI_ORIENT_DONT_CHANGE;
+	actors->ScriptOrient.eMode = AI_ORIENT_INVALID;
+	actors->threat.iPacifistWait = 20000;
+	actors->navigation.badPlaceAwareness = ACTOR_DEFAULT_BADPLACE_AWARENESS;
+	actors->grenade.bThrowbackGrenades = 1;
+	actors->combat.goodShootPosValid = 0;
+	actors->flags.allBits = actors->flags.allBits & 0xFFFFFC0F | 992;
+
+	return actors
 }
 
 /*
