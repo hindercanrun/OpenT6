@@ -1027,7 +1027,6 @@ void Dvar_SetLatchedValue(dvar_t *dvar, DvarValue value)
 {
 	DvarValue latchedString;
 	DvarValue oldString;
-	bool shouldFree;
 
 	switch (dvar->type)
 	{
@@ -1051,7 +1050,7 @@ void Dvar_SetLatchedValue(dvar_t *dvar, DvarValue value)
 	case DVAR_TYPE_STRING:
 		if (dvar->latched.string != value.string)
 		{
-			shouldFree = Dvar_ShouldFreeLatchedString(dvar);
+			bool shouldFree = Dvar_ShouldFreeLatchedString(dvar);
 			if (shouldFree)
 			{
 				oldString.string = dvar->latched.string;
@@ -1142,10 +1141,7 @@ Dvar_FindMalleableVar
 */
 dvar_t *Dvar_FindMalleableVar(const char* dvarName)
 {
-	int hash;
-
-	hash = Com_HashString(dvarName, 0);
-	return Dvar_FindMalleableVar(hash);
+	return Dvar_FindMalleableVar(Com_HashString(dvarName, 0));
 }
 
 /*
