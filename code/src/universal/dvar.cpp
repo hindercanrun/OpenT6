@@ -3522,7 +3522,7 @@ void Dvar_Init()
 Dvar_LoadDvarsAddFlags
 ==============
 */
-void __cdecl Dvar_LoadDvarsAddFlags(MemoryFile *memFile, unsigned __int16 flags)
+void Dvar_LoadDvarsAddFlags(MemoryFile *memFile, unsigned __int16 flags)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
@@ -3534,7 +3534,8 @@ Dvar_LoadDvars
 */
 void Dvar_LoadDvars(MemoryFile *memFile)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(memFile);
+	Dvar_LoadDvarsAddFlags(memFile, 0);
 }
 
 /*
@@ -3544,7 +3545,8 @@ Dvar_LoadScriptInfo
 */
 void Dvar_LoadScriptInfo(MemoryFile *memFile)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(memFile);
+	Dvar_LoadDvarsAddFlags(memFile, 0x400);
 }
 
 /*
@@ -3646,7 +3648,12 @@ Dvar_ForEach
 */
 void Dvar_ForEach(void (*callback)(const dvar_t *, void *), void *userData)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Dvar_Sort();
+
+	for (int i = 0; i < g_dvarCount; ++i)
+	{
+		callback(s_sortedDvars[i], userData);
+	}
 }
 
 /*
@@ -3656,7 +3663,22 @@ Dvar_ForEachName
 */
 void Dvar_ForEachName(void (*callback)(const char *))
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Dvar_Sort();
+
+	for (int i = 0; i < g_dvarCount; ++i)
+	{
+		const char *name;
+		if (s_sortedDvars[i])
+		{
+			name = s_sortedDvars[i]->name;
+		}
+		else
+		{
+			name = nullptr;
+		}
+
+		callback(name);
+	}
 }
 
 /*
@@ -3664,8 +3686,25 @@ void Dvar_ForEachName(void (*callback)(const char *))
 Dvar_ForEachName
 ==============
 */
-void Dvar_ForEachName(LocalClientNum_t localClientNum, void (*callback)(LocalClientNum_t, const char *))
+void Dvar_ForEachName(
+	LocalClientNum_t localClientNum,
+	void (*callback)(LocalClientNum_t, const char *))
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Dvar_Sort();
+
+	for (int i = 0; i < g_dvarCount; ++i)
+	{
+		const char *name;
+		if (s_sortedDvars[i])
+		{
+			name = s_sortedDvars[i]->name;
+		}
+		else
+		{
+			name = nullptr;
+		}
+
+		callback(localClientNum, name);
+	}
 }
 
