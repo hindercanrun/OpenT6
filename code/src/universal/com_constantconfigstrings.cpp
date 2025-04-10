@@ -1,5 +1,9 @@
 #include "types.h"
 
+const StringTable *configStringTable;
+
+int configStringTableChecksum = nullptr;
+
 /*
 ==============
 CCS_ClearConstantConfigStrings
@@ -7,9 +11,10 @@ CCS_ClearConstantConfigStrings
 */
 void CCS_ClearConstantConfigStrings()
 {
-	configStringTable = 0;
-	configStringTableChecksum = 0;
-	Com_DPrintf(11, "CCS: Cleared\n");
+	configStringTable = NULL;
+	configStringTableChecksum = NULL;
+
+	Com_DPrintf(CON_CHANNEL_NETWORK, "CCS: Cleared\n");
 }
 
 /*
@@ -85,7 +90,7 @@ CCS_GetChecksum
 */
 int CCS_GetChecksum()
 {
-	Com_DPrintf(11, "CCS: CCS_GetChecksum: %d\n", configStringTableChecksum);
+	Com_DPrintf(CON_CHANNEL_NETWORK, "CCS: CCS_GetChecksum: %d\n", configStringTableChecksum);
 	return configStringTableChecksum;
 }
 
@@ -101,10 +106,16 @@ void CCS_LoadConstantConfigStrings(const char *mapname, const char *gametype)
 	assert(mapname[0]);
 	assert(gametype[0]);
 
-	Com_sprintf(filename, 256, "%s/configStrings/configStrings_%s.csv", "mp", mapname);
+	char filename[256];
+	Com_sprintf(filename, sizeof(filename), "%s/configStrings/configStrings_%s.csv", "mp", mapname);
 	StringTable_GetAsset();
+
 	configStringTableChecksum = StringTable_Checksum(configStringTable, 0);
-	Com_DPrintf(11, "CCS: CCS_LoadConstantConfigStrings %s: %d\n", filename, configStringTableChecksum);
+	Com_DPrintf(
+		CON_CHANNEL_NETWORK,
+		"CCS: CCS_LoadConstantConfigStrings %s: %d\n",
+		filename,
+		configStringTableChecksum);
 }
 
 /*
@@ -114,10 +125,11 @@ CCS_GetConfigStringValue
 */
 const char *CCS_GetConfigStringValue(const int rowNum)
 {
-	if (configStringTable)
-		return StringTable_GetColumnValueForRow(configStringTable, rowNum, 0);
-	else
+	if (!configStringTable)
+	{
 		return "";
+	}
+	return StringTable_GetColumnValueForRow(configStringTable, rowNum, 0);
 }
 
 /*
