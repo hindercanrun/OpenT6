@@ -413,7 +413,7 @@ int Key_IsDown(LocalClientNum_t localClientNum, int keynum)
 	{
 		return playerKeys[localClientNum].keys[keynum].down;
 	}
-	return 0;
+	return false;
 }
 
 /*
@@ -431,8 +431,60 @@ to be configured even if they don't have defined names.
 */
 int Key_StringToKeynum(LocalClientNum_t localClientNum, const char *str)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (!str || !str[0])
+	{
+		return -1;
+	}
+
+	if (!str[1])
+	{
+		return str[0];
+	}
+
+	// check for hex code
+	if (str[0] == '0' && str[1] == 'x' && strlen(str) == 4)
+	{
+		int n1 = str[2];
+		if (n1 >= '0' && n1 <= '9')
+		{
+			n1 -= '0';
+		}
+		else if (n1 >= 'a' && n1 <= 'f')
+		{
+			n1 = n1 - 'a' + 10;
+		}
+		else
+		{
+			n1 = 0;
+		}
+
+		int n2 = str[3];
+		if (n2 >= '0' && n2 <= '9')
+		{
+			n2 -= '0';
+		}
+		else if (n2 >= 'a' && n2 <= 'f')
+		{
+			n2 = n2 - 'a' + 10;
+		}
+		else
+		{
+			n2 = 0;
+		}
+
+		return n1 * 16 + n2;
+	}
+
+	// scan for a text match
+	for (keyname_t *kn = keynames; kn->name; kn++)
+	{
+		if (!I_stricmp(str, kn->name))
+		{
+			return kn->keynum;
+		}
+	}
+
+	return -1;
 }
 
 /*
@@ -442,8 +494,7 @@ Key_IsValidGamePadChar
 */
 BOOL Key_IsValidGamePadChar(const char key)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	return key >= 1 && key <= 6 || key >= 14 && key <= 25 || (key - 28) <= 3;
 }
 
 /*
@@ -456,8 +507,53 @@ given keynum.
 */
 const char *Key_KeynumToString(int keynum, int translate)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return NULL;
+	if (keynum == -1)
+	{
+		return "<KEY NOT FOUND>";
+	}
+
+	if (keynum < 0 || keynum > 255 )
+	{
+		return "<OUT OF RANGE>";
+	}
+
+	static char tinystr[5];
+
+	// check for printable ascii (don't use quote)
+	if (keynum > 32 && keynum < 127 && keynum != '"' && keynum != ';')
+	{
+		tinystr[0] = keynum;
+		tinystr[1] = 0;
+		return tinystr;
+	}
+
+	// check for a key string
+	for (keyname_t *kn = keynames; kn->name; kn++)
+	{
+		if (keynum == kn->keynum)
+		{
+			return kn->name;
+		}
+	}
+
+	// TODO: add code later
+	if (!translate)
+	{
+		UNIMPLEMENTED(__FUNCTION__);
+		return NULL;
+	}
+
+	// make a hex string
+	int i = keynum >> 4;
+	int j = keynum & 15;
+
+	tinystr[0] = '0';
+	tinystr[1] = 'x';
+	tinystr[2] = i > 9 ? i - 10 + 'a' : i + '0';
+	tinystr[3] = j > 9 ? j - 10 + 'a' : j + '0';
+	tinystr[4] = 0;
+
+	return tinystr;
 }
 
 /*
@@ -497,6 +593,16 @@ Key_GetBinding
 */
 Bind_t Key_GetBinding(LocalClientNum_t localClientNum, int keynum, BindIndex_t index)
 {
+	assertMsg(
+		(unsigned)keynum < (unsigned)256,
+		"keynum doesn't index MAX_KEYS\n\t%i not in [0, %i)",
+		keynum,
+		256);
+	assertMsg(
+		(unsigned)index < (unsigned)BIND_INDEX_COUNT,
+		"index doesn't index BIND_INDEX_COUNT\n\t%i not in [0, %i)",
+		index,
+		2);
 	return playerKeys[localClientNum].keys[keynum].binding[index];
 }
 
@@ -538,7 +644,7 @@ int Key_GetMouseKeyboardCommandAssignment(LocalClientNum_t localClientNum, Bind_
 Key_BindMustHaveCommands
 ==============
 */
-void __cdecl Key_BindMustHaveCommands(LocalClientNum_t localClientNum)
+void Key_BindMustHaveCommands(LocalClientNum_t localClientNum)
 {
 	UNIMPLEMENTED(__FUNCTION__);
 }
