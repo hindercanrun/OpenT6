@@ -7,7 +7,8 @@ TRACK_r_screenshot
 */
 void TRACK_r_screenshot()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	track_static_alloc_internal(cubemapShotAxis, 252, "cubemapShotAxis", 21);
+	track_static_alloc_internal(&cubeShotGlob, 72, "cubeShotGlob", 21);
 }
 
 /*
@@ -67,7 +68,28 @@ R_BeginCubemapShot
 */
 void R_BeginCubemapShot(const int pixelWidthHeight, const int pixelBorder)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assertMsg(
+		(pixelWidthHeight > 0),
+		"(pixelWidthHeight) = %i",
+		pixelWidthHeight);
+	assertMsg(
+		(pixelWidthHeight < 65536),
+		"(pixelWidthHeight) = %i",
+		pixelWidthHeight);
+	assertMsg(
+		(pixelBorder >= 0),
+		"(pixelBorder) = %i",
+		pixelBorder);
+	assertMsg(
+		(pixelBorder < pixelWidthHeight),
+		"(pixelBorder) = %i",
+		pixelBorder);
+
+	gfxMetrics.cubemapShotRes = pixelWidthHeight;
+	gfxMetrics.cubemapShotPixelBorder = pixelBorder;
+
+	R_SetRenderTargetSize(&gfxCmdBufSourceState, 2);
+	R_SetRenderTarget(gfxCmdBufContext, 2);
 }
 
 /*
@@ -77,7 +99,7 @@ R_SaveCubemapShot
 */
 void R_SaveCubemapShot(const char *filename, const CubemapShot shotIndex, const float n0, const float n1)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_CubemapShotWriteTargaFile(filename, shotIndex, n0, n1);
 }
 
 /*
@@ -156,8 +178,10 @@ void R_CopyCubemapShot(CubemapShot shotIndex)
 R_EndCubemapShot
 ==============
 */
-void R_EndCubemapShot(void *notthis)
+void R_EndCubemapShot(CubemapShot shotIndex)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	R_CopyCubemapShot(shotIndex);
+	R_SetRenderTargetSize(&gfxCmdBufSourceState, 2);
+	R_SetRenderTarget(gfxCmdBufContext, 2);
 }
 
