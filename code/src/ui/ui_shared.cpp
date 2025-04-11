@@ -985,7 +985,15 @@ UI_ClearFeeder_f
 */
 void UI_ClearFeeder_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Cmd_Argc() != 1)
+	{
+		Com_Printf(CON_CHANNEL_UI, "Usage: clearFeeder\n");
+	}
+
+	UIContextIndex_t contextIndex = Com_LocalClient_GetUIContextIndex(LOCAL_CLIENT_FIRST);
+	assert(contextIndex != INVALID_UI_CONTEXT);
+
+	UI_ClearFeeder(contextIndex, Cmd_ItemDef(), 1);
 }
 
 /*
@@ -995,7 +1003,15 @@ UI_ClearFeederWithoutResetCursor_f
 */
 void UI_ClearFeederWithoutResetCursor_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Cmd_Argc() != 1)
+	{
+		Com_Printf(CON_CHANNEL_UI, "Usage: clearFeederWithoutResetCursor\n");
+	}
+
+	UIContextIndex_t contextIndex = Com_LocalClient_GetUIContextIndex(LOCAL_CLIENT_FIRST);
+	assert(contextIndex != INVALID_UI_CONTEXT);
+
+	UI_ClearFeeder(contextIndex, Cmd_ItemDef(), 0);
 }
 
 /*
@@ -1015,7 +1031,10 @@ UI_RefreshFeeder_f
 */
 void UI_RefreshFeeder_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Cmd_Argc() != 2)
+	{
+		Com_Printf(CON_CHANNEL_UI, "Usage: refreshFeeder <populate event name>\n");
+	}
 }
 
 /*
@@ -1025,7 +1044,14 @@ UI_ChangeRowStatus_f
 */
 void UI_ChangeRowStatus_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Cmd_Argc() != 4)
+	{
+		Com_Printf(CON_CHANNEL_UI, "Usage: changeRowStatus <menu name> <row index> <new status>\n");
+	}
+
+	UI_ChangeRowStatus(
+		Cmd_ItemDef(),
+		atoi(Cmd_Argv(2)), atoi(Cmd_Argv(3)));
 }
 
 /*
@@ -1045,7 +1071,25 @@ UI_SetActiveMenu_f
 */
 void UI_SetActiveMenu_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Cmd_Argc() != 2)
+	{
+		Com_Printf(CON_CHANNEL_UI, "Usage: setActiveMenu <menuType>\n");
+		return;
+	}
+
+	if (!I_stricmp(Cmd_Argv(1), "theater"))
+	{
+		UI_SetActiveMenu(LOCAL_CLIENT_FIRST, 20);
+	}
+	else if (!I_stricmp(Cmd_Argv(1), "private"))
+	{
+		UI_SetActiveMenu(LOCAL_CLIENT_FIRST, 18);
+	}
+	else
+	{
+		Com_Printf(CON_CHANNEL_UI, "Unhandled type %s in setActiveMenu command\n", Cmd_Argv(1));
+		return;
+	}
 }
 
 /*
@@ -1055,7 +1099,29 @@ UI_KickPlayer_f
 */
 void UI_KickPlayer_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (Cmd_Argc() != 2)
+	{
+		Com_Printf(CON_CHANNEL_UI, "Usage: kickplayer xuid\n");
+		return;
+	}
+
+	if (!Party_InParty(&g_lobbyData) || Com_SessionMode_IsPublicOnlineGame())
+	{
+		Com_PrintError(26, "Attempt to kick a player from a public lobby.\n");
+		return;
+	}
+
+	if (I_atoi64(Cmd_Argv(1)) && Party_AreWeHost(&g_lobbyData) && !Live_XUIDIsLocalPlayer(I_atoi64(Cmd_Argv(1))))
+	{
+		if (Party_FindMemberByXUID(&g_lobbyData, I_atoi64(Cmd_Argv(1))) >= CLIENT_INDEX_FIRST)
+		{
+			Com_Printf(25, "Kicking client %i in UI_KickPlayer_f()\n", MemberByXUID);
+			PartyHost_KickPlayer(
+				&g_lobbyData,
+				Party_FindMemberByXUID(&g_lobbyData, I_atoi64(Cmd_Argv(1))),
+				"@PLATFORM_KICKEDFROMPARTY");
+		}
+	}
 }
 
 /*
@@ -1803,7 +1869,8 @@ UI_PlaySound_f
 */
 void UI_PlaySound_f()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	SND_FadeIn();
+	SND_Play(Cmd_Argv(1), 0, 1.0f, 528383, 0, 0, 0);
 }
 
 /*
@@ -2664,7 +2731,36 @@ UI_RegisterCmds
 */
 void UI_RegisterCmds()
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	Cmd_AddCommandInternal("setlocalvarbool", UI_SetLocalVarBool_f, &UI_SetLocalVarBool_f_VAR);
+	Cmd_AddCommandInternal("setlocalvarint", UI_SetLocalVarInt_f, &UI_SetLocalVarInt_f_VAR);
+	Cmd_AddCommandInternal("setlocalvarfloat", UI_SetLocalVarFloat_f, &UI_SetLocalVarFloat_f_VAR);
+	Cmd_AddCommandInternal("setlocalvarstring", UI_SetLocalVarString_f, &UI_SetLocalVarString_f_VAR);
+	Cmd_AddCommandInternal("fadeitem", UI_FadeItem_f, &UI_FadeItem_f_VAR);
+	Cmd_AddCommandInternal("showitem", UI_ShowItem_f, &UI_ShowItem_f_VAR);
+	Cmd_AddCommandInternal("hideitem", UI_HideItem_f, &UI_HideItem_f_VAR);
+	Cmd_AddCommandInternal("showmenu", UI_ShowMenu_f, &UI_ShowMenu_f_VAR);
+	Cmd_AddCommandInternal("hidemenu", UI_HideMenu_f, &UI_HideMenu_f_VAR);
+	Cmd_AddCommandInternal("openmenu", UI_OpenMenu_f, &UI_OpenMenu_f_VAR);
+	Cmd_AddCommandInternal("closemenu", UI_CloseMenu_f, &UI_CloseMenu_f_VAR);
+	Cmd_AddCommandInternal("openmenuimmediate", UI_OpenMenuImmediate_f, &UI_OpenMenuImmediate_f_VAR);
+	Cmd_AddCommandInternal("closemenuimmediate", UI_CloseMenuImmediate_f, &UI_CloseMenuImmediate_f_VAR);
+	Cmd_AddCommandInternal("changeMenuOpenSlideDirection", UI_ChangeMenuOpenSlideDirection_f, &UI_ChangeMenuOpenSlideDirection_f_VAR);
+	Cmd_AddCommandInternal("changeMenuCloseSlideDirection", UI_ChangeMenuCloseSlideDirection_f, &UI_ChangeMenuCloseSlideDirection_f_VAR);
+	Cmd_AddCommandInternal("opentoastpopup", UI_OpenToastPopup_f, &UI_OpenToastPopup_f_VAR);
+	Cmd_AddCommandInternal("focusitem", UI_FocusItem_f, &UI_FocusItem_f_VAR);
+	Cmd_AddCommandInternal("playsound", UI_PlaySound_f, &UI_PlaySound_f_VAR);
+	Cmd_AddCommandInternal("movefeeder", UI_MoveFeeder_f, &UI_MoveFeeder_f_VAR);
+	Cmd_AddCommandInternal("addToFeeder", UI_AddToFeeder_f, &UI_AddToFeeder_f_VAR);
+	Cmd_AddCommandInternal("addToFeederExtended", UI_AddToFeederExtended_f, &UI_AddToFeederExtended_f_VAR);
+	Cmd_AddCommandInternal("clearFeederWithoutResetCursor", UI_ClearFeederWithoutResetCursor_f, &UI_ClearFeederWithoutResetCursor_f_VAR);
+	Cmd_AddCommandInternal("clearFeeder", UI_ClearFeeder_f, &UI_ClearFeeder_f_VAR);
+	Cmd_AddCommandInternal("raiseFeederEvent", UI_RaiseFeederEvent_f, &UI_RaiseFeederEvent_f_VAR);
+	Cmd_AddCommandInternal("refreshFeeder", UI_RefreshFeeder_f, &UI_RefreshFeeder_f_VAR);
+	Cmd_AddCommandInternal("refreshFeederSelection", UI_RefreshFeederSelection_f, &UI_RefreshFeederSelection_f_VAR);
+	Cmd_AddCommandInternal("changeRowStatus", UI_ChangeRowStatus_f, &UI_ChangeRowStatus_f_VAR);
+	Cmd_AddCommandInternal("validatePrivateMatchGametype", UI_ValidatePrivateMatchGametype_f, &UI_ValidatePrivateMatchGametype_f_VAR);
+	Cmd_AddCommandInternal("setactivemenu", UI_SetActiveMenu_f, &UI_SetActiveMenu_f_VAR);
+	Cmd_AddCommandInternal("kickplayer", UI_KickPlayer_f, &UI_KickPlayer_f_VAR);
 }
 
 /*
