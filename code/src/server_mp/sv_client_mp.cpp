@@ -309,7 +309,30 @@ SV_BanClient
 */
 void SV_BanClient(client_t *cl)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(cl);
+
+	if (cl->header.netchan.remoteAddress.type == NA_LOOPBACK)
+	{
+		SV_SendServerCommand(cl, 0, SV_CMD_CAN_IGNORE, "%c \"EXE_CANNOTKICKHOSTPLAYER\"", 79);
+	}
+	else if (cl->xuid)
+	{
+		if (Party_IsInTempBannedXuidList(cl->xuid))
+		{
+			Com_Printf(26, "This xuid (%llx) is already banned\n", cl->xuid);
+		}
+		else
+		{
+			Party_AddToTempBannedXuidList(cl->xuid);
+			SV_DropClient(cl, "EXE_PLAYERKICKED_BAN", 1);
+
+			cl->lastPacketTime = svs.time;
+		}
+	}
+	else
+	{
+		Com_Printf(26, "Can't ban user, no xuid was found\n");
+	}
 }
 
 /*
