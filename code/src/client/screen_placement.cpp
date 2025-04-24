@@ -125,58 +125,65 @@ void ScrPlace_SetupFloatViewport(
 	float viewportY,
 	float viewportWidth,
 	float viewportHeight,
-	float aspect,
+	[[maybe_unused]] float aspect,
 	bool splitScreen)
 {
-#ifdef 0
-	float	adjustedRealWidth;
-
-	memset((unsigned __int8 *)scrPlace, 0xB0u, sizeof(ScreenPlacement));
-
-	scrPlace->realViewportBase[0] = *(float *)&0.0;
-	scrPlace->realViewportBase[1] = *(float *)&0.0;
+	memset(scrPlace, sizeof(scrPlace), sizeof(ScreenPlacement));
+	scrPlace->realViewportBase[0] = 0.0f;
+	scrPlace->realViewportBase[1] = 0.0f;
 	scrPlace->realViewportSize[0] = viewportWidth;
 	scrPlace->realViewportSize[1] = viewportHeight;
-	adjustedRealWidth = (float)(1.3333334 * viewportHeight) / cls.vidConfig.aspectRatioScenePixel;
 
-  if ( adjustedRealWidth > viewportWidth )
-    adjustedRealWidth = viewportWidth;
-  ScrPlace_CalcSafeAreaOffsets(
-    viewportX,
-    viewportY,
-    viewportWidth,
-    viewportHeight,
-    viewportWidth / adjustedRealWidth,
-    viewportHeight / viewportHeight,
-    1.0,
-    1.0,
-    scrPlace->realViewableMin,
-    scrPlace->realViewableMax,
-    scrPlace->virtualViewableMin,
-    scrPlace->virtualViewableMax);
-  ScrPlace_CalcSafeAreaOffsets(
-    viewportX,
-    viewportY,
-    viewportWidth,
-    viewportHeight,
-    viewportWidth / adjustedRealWidth,
-    viewportHeight / viewportHeight,
-    1.0,
-    1.0,
-    scrPlace->realTweakableMin,
-    scrPlace->realTweakableMax,
-    scrPlace->virtualTweakableMin,
-    scrPlace->virtualTweakableMax);
-  scrPlace->scaleVirtualToReal[0] = adjustedRealWidth / 640.0;
-  scrPlace->scaleVirtualToReal[1] = viewportHeight / 480.0;
-  scrPlace->scaleVirtualToFull[0] = viewportWidth / 640.0;
-  scrPlace->scaleVirtualToFull[1] = viewportHeight / 480.0;
-  scrPlace->scaleRealToVirtual[0] = 640.0 / adjustedRealWidth;
-  scrPlace->scaleRealToVirtual[1] = 480.0 / viewportHeight;
-  scrPlace->subScreen[0] = (viewportWidth - adjustedRealWidth) * 0.5;
-  scrPlace->subScreen[1] = (viewportHeight - viewportHeight) * 0.5;
-#endif
-	UNIMPLEMENTED (__FUNCTION__);
+	float adjustedRealWidth = (1.3333334f * viewportHeight) / cls.vidConfig.aspectRatioScenePixel;
+	if (adjustedRealWidth > viewportWidth)
+	{
+		adjustedRealWidth = viewportWidth;
+	}
+
+	ScrPlace_CalcSafeAreaOffsets(
+		viewportX,
+		viewportY,
+		viewportWidth,
+		viewportHeight,
+		viewportWidth / adjustedRealWidth,
+		viewportHeight / viewportHeight,
+		1.0f,
+		1.0f,
+		scrPlace->realViewableMin,
+		scrPlace->realViewableMax,
+		scrPlace->virtualViewableMin,
+		scrPlace->virtualViewableMax);
+	ScrPlace_CalcSafeAreaOffsets(
+		viewportX,
+		viewportY,
+		viewportWidth,
+		viewportHeight,
+		viewportWidth / adjustedRealWidth,
+		viewportHeight / viewportHeight,
+		1.0f,
+		1.0f,
+		scrPlace->realTweakableMin,
+		scrPlace->realTweakableMax,
+		scrPlace->virtualTweakableMin,
+		scrPlace->virtualTweakableMax);
+
+	scrPlace->scaleVirtualToReal[0] = adjustedRealWidth / 640.0f;
+	scrPlace->scaleVirtualToReal[1] = viewportHeight / 480.0f;
+	scrPlace->scaleVirtualToFull[0] = viewportWidth / 640.0f;
+	scrPlace->scaleVirtualToFull[1] = viewportHeight / 480.0f;
+	scrPlace->scaleRealToVirtual[0] = 640.0f / adjustedRealWidth;
+	scrPlace->scaleRealToVirtual[1] = 480.0f / viewportHeight;
+	scrPlace->subScreen[0] = (viewportWidth - adjustedRealWidth) * 0.5f;
+	scrPlace->subScreen[1] = (viewportHeight - viewportHeight) * 0.5f;
+
+	if (splitScreen)
+	{
+		scrPlace->hudSplitscreenScale = cg_hudSplitscreenScale;
+	}
+	else
+	{
+		scrPlace->hudSplitscreenScale = 1.0f;
+	}
 }
 
 /*
@@ -227,10 +234,62 @@ void ScrPlace_SetupUnsafeViewport (
 ScrPlace_ApplyX
 ==============
 */
-double ScrPlace_ApplyX(const ScreenPlacement *scrPlace, float x, int horzAlign)
+float ScrPlace_ApplyX(const ScreenPlacement *scrPlace, float x, int horzAlign)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (cg_hudSplitscreenOffsetsUseScale->current.enabled)
+	{
+		x = (cg_hudSplitscreenScale * x);
+	}
+
+	float scale = (cg_hudStereo3DScale * x);
+	float result;
+
+	switch (horzAlign)
+	{
+	case 1:
+		result = (x * scrPlace->scaleVirtualToReal[0]) + scrPlace->realViewableMin[0];
+		break;
+	case 2:
+		result = ((x * scrPlace->scaleVirtualToReal[0]) + (scrPlace->realViewportSize[0] * scale)) + scrPlace->realViewportBase[0];
+		break;
+	case 3:
+		result = (x * scrPlace->scaleVirtualToReal[0]) + scrPlace->realViewableMax[0];
+		break;
+	case 4:
+		result = (x * scrPlace->scaleVirtualToFull[0]) + scrPlace->realViewportBase[0];
+		break;
+	case 5:
+		result = x;
+		break;
+	case 6:
+		result = x * scrPlace->scaleRealToVirtual[0];
+		break;
+	case 7:
+		result = (x * scrPlace->scaleVirtualToReal[0]) + ((scrPlace->realViewableMin[0] + scrPlace->realViewableMax[0]) * scale);
+		break;
+	case 8:
+		result = (x * scrPlace->scaleVirtualToReal[0]) + scrPlace->realTweakableMin[0];
+		break;
+	case 9:
+		result = (x * scrPlace->scaleVirtualToReal[0]) + ((scrPlace->realTweakableMin[0] + scrPlace->realTweakableMax[0]) * scale);
+		break;
+	case 10:
+		result = (x * scrPlace->scaleVirtualToReal[0]) + scrPlace->realTweakableMax[0];
+		break;
+	default:
+		assertMsg((horzAlign == NULL), "(horzAlign) = %i", horzAlign);
+		result = (x * scrPlace->scaleVirtualToReal[0]) + scrPlace->subScreen[0];
+		break;
+	}
+
+#ifn defined(DEDICATED)
+	if (rg.renderHiResShot)
+	{
+		return ((rg.hiResShotTiles * result) - cls.vidConfig.displayWidth * rg.hiResShotRow);
+	}
+#endif
+
+	return result;
 }
 
 /*
@@ -238,10 +297,62 @@ double ScrPlace_ApplyX(const ScreenPlacement *scrPlace, float x, int horzAlign)
 ScrPlace_ApplyY
 ==============
 */
-double ScrPlace_ApplyY(const ScreenPlacement *scrPlace, float y, int vertAlign)
+float ScrPlace_ApplyY(const ScreenPlacement *scrPlace, float y, int vertAlign)
 {
-	UNIMPLEMENTED(__FUNCTION__);
-	return 0;
+	if (cg_hudSplitscreenOffsetsUseScale->current.enabled)
+	{
+		y = (cg_hudSplitscreenScale * y);
+	}
+
+	float scale = (cg_hudStereo3DScale * y);
+	float result;
+
+	switch (vertAlign)
+	{
+	case 1:
+		result = (y * scrPlace->scaleVirtualToReal[1]) + scrPlace->realViewableMin[1];
+		break;
+	case 2:
+		result = ((y * scrPlace->scaleVirtualToReal[1]) + (scrPlace->realViewportSize[1] * scale)) + scrPlace->realViewportBase[1];
+		break;
+	case 3:
+		result = (y * scrPlace->scaleVirtualToReal[1]) + scrPlace->realViewableMax[1];
+		break;
+	case 4:
+		result = (y * scrPlace->scaleVirtualToFull[1]) + scrPlace->realViewportBase[1];
+		break;
+	case 5:
+		result = y;
+		break;
+	case 6:
+		result = y * scrPlace->scaleRealToVirtual[1];
+		break;
+	case 7:
+		result = (y * scrPlace->scaleVirtualToReal[1]) + ((scrPlace->realViewableMin[1] + scrPlace->realViewableMax[1]) * scale);
+		break;
+	case 8:
+		result = (y * scrPlace->scaleVirtualToReal[1]) + scrPlace->realTweakableMin[1];
+		break;
+	case 9:
+		result = (y * scrPlace->scaleVirtualToReal[1]) + ((scrPlace->realTweakableMin[1] + scrPlace->realTweakableMax[1]) * scale);
+		break;
+	case 10:
+		result = (y * scrPlace->scaleVirtualToReal[1]) + scrPlace->realTweakableMax[1];
+		break;
+	default:
+		assertMsg((vertAlign == NULL), "(vertAlign) = %i", vertAlign);
+		result = (y * scrPlace->scaleVirtualToReal[1]) + scrPlace->subScreen[1];
+		break;
+	}
+
+#ifn defined(DEDICATED)
+	if (rg.renderHiResShot)
+	{
+		return ((rg.hiResShotTiles * result) - cls.vidConfig.displayHeight * rg.hiResShotCol);
+	}
+#endif
+
+	return result;
 }
 
 /*
@@ -249,9 +360,9 @@ double ScrPlace_ApplyY(const ScreenPlacement *scrPlace, float y, int vertAlign)
 ScrPlace_ApplyW
 ==============
 */
-double ScrPlace_ApplyW(const ScreenPlacement *scrPlace, float w, int horzAlign)
+float ScrPlace_ApplyW(const ScreenPlacement *scrPlace, float w, int horzAlign)
 {
-	switch ( horzAlign )
+	switch (horzAlign)
 	{
 	case 0:
 	case 1:
@@ -262,14 +373,24 @@ double ScrPlace_ApplyW(const ScreenPlacement *scrPlace, float w, int horzAlign)
 	case 8:
 	case 9:
 	case 10:
-		return (scrPlace->scaleVirtualToReal[0] * scrPlace->hudSplitscreenScale * w);
+		w = w * scrPlace->scaleVirtualToReal[0];
+		break;
 	case 4:
-		return (scrPlace->scaleVirtualToFull[0] * scrPlace->hudSplitscreenScale * w);
+		w = w * scrPlace->scaleVirtualToFull[0];
+		break;
 	case 5:
-		return scrPlace->hudSplitscreenScale * w;
+		break;
 	default:
-		return (scrPlace->scaleVirtualToReal[0] * scrPlace->hudSplitscreenScale * w);
+		assertMsg(false, "invalid horizontal alignment case");
+		break;
 	}
+
+	if (rg.renderHiResShot)
+	{
+		return (rg.hiResShotTiles * w);
+	}
+
+	return w;
 }
 
 /*
@@ -277,9 +398,9 @@ double ScrPlace_ApplyW(const ScreenPlacement *scrPlace, float w, int horzAlign)
 ScrPlace_ApplyH
 ==============
 */
-double ScrPlace_ApplyH(const ScreenPlacement *scrPlace, float h, int vertAlign)
+float ScrPlace_ApplyH(const ScreenPlacement *scrPlace, float h, int vertAlign)
 {
-	switch ( vertAlign )
+	switch (vertAlign)
 	{
 	case 0:
 	case 1:
@@ -290,14 +411,19 @@ double ScrPlace_ApplyH(const ScreenPlacement *scrPlace, float h, int vertAlign)
 	case 8:
 	case 9:
 	case 10:
-		return (scrPlace->scaleVirtualToReal[1] * scrPlace->hudSplitscreenScale * h);
+		h = h * scrPlace->scaleVirtualToReal[1];
+		break;
 	case 4:
-		return (scrPlace->scaleVirtualToFull[1] * v3scrPlace->hudSplitscreenScale * h);
+		h = h * scrPlace->scaleVirtualToFull[1];
+		break;
 	case 5:
-		return scrPlace->hudSplitscreenScale * h;
+		return h;
 	default:
-		return (scrPlace->scaleVirtualToReal[1] * scrPlace->hudSplitscreenScale * h);
+		assertMsg(false, "invalid vertical alignment case");
+		break;
 	}
+
+	return h;
 }
 
 /*
@@ -305,9 +431,10 @@ double ScrPlace_ApplyH(const ScreenPlacement *scrPlace, float h, int vertAlign)
 ApplySplitscreenScaling
 ==============
 */
-void ApplySplitscreenScaling( float *x, float *y, float *w, float *h, float hudSplitscreenScale )
+void ApplySplitscreenScaling(float *x, float *y, float *w, float *h, float hudSplitscreenScale)
 {
-	if ( cg_hudSplitscreenOffsetsUseScale->current.enabled ) {
+	if (cg_hudSplitscreenOffsetsUseScale->current.enabled)
+	{
 		*x = *x * hudSplitscreenScale;
 		*y = *y * hudSplitscreenScale;
 	}
@@ -321,7 +448,7 @@ void ApplySplitscreenScaling( float *x, float *y, float *w, float *h, float hudS
 ScrPlace_ApplyRect
 ==============
 */
-void	ScrPlace_ApplyRect (
+void ScrPlace_ApplyRect(
 	const ScreenPlacement *scrPlace,
 	float *x,
 	float *y,
@@ -330,79 +457,85 @@ void	ScrPlace_ApplyRect (
 	int horzAlign,
 	int vertAlign)
 {
-	UNIMPLEMENTED (__FUNCTION__);
+	UNIMPLEMENTED(__FUNCTION__);
 }
-
 
 /*
 ==============
 ScrPlace_SetLegacySplitscreenScaling
 ==============
 */
-void ScrPlace_SetLegacySplitscreenScaling( void) {
-	if ( R_Is3DOn( ) ) {
+void ScrPlace_SetLegacySplitscreenScaling()
+{
+	if (R_Is3DOn())
+	{
 		cg_hudSplitscreenScale = cg_hudLegacySplitscreenScale->current.value;
-	} else {
+	}
+	else
+	{
 		cg_hudSplitscreenScale = 1.0f;
 	}
 }
-
-
 
 /*
 ==============
 ScrPlace_SetNormalSplitscreenScaling
 ==============
 */
-void ScrPlace_SetNormalSplitscreenScaling (void) {
+void ScrPlace_SetNormalSplitscreenScaling()
+{
 	cg_hudSplitscreenScale = 1.0f;
 }
-
 
 /*
 ==============
 ScrPlace_Init
 ==============
 */
-void ScrPlace_Init (void) {
-	safeArea_horizontal = _Dvar_RegisterFloat ("safeArea_horizontal",
-							0.85,
-							0.0,
-							1.0,
-							DVAR_NOFLAG,
-							"Horizontal safe area as a fraction of the screen width");
-	safeArea_vertical = _Dvar_RegisterFloat (
-							"safeArea_vertical",
-							0.85,
-							0.0,
-							1.0,
-							DVAR_NOFLAG,
-							"Vertical safe area as a fraction of the screen height");
-	ui_safearea = _Dvar_RegisterBool ("ui_safearea", 0, DVAR_NOFLAG, "");
+void ScrPlace_Init()
+{
+	safeArea_horizontal = Dvar_RegisterFloat(
+		"safeArea_horizontal",
+		0.85f,
+		0.0f,
+		1.0f,
+		DVAR_NOFLAG,
+		"Horizontal safe area as a fraction of the screen width");
+	safeArea_vertical = Dvar_RegisterFloat(
+		"safeArea_vertical",
+		0.85f,
+		0.0f,
+		1.0f,
+		DVAR_NOFLAG,
+		"Vertical safe area as a fraction of the screen height");
+	ui_safearea = Dvar_RegisterBool(
+		"ui_safearea",
+		false,
+		DVAR_NOFLAG,
+		nullptr);
 
-	cg_hudSplitscreenScale = 1.0;
+	cg_hudSplitscreenScale = 1.0f;
 
-	if ( R_Is3DOn () && R_IsLowRes3D() ) {
-		cg_hudLegacyStereo3DScale = _Dvar_RegisterFloat (
+	if (R_Is3DOn() && R_IsLowRes3D())
+	{
+		cg_hudLegacyStereo3DScale = Dvar_RegisterFloat(
 			"cg_hudLegacyStereo3DScale",
-			1.45,
-			1.0,
-			3.4028235e38,
+			1.45f,
+			1.0f,
+			3.4028235e38f,
 			DVAR_NOFLAG,
 			"Screen scale for hud elements in stereo 3D");
-		cg_hudStereo3DScale = 1.0;
+		cg_hudStereo3DScale = 1.0f;
 	}
 	else
 	{
-		cg_hudLegacyStereo3DScale = _Dvar_RegisterFloat (
+		cg_hudLegacyStereo3DScale = Dvar_RegisterFloat(
 			"cg_hudLegacyStereo3DScale",
-			1.0,
-			1.0,
-			3.4028235e38,
+			1.0f,
+			1.0f,
+			3.4028235e38f,
 			DVAR_NOFLAG,
 			"Screen scale for hud elements in stereo 3D");
-		cg_hudStereo3DScale = 1.0;
+		cg_hudStereo3DScale = 1.0f;
 	}
 }
-
-///////
