@@ -135,7 +135,23 @@ BG_SetupTransitionTimes
 */
 void BG_SetupTransitionTimes(WeaponVariantDef *weapVariantDef)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (weapVariantDef->iAdsTransInTime < 0)
+	{
+		weapVariantDef->fOOPosAnimLength[0] = 1.0f / 300.0f;
+	}
+	else
+	{
+		weapVariantDef->fOOPosAnimLength[0] = 1.0f / weapVariantDef->iAdsTransInTime;
+	}
+
+	if (weapVariantDef->iAdsTransOutTime < 0)
+	{
+		weapVariantDef->fOOPosAnimLength[1] = 1.0f / 500.0f;
+	}
+	else
+	{
+		weapVariantDef->fOOPosAnimLength[1] = 1.0f / weapVariantDef->iAdsTransOutTime;
+	}
 }
 
 /*
@@ -145,7 +161,15 @@ BG_CheckWeaponDamageRanges
 */
 void BG_CheckWeaponDamageRanges(WeaponVariantDef *weapVariantDef)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	if (weapDef->fMaxDamageRange < 0.0f)
+	{
+		weapDef->fMaxDamageRange = 999999.0f;
+	}
+
+	if (weapDef->fMinDamageRange < 0.0f)
+	{
+		weapDef->fMinDamageRange = 999999.0f;
+	}
 }
 
 /*
@@ -175,7 +199,31 @@ BG_CheckProjectileValues
 */
 void BG_CheckProjectileValues(WeaponFullDef *weaponFullDef)
 {
-	UNIMPLEMENTED(__FUNCTION__);
+	assert(weaponDef->weapType != WEAPTYPE_PROJECTILE);
+
+	if (weaponFullDef->weapDef.iProjectileSpeed < 0.0f)
+	{
+		Com_Error(
+			ERR_DROP,
+			"Projectile speed for WeapType %s must be greater than 0.0",
+			weaponFullDef->weapVariantDef.szDisplayName);
+	}
+
+	if (weaponFullDef->weapDef.destabilizationCurvatureMax > 1000000000.0f || weaponFullDef->weapDef.destabilizationCurvatureMax < 0.0f)
+	{
+		Com_Error(
+			ERR_DROP,
+			"Destabilization angle for for WeapType %s must be between 0 and 45 degrees",
+			weaponFullDef->weapVariantDef.szDisplayName);
+	}
+
+	if (weaponFullDef->weapDef.destabilizationRateTime < 0.0)
+	{
+		Com_Error(
+			ERR_DROP,
+			"Destabilization rate time for for WeapType %s must be non-negative",
+			weaponFullDef->weapVariantDef.szDisplayName);
+	}
 }
 
 /*
