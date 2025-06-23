@@ -1,11 +1,5 @@
 # OpenT6
-
-[![License](https://img.shields.io/badge/License-GPLv2-blue)](LICENSE)
-
-*(A Legal copy is required to play, game resources are not provided.)*
-
-# Official Releases
-Official releases will not be available until the project reaches a playable state.
+Open source version of the T6 engine
 
 # Contributing
 I really don't care, just send me stuff.
